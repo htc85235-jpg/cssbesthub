@@ -527,15 +527,15 @@
     try {
       var url = new URL(window.location.href);
       if (url.searchParams.get('vm') === 'sent') {
-        // Clean URL
+        // Set flag BEFORE cleaning URL so polling check can re-show banner
+        window._vmSuccessPending = true;
+        // Show banner now
+        showSuccessBanner();
+        // Clean URL immediately
         url.searchParams.delete('vm');
         window.history.replaceState({}, document.title, url.toString());
-        // Wait for DOM ready, then show banner
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', showSuccessBanner);
-        } else {
-          showSuccessBanner();
-        }
+        // Clear flag after 15 seconds (banner auto-dismisses at 12s)
+        setTimeout(function(){ window._vmSuccessPending = false; }, 15000);
       }
     } catch (e) {
       // URL parsing failed — silently ignore
@@ -581,15 +581,14 @@
           attachListeners();
         }
       });
-      // Also re-run success detection if React wipes the banner
+      // Re-show banner if React wipes it (uses flag, not URL, since URL is cleaned)
       var bannerCheckCount = 0;
       var bannerCheckInterval = setInterval(function(){
         bannerCheckCount++;
-        var url = new URL(window.location.href);
-        if (url.searchParams.get('vm') === 'sent' && !document.getElementById('vm-success-banner')) {
-          checkSuccessRedirect();
+        if (window._vmSuccessPending && !document.getElementById('vm-success-banner')) {
+          showSuccessBanner();
         }
-        if (bannerCheckCount > 20) clearInterval(bannerCheckInterval); // 10 seconds max
+        if (bannerCheckCount > 30) clearInterval(bannerCheckInterval); // 15 seconds max
       }, 500);
       observer.observe(document.body, { childList: true, subtree: true });
     }
