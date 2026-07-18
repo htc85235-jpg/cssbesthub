@@ -370,14 +370,14 @@
 
   var selectedFile = null;
 
-  // --- Defeat browser autofill / any persisted password ---
+  // --- Defeat browser autofill on page load only ---
   // Password is NEVER stored on this page — must be typed every time.
+  // NOTE: we do NOT add a focus listener here — a capture-phase focus
+  // listener would fire every time the user taps the input, wiping their
+  // typing. Initial clears on load are enough to defeat autofill.
   pwdInput.value = '';
-  // Re-clear after a tick (Chrome sometimes autofills AFTER DOMContentLoaded)
   setTimeout(function(){ pwdInput.value = ''; }, 50);
   setTimeout(function(){ pwdInput.value = ''; }, 300);
-  // Re-clear when window regains focus (in case browser autofills on tab switch)
-  window.addEventListener('focus', function(){ pwdInput.value = ''; }, true);
 
   // --- File selection ---
   fileInput.addEventListener('change', function(){
