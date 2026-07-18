@@ -293,7 +293,7 @@
     </div>
     <span class="badge">AES-256-GCM</span>
     <h1>Voice Message Decryptor</h1>
-    <p class="subtitle">Open the <code>.enc</code> attachment from your email, enter the password, and play.</p>
+    <p class="subtitle">Open the <code>.enc</code> attachment from your email, type the password each time, and play.</p>
   </header>
 
   <div class="card">
@@ -307,7 +307,7 @@
 
     <label class="field-label" style="margin-top:18px;">2. Enter password</label>
     <div class="password-row">
-      <input type="password" id="pwdInput" value="slowdumbo" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Password">
+      <input type="password" id="pwdInput" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the password" autofocus>
       <button type="button" class="toggle-eye" id="toggleEye" aria-label="Show/hide password">👁</button>
     </div>
 
@@ -333,7 +333,7 @@
       <li>Save the <code>.enc</code> attachment from Gmail to your device (Downloads folder).</li>
       <li>Open this page in Chrome. Bookmark it for next time.</li>
       <li>Tap the file picker above → "Files" → choose the <code>.enc</code> file.</li>
-      <li>Password <code>slowdumbo</code> is already filled in. Tap <strong>Decrypt &amp; Play</strong>.</li>
+      <li>Type the password (you must get it from the sender — it is NOT stored on this page). Tap <strong>Decrypt &amp; Play</strong>.</li>
       <li>Audio plays inline. Tap <strong>Download</strong> to save the decrypted audio (.webm / .mp4 / .ogg).</li>
     </ol>
     <p><strong>Works fully offline:</strong> After the first load, you can use this page without internet. To install as an app: Chrome menu → "Add to Home screen".</p>
@@ -361,6 +361,15 @@
   var result      = document.getElementById('result');
 
   var selectedFile = null;
+
+  // --- Defeat browser autofill / any persisted password ---
+  // Password is NEVER stored on this page — must be typed every time.
+  pwdInput.value = '';
+  // Re-clear after a tick (Chrome sometimes autofills AFTER DOMContentLoaded)
+  setTimeout(function(){ pwdInput.value = ''; }, 50);
+  setTimeout(function(){ pwdInput.value = ''; }, 300);
+  // Re-clear when window regains focus (in case browser autofills on tab switch)
+  window.addEventListener('focus', function(){ pwdInput.value = ''; }, true);
 
   // --- File selection ---
   fileInput.addEventListener('change', function(){
