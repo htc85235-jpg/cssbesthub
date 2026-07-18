@@ -386,46 +386,135 @@
   }
 
   // ===== SEND =====
+  // FormSubmit's AJAX endpoint (formsubmit.co/ajax/) silently drops file
+  // attachments. We use a hidden iframe + form POST to the NON-ajax endpoint
+  // which fully supports multipart/form-data file uploads up to 10 MB.
+  var submitIframe = null;
+  var submitForm = null;
+  var submitTimeout = null;
+  var submitHandled = false;
+
+  function cleanupSubmitArtifacts() {
+    if (submitTimeout) { clearTimeout(submitTimeout); submitTimeout = null; }
+    if (submitForm && submitForm.parentNode) {
+      submitForm.parentNode.removeChild(submitForm);
+    }
+    if (submitIframe && submitIframe.parentNode) {
+      submitIframe.parentNode.removeChild(submitIframe);
+    }
+    submitForm = null;
+    submitIframe = null;
+  }
+
+  function handleSendComplete(success, message) {
+    if (submitHandled) return;
+    submitHandled = true;
+    cleanupSubmitArtifacts();
+    if (success) {
+      show(successSection);
+      if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
+      audioBlob = null;
+      audioChunks = [];
+    } else {
+      errorMsg.textContent = message || 'Unknown error';
+      show(errorSection);
+    }
+  }
+
   async function sendVoiceMessage() {
     if (!audioBlob) return;
     show(sendingSection);
+    submitHandled = false;
+
     try {
+      // 1. Encrypt the audio
       var encryptedBlob = await encryptBlob(audioBlob, VAULT_PASSWORD);
+
+      // 2. Determine original audio format for metadata
       var originalExt = 'bin';
       if (audioBlob.type.includes('webm')) originalExt = 'webm';
       else if (audioBlob.type.includes('mp4')) originalExt = 'mp4';
       else if (audioBlob.type.includes('ogg')) originalExt = 'ogg';
 
-      var formData = new FormData();
-      formData.append('_subject', 'Encrypted voice message from CSS aspirants voice box');
-      formData.append('_template', 'table');
-      formData.append('timestamp', new Date().toISOString());
-      formData.append('browser', navigator.userAgent);
-      formData.append('original_format', originalExt);
-      formData.append('duration_seconds', Math.floor((Date.now() - recordStartTime) / 1000));
-      formData.append('attachment', encryptedBlob, 'voice_' + Date.now() + '.enc');
+      // 3. Wrap encrypted blob in a File object
+      var fileName = 'voice_' + Date.now() + '.enc';
+      var file = new File([encryptedBlob], fileName, { type: 'application/octet-stream' });
 
-      var response = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(FORMSUBMIT_EMAIL), {
-        method: 'POST',
-        body: formData,
-        headers: { 'Accept': 'application/json' }
+      // 4. Create hidden iframe as the form's target
+      var iframeName = 'vm_submit_frame_' + Date.now();
+      submitIframe = document.createElement('iframe');
+      submitIframe.name = iframeName;
+      submitIframe.id = iframeName;
+      submitIframe.style.cssText = 'position:absolute;width:1px;height:1px;left:-9999px;top:-9999px;border:0;';
+      submitIframe.setAttribute('aria-hidden', 'true');
+      submitIframe.setAttribute('tabindex', '-1');
+      document.body.appendChild(submitIframe);
+
+      // 5. Create hidden form targeting the iframe
+      submitForm = document.createElement('form');
+      submitForm.method = 'POST';
+      submitForm.action = 'https://formsubmit.co/' + encodeURIComponent(FORMSUBMIT_EMAIL);
+      submitForm.target = iframeName;
+      submitForm.enctype = 'multipart/form-data';
+      submitForm.encoding = 'multipart/form-data'; // IE compat
+      submitForm.style.display = 'none';
+
+      // 6. Append metadata fields
+      var fields = {
+        '_subject': 'Encrypted voice message from CSS aspirants voice box',
+        '_template': 'table',
+        '_captcha': 'false',
+        'timestamp': new Date().toISOString(),
+        'browser': navigator.userAgent.substring(0, 200),
+        'original_format': originalExt,
+        'duration_seconds': String(Math.floor((Date.now() - recordStartTime) / 1000)),
+        'file_name': fileName,
+        'file_size_bytes': String(file.size)
+      };
+      Object.keys(fields).forEach(function(name){
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = fields[name];
+        submitForm.appendChild(input);
       });
 
-      if (!response.ok) {
-        throw new Error('Server returned ' + response.status);
+      // 7. Append file input (using DataTransfer to set .files)
+      var fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.name = 'attachment';
+      try {
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+      } catch (dtErr) {
+        // Fallback for older browsers — should not happen on modern Android Chrome
+        throw new Error('Browser does not support file submission: ' + dtErr.message);
       }
-      var result = await response.json();
-      if (result.success === 'true' || result.success === true) {
-        show(successSection);
-        if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
-        audioBlob = null;
-        audioChunks = [];
-      } else {
-        throw new Error(result.message || 'Unknown error');
-      }
+      submitForm.appendChild(fileInput);
+
+      document.body.appendChild(submitForm);
+
+      // 8. Set up load listener BEFORE submitting
+      // The iframe's load event fires after FormSubmit responds (success page or error page).
+      // We can't read the cross-origin response, so we assume success on load.
+      submitIframe.addEventListener('load', function(){
+        // Slight delay to let any redirect settle
+        setTimeout(function(){
+          handleSendComplete(true);
+        }, 300);
+      });
+
+      // 9. Fallback timeout (60s) — if load event never fires (network issue / silent failure)
+      submitTimeout = setTimeout(function(){
+        handleSendComplete(false, 'Submission timed out. Please check your internet connection and try again.');
+      }, 60000);
+
+      // 10. Submit the form
+      submitForm.submit();
+
     } catch (err) {
-      errorMsg.textContent = err.message;
-      show(errorSection);
+      handleSendComplete(false, err.message || 'Failed to send voice message.');
     }
   }
 
