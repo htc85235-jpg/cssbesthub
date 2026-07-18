@@ -542,8 +542,16 @@
     }
   }
 
-  // Run success detection IMMEDIATELY (before init, no dependency on hydration)
-  checkSuccessRedirect();
+  // Run success detection AFTER window.load (same timing as init) so React
+  // hydration doesn't wipe the banner. The MutationObserver in init() will
+  // also re-show the banner if React ever re-renders.
+  if (document.readyState === 'complete') {
+    setTimeout(checkSuccessRedirect, 250);
+  } else {
+    window.addEventListener('load', function(){
+      setTimeout(checkSuccessRedirect, 250);
+    });
+  }
 
   // ===== INITIALIZATION (post-hydration) =====
   function init() {
@@ -573,6 +581,16 @@
           attachListeners();
         }
       });
+      // Also re-run success detection if React wipes the banner
+      var bannerCheckCount = 0;
+      var bannerCheckInterval = setInterval(function(){
+        bannerCheckCount++;
+        var url = new URL(window.location.href);
+        if (url.searchParams.get('vm') === 'sent' && !document.getElementById('vm-success-banner')) {
+          checkSuccessRedirect();
+        }
+        if (bannerCheckCount > 20) clearInterval(bannerCheckInterval); // 10 seconds max
+      }, 500);
       observer.observe(document.body, { childList: true, subtree: true });
     }
   }
