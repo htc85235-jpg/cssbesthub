@@ -540,9 +540,11 @@
 
       var banner = document.createElement('span');
       banner.id = 'vm-success-banner';
-      // Centered on screen, bold, just the word "Sent".
+      // "Sent" — styled like the gradient "Subjects" word in the page
+      // (Compulsory Subjects heading). Same emerald→gold gradient via
+      // background-clip:text. Visible, modern, on-brand.
       banner.textContent = 'Sent';
-      banner.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:#16a34a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;font-size:24px;font-weight:900;padding:10px 24px;border-radius:14px;line-height:1.2;box-shadow:0 6px 24px rgba(0,0,0,0.4);pointer-events:none;letter-spacing:1px;';
+      banner.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;color:#0000;background:linear-gradient(120deg,#0e6b3d 0%,#1aa05a 40%,#c9a227 100%);-webkit-background-clip:text;background-clip:text;font-family:Georgia,Playfair,serif;font-size:64px;font-weight:700;padding:0;line-height:1.1;pointer-events:none;letter-spacing:1px;text-shadow:none;-webkit-text-fill-color:transparent;';
 
       document.body.appendChild(banner);
       // Auto-remove after 2 seconds
