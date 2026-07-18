@@ -54,8 +54,8 @@
     + '    <button id="vm-close" aria-label="Close" style="position:absolute;top:14px;right:14px;background:none;border:none;color:#94a3b8;font-size:24px;cursor:pointer;line-height:1;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;">&times;</button>'
     + '    <h2 style="margin:0 0 22px;font-size:22px;font-weight:700;color:#f8fafc;text-align:center;">Owner Access Only</h2>'
     + '    <div id="vm-prompt">'
-    + '      <input id="vm-password" type="password" autocomplete="off" placeholder="Password" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#f8fafc;font-size:16px;outline:none;margin-bottom:10px;"/>'
-    + '      <button id="vm-unlock-btn" type="button" style="width:100%;padding:12px;border-radius:10px;border:none;background:#d4af37;color:#1a1a1a;font-weight:700;font-size:15px;cursor:pointer;">Unlock</button>'
+    + '      <input id="vm-password" type="password" autocomplete="off" placeholder="••••••••" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#f8fafc;font-size:16px;outline:none;margin-bottom:10px;"/>'
+    + '      <button id="vm-unlock-btn" type="button" style="width:100%;padding:12px;border-radius:10px;border:none;background:#d4af37;color:#1a1a1a;font-weight:700;font-size:15px;cursor:pointer;">I am the Owner</button>'
     + '      <p id="vm-wrong" style="display:none;color:#ef4444;font-size:13px;margin:10px 0 0;text-align:center;">Wrong password. Try again.</p>'
     + '    </div>'
     + '    <div id="vm-recorder" style="display:none;">'
@@ -227,6 +227,28 @@
     });
     document.addEventListener('keydown', function(e){
       if (e.key === 'Escape' && overlay.style.display === 'flex') closeOverlay();
+    });
+
+    // Auto-close the moment the tab is hidden or browser is minimized /
+    // switched away. This prevents anyone from seeing the open box if the
+    // user leaves their phone unattended with the box open.
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden && overlay && overlay.style.display === 'flex') {
+        closeOverlay();
+      }
+    });
+    // Also close on window blur (catches some Android "recents" / app-switch
+    // cases that don't fire visibilitychange reliably).
+    window.addEventListener('blur', function(){
+      if (overlay && overlay.style.display === 'flex') {
+        // Defer to next tick so focus shifts within the page (e.g. clicking
+        // into the password field) don't trigger close.
+        setTimeout(function(){
+          if (!document.hasFocus() && overlay.style.display === 'flex') {
+            closeOverlay();
+          }
+        }, 0);
+      }
     });
 
     unlockBtn.addEventListener('click', tryUnlock);
