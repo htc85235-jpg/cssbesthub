@@ -153,6 +153,12 @@
     cursor: pointer;
   }
   .toggle-eye:active { background: var(--border); }
+  .pwd-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
   /* Primary button */
   .btn-primary {
     display: block;
@@ -187,6 +193,7 @@
     padding: 14px;
     font-size: 14px;
     margin-top: 14px;
+    line-height: 1.5;
   }
   .result-success {
     margin-top: 16px;
@@ -307,9 +314,10 @@
 
     <label class="field-label" style="margin-top:18px;">2. Enter password</label>
     <div class="password-row">
-      <input type="password" id="pwdInput" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the password" autofocus>
+      <input type="password" id="pwdInput" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Type the password" autofocus>
       <button type="button" class="toggle-eye" id="toggleEye" aria-label="Show/hide password">👁</button>
     </div>
+    <div class="pwd-hint" id="pwdHint">Must match exactly — including @ and capital letters.</div>
 
     <button type="button" class="btn-primary" id="decryptBtn" disabled>Decrypt &amp; Play</button>
 
@@ -461,7 +469,8 @@
   // --- Decrypt ---
   async function decrypt() {
     if (!selectedFile) return;
-    var password = pwdInput.value;
+    // Trim whitespace — Android sometimes adds trailing space from autocorrect
+    var password = pwdInput.value.trim();
     if (!password) {
       showError('Please enter the password.');
       return;
@@ -490,7 +499,10 @@
       try {
         plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
       } catch (e) {
-        throw new Error('Wrong password or corrupted file. AES-GCM authentication failed.');
+        // Provide actionable hints — most common causes:
+        //   1. Typo in password (wrong case, missing @, extra space)
+        //   2. Trying to decrypt an OLD file from before the password change
+        throw new Error('Wrong password or corrupted file.\n\nCommon causes:\n• Typo — check the @ symbol, capital S and capital D, no trailing space\n• Old recording — files saved BEFORE the password change still use the previous password');
       }
 
       var plainBytes = new Uint8Array(plaintext);
@@ -526,7 +538,9 @@
   }
 
   function showError(msg) {
-    result.innerHTML = '<div class="result-error">⚠ ' + escapeHtml(msg) + '</div>';
+    // Convert \n to <br> for display, escape the rest
+    var html = escapeHtml(msg).replace(/\n/g, '<br>');
+    result.innerHTML = '<div class="result-error">⚠ ' + html + '</div>';
     result.classList.add('visible');
   }
   function escapeHtml(s) {
