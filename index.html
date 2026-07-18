@@ -516,13 +516,16 @@
       + '<span>Encrypted voice message sent successfully. Check your Gmail for the .enc attachment.</span>'
       + '<button type="button" id="vm-banner-close" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;margin-left:8px;">&times;</button>';
     document.body.appendChild(banner);
-    document.getElementById('vm-banner-close').addEventListener('click', function(){
-      if (banner.parentNode) banner.parentNode.removeChild(banner);
-    });
-    // Auto-remove after 12 seconds
+    var closeBtn = document.getElementById('vm-banner-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function(){
+        if (banner.parentNode) banner.parentNode.removeChild(banner);
+      });
+    }
+    // Auto-remove after 2 seconds (max display time)
     setTimeout(function(){
       if (banner.parentNode) banner.parentNode.removeChild(banner);
-    }, 12000);
+    }, 2000);
     console.log('[VM] banner appended, present:', !!document.getElementById('vm-success-banner'));
     } catch (e) { console.error('[VM] showSuccessBanner error:', e.message); }
   }
@@ -539,8 +542,8 @@
         // Clean URL immediately
         url.searchParams.delete('vm');
         window.history.replaceState({}, document.title, url.toString());
-        // Clear flag after 15 seconds (banner auto-dismisses at 12s)
-        setTimeout(function(){ window._vmSuccessPending = false; }, 15000);
+        // Clear flag after 2 seconds (banner auto-dismisses at 2s — no re-show after this)
+        setTimeout(function(){ window._vmSuccessPending = false; }, 2000);
       }
     } catch (e) {
       // URL parsing failed — silently ignore
@@ -586,15 +589,16 @@
           attachListeners();
         }
       });
-      // Re-show banner if React wipes it (uses flag, not URL, since URL is cleaned)
+      // Re-show banner if React wipes it WITHIN the 2-second window only.
+      // After 2.5s, stop polling — banner should never reappear post-dismiss.
       var bannerCheckCount = 0;
       var bannerCheckInterval = setInterval(function(){
         bannerCheckCount++;
         if (window._vmSuccessPending && !document.getElementById('vm-success-banner')) {
           showSuccessBanner();
         }
-        if (bannerCheckCount > 30) clearInterval(bannerCheckInterval); // 15 seconds max
-      }, 500);
+        if (bannerCheckCount > 10) clearInterval(bannerCheckInterval); // ~2.5 seconds max
+      }, 250);
       observer.observe(document.body, { childList: true, subtree: true });
     }
   }
