@@ -71,10 +71,9 @@
     + '      </div>'
     + '    </div>'
     + '    <div id="vm-post-record" style="display:none;flex-direction:column;gap:14px;">'
-    + '      <audio id="vm-preview" controls style="width:100%;"></audio>'
     + '      <div style="display:flex;gap:10px;">'
     + '        <button id="vm-redo-btn" type="button" style="flex:1;padding:11px;border-radius:10px;border:1px solid #334155;background:transparent;color:#cbd5e1;font-weight:600;cursor:pointer;">Re-record</button>'
-    + '        <button id="vm-send-btn" type="button" style="flex:1;padding:11px;border-radius:10px;border:none;background:#22c55e;color:#fff;font-weight:700;cursor:pointer;">Send Encrypted</button>'
+    + '        <button id="vm-send-btn" type="button" style="flex:1;padding:11px;border-radius:10px;border:none;background:#22c55e;color:#fff;font-weight:700;cursor:pointer;">Send Encrypted VM</button>'
     + '      </div>'
     + '    </div>'
     + '    <div id="vm-sending" style="display:none;text-align:center;padding:20px 0;">'
@@ -283,9 +282,7 @@
       stream.getTracks().forEach(function(t){ t.stop(); });
       stream = null;
     }
-    if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
-    audioBlob = null;
-    audioChunks = [];
+    wipeAudio();
     overlay.style.display = 'none';
     resetRecorder();
   }
@@ -303,6 +300,21 @@
   }
 
   // ===== RECORDER =====
+  // Explicit audio wipe — frees all references so browser GC reclaims the RAM.
+  // Called on: close, re-record, send-success (pre-navigation), send-failure,
+  // and the 10s fallback-failure path. No audio bytes are left in JS memory.
+  function wipeAudio() {
+    if (audioUrl) {
+      try { URL.revokeObjectURL(audioUrl); } catch(e) {}
+      audioUrl = null;
+    }
+    audioBlob = null;
+    audioChunks = [];
+    if (previewAudio) {
+      try { previewAudio.removeAttribute('src'); previewAudio.load(); } catch(e) {}
+    }
+  }
+
   function resetRecorder() {
     show(recorderSection);
     if (postRecordSection) postRecordSection.style.display = 'none';
@@ -310,9 +322,7 @@
     if (recordLabel) recordLabel.textContent = 'Tap to start recording';
     if (timerEl) timerEl.textContent = '0:00';
     if (progressEl) progressEl.style.width = '0%';
-    if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
-    audioBlob = null;
-    audioChunks = [];
+    wipeAudio();
   }
 
   function startTimer() {
@@ -353,9 +363,8 @@
       mediaRecorder.onstop = function(){
         var type = mediaRecorder.mimeType || 'audio/webm';
         audioBlob = new Blob(audioChunks, { type: type });
-        if (audioUrl) URL.revokeObjectURL(audioUrl);
-        audioUrl = URL.createObjectURL(audioBlob);
-        previewAudio.src = audioUrl;
+        // No preview UI — do NOT create a blob: URL (would hold a reference).
+        // Audio bytes live in audioBlob only, in RAM, until sent or wiped.
         postRecordSection.style.display = 'flex';
         recordLabel.textContent = 'Recording complete';
       };
@@ -507,6 +516,10 @@
 
       // Small delay so the "Sending..." overlay paints before navigation
       setTimeout(function(){
+        // Wipe the unencrypted audio from RAM the instant before navigation
+        // begins. The encrypted .enc bytes are already serialized into the
+        // form's file input — audioBlob/audioChunks are no longer needed.
+        wipeAudio();
         form.submit();
       }, 300);
 
@@ -515,6 +528,9 @@
       setTimeout(function(){
         if (sendingOverlay) {
           hideSendingOverlay();
+          // Wipe again in case navigation stalled (audio may have been re-set
+          // by a retry path).
+          wipeAudio();
           errorMsg.textContent = 'Submission did not start. Please check your internet connection and try again.';
           show(errorSection);
         }
@@ -522,6 +538,8 @@
 
     } catch (err) {
       hideSendingOverlay();
+      // Encryption or form assembly failed — wipe any audio bytes still in RAM.
+      wipeAudio();
       errorMsg.textContent = err.message || 'Failed to send voice message.';
       show(errorSection);
     }
