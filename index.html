@@ -38,6 +38,10 @@
   var voiceAudioCache = {}; // temporary, cleared on close — no persistent storage
   var pendingSeenUpdates = []; // batch seen updates to reduce writes
   var seenSaveTimer = null; // debounce seen saves
+  var typingTimer = null; // debounce typing status sends
+  var isTypingNow = false;
+  var lastTypingSend = 0;
+  var recordedMimeType = 'audio/webm'; // track actual MIME type from recorder
 
   // ===== DOM =====
   var trigger = null;
@@ -192,6 +196,18 @@
     // Sending indicator
     + '    .chat-msg.sending { opacity:0.5; }'
     + '    .chat-msg .msg-sending { font-size:8px; opacity:0.4; }'
+
+    // Typing indicator
+    + '    .typing-indicator { display:none; align-self:flex-start; background:#ffffff; color:#1a1a1a; padding:8px 14px; border-radius:14px; border-bottom-left-radius:2px; font-size:11px; font-style:italic; opacity:0.7; margin:2px 0; }'
+    + '    .typing-indicator.visible { display:block; }'
+    + '    .typing-dots { display:inline-flex; gap:3px; margin-left:4px; vertical-align:middle; }'
+    + '    .typing-dots span { width:4px; height:4px; border-radius:50%; background:#888; animation: typingBounce 1.2s infinite; }'
+    + '    .typing-dots span:nth-child(2) { animation-delay:0.2s; }'
+    + '    .typing-dots span:nth-child(3) { animation-delay:0.4s; }'
+    + '    @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-4px)} }'
+
+    // Loading spinner for voice play
+    + '    @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }'
     + '  </style>'
 
     + '  <div id="chat-modal">'
@@ -247,6 +263,9 @@
     // Notices
     + '      <div class="chat-notice">Messages auto-delete in 24h</div>'
     + '      <div class="no-storage-badge">Zero local storage</div>'
+
+    // Typing indicator
+    + '      <div class="typing-indicator" id="chat-typing-indicator"><span class="typing-name" id="chat-typing-name"></span><span class="typing-dots"><span></span><span></span><span></span></span></div>'
 
     // Recording bar
     + '      <div class="chat-rec-bar" id="chat-rec-bar">'
@@ -415,6 +434,55 @@
     return result;
   }
 
+  // ===== TYPING INDICATOR =====
+  function sendTypingStatus() {
+    if (!myRole) return;
+    var now = Date.now();
+    // Debounce: don't send more than once per 2 seconds
+    if (now - lastTypingSend < 2000) return;
+    lastTypingSend = now;
+
+    // Try Cloudflare Worker first (fast)
+    try {
+      fetch(WORKER_URL + '/typing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: myRole })
+      }).catch(function() {
+        // Worker not available — fail silently
+      });
+    } catch(e) {}
+  }
+
+  async function checkOtherTyping() {
+    if (!myRole) return;
+    var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
+    var typingEl = document.getElementById('chat-typing-indicator');
+    var typingName = document.getElementById('chat-typing-name');
+    if (!typingEl) return;
+
+    try {
+      var resp = await fetch(WORKER_URL + '/typing/' + otherRole);
+      if (resp.ok) {
+        var data = await resp.json();
+        if (data.typing) {
+          var displayName = otherRole === 'dumbi' ? 'Dumbi' : 'Dumbo';
+          if (typingName) typingName.textContent = displayName + ' is typing ';
+          typingEl.classList.add('visible');
+          return;
+        }
+      }
+    } catch(e) {
+      // Worker not available — no typing indicator
+    }
+    typingEl.classList.remove('visible');
+  }
+
+  function stopTypingStatus() {
+    isTypingNow = false;
+    if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+  }
+
   // ===== LOAD MESSAGES FROM GITHUB =====
   async function loadMessages() {
     try {
@@ -461,6 +529,8 @@
     } catch(e) {
       console.log('[Chat] Load failed:', e.message);
     }
+    // Check if other person is typing (after messages load)
+    checkOtherTyping();
   }
 
   // ===== SAVE MESSAGES TO GITHUB (with merge-based conflict resolution) =====
@@ -536,6 +606,7 @@
     var text = chatInput.value.trim();
     if (!text || !myRole) return;
     chatInput.value = '';
+    stopTypingStatus(); // Stop typing indicator
 
     var msg = {
       id: 'txt_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
@@ -705,6 +776,7 @@
 
     if (msg.type === 'voice') {
       div.classList.add('voice-msg');
+      if (msg.mimeType) div.dataset.mime = msg.mimeType;
       var playBtnColor = '#1a7a3a';
       div.innerHTML =
         '<button class="voice-play-btn" style="background:' + playBtnColor + ';color:#fff;" data-voice-key="' + msg.voiceKey + '">' +
@@ -750,8 +822,19 @@
 
   // ===== PLAY VOICE MESSAGE =====
   var currentAudio = null;
+  var currentPlayBtn = null;
 
   async function playVoiceMessage(key, btn) {
+    // If clicking the same button that's currently playing, pause it
+    if (currentAudio && currentPlayBtn === btn) {
+      currentAudio.pause();
+      currentAudio = null;
+      btn.classList.remove('playing');
+      currentPlayBtn = null;
+      return;
+    }
+
+    // Stop any currently playing audio
     if (currentAudio) {
       currentAudio.pause();
       currentAudio = null;
@@ -759,33 +842,97 @@
     }
 
     btn.classList.add('playing');
+    currentPlayBtn = btn;
+
+    // Show loading state on button
+    var origHtml = btn.innerHTML;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px;animation:spin 1s linear infinite"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity=".3"/><path d="M20 12h2A10 10 0 0 0 12 2v2a8 8 0 0 1 8 8z"/></svg>';
 
     try {
       var token = btoa('owner:' + CHAT_PASSWORD);
       var resp = await fetch(WORKER_URL + '/message/' + key, {
         headers: { 'X-Owner-Token': token }
       });
-      if (!resp.ok) throw new Error('Download failed');
+      if (!resp.ok) throw new Error('Download failed: ' + resp.status);
       var encryptedData = await resp.arrayBuffer();
+      
+      if (!encryptedData || encryptedData.byteLength < 29) {
+        throw new Error('Invalid voice data');
+      }
+      
       var decrypted = await decryptBlob(encryptedData, ENCRYPT_PASSWORD);
-      var audioBlob = new Blob([decrypted], { type: 'audio/webm' });
+      
+      // Detect MIME type from the message data if available
+      var mimeType = 'audio/webm';
+      // Try to find the message in the current data to get its mimeType
+      var msgEl = btn.closest('.chat-msg');
+      if (msgEl) {
+        // Check if we stored mimeType in a data attribute
+        var storedMime = msgEl.dataset.mime;
+        if (storedMime) mimeType = storedMime;
+      }
+      
+      var audioBlob = new Blob([decrypted], { type: mimeType });
       var url = URL.createObjectURL(audioBlob);
       var audio = new Audio(url);
       currentAudio = audio;
+
+      // Restore play button icon (change to pause icon)
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+
       audio.onended = function() {
         btn.classList.remove('playing');
+        btn.innerHTML = origHtml;
         currentAudio = null;
+        currentPlayBtn = null;
         URL.revokeObjectURL(url);
       };
       audio.onerror = function() {
+        // If webm fails, try ogg
+        if (mimeType === 'audio/webm') {
+          URL.revokeObjectURL(url);
+          var oggBlob = new Blob([decrypted], { type: 'audio/ogg' });
+          var oggUrl = URL.createObjectURL(oggBlob);
+          var oggAudio = new Audio(oggUrl);
+          currentAudio = oggAudio;
+          oggAudio.onended = function() {
+            btn.classList.remove('playing');
+            btn.innerHTML = origHtml;
+            currentAudio = null;
+            currentPlayBtn = null;
+            URL.revokeObjectURL(oggUrl);
+          };
+          oggAudio.onerror = function() {
+            btn.classList.remove('playing');
+            btn.innerHTML = origHtml;
+            currentAudio = null;
+            currentPlayBtn = null;
+            URL.revokeObjectURL(oggUrl);
+          };
+          oggAudio.play().catch(function() {});
+          return;
+        }
         btn.classList.remove('playing');
+        btn.innerHTML = origHtml;
         currentAudio = null;
+        currentPlayBtn = null;
         URL.revokeObjectURL(url);
       };
-      audio.play();
+
+      // Handle autoplay restrictions
+      audio.play().catch(function(e) {
+        console.warn('[Chat] Autoplay blocked, retrying with user gesture:', e);
+        btn.classList.remove('playing');
+        btn.innerHTML = origHtml;
+        currentAudio = null;
+        currentPlayBtn = null;
+      });
     } catch(e) {
       console.error('[Chat] Voice play failed:', e);
       btn.classList.remove('playing');
+      btn.innerHTML = origHtml;
+      currentAudio = null;
+      currentPlayBtn = null;
     }
   }
 
@@ -886,6 +1033,7 @@
         if (window.MediaRecorder && MediaRecorder.isTypeSupported(candidates[i])) { mimeType = candidates[i]; break; }
       }
       mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType: mimeType }) : new MediaRecorder(stream);
+      if (mimeType) recordedMimeType = mimeType;
       mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size > 0) audioChunks.push(e.data); };
       mediaRecorder.start(250);
       isRecording = true;
@@ -927,14 +1075,33 @@
   }
 
   async function sendVoiceInBackground(blob, recStart) {
-    try {
-      var encryptedBlob = await encryptBlob(blob, ENCRYPT_PASSWORD);
-      var durationSec = Math.floor((Date.now() - recStart) / 1000);
-      var durationStr = formatTime(durationSec);
-      var key = 'vm_' + Date.now() + '_' + (myRole || 'unknown');
+    // Calculate duration and create message object immediately
+    var durationSec = Math.floor((Date.now() - recStart) / 1000);
+    var durationStr = formatTime(durationSec);
+    var tempKey = 'vm_' + Date.now() + '_' + (myRole || 'unknown');
 
-      // Upload to Cloudflare
-      var uploadResp = await fetch(WORKER_URL + '/upload?sender=' + encodeURIComponent(myRole || 'unknown') + '&duration=' + encodeURIComponent(durationStr), {
+    var msg = {
+      id: tempKey,
+      type: 'voice',
+      sender: myRole,
+      ts: Date.now(),
+      voiceKey: tempKey,
+      duration: durationStr,
+      mimeType: blob.type || 'audio/webm'
+    };
+
+    // Show locally IMMEDIATELY (before any network calls)
+    appendMessage(msg);
+    scrollToBottom();
+    showSentBanner();
+
+    // Now upload and save in background
+    try {
+      // Step 1: Encrypt and upload to Cloudflare
+      var encryptedBlob = await encryptBlob(blob, ENCRYPT_PASSWORD);
+      var actualMimeType = blob.type || recordedMimeType || 'audio/webm';
+
+      var uploadResp = await fetch(WORKER_URL + '/upload?sender=' + encodeURIComponent(myRole || 'unknown') + '&duration=' + encodeURIComponent(durationStr) + '&mimeType=' + encodeURIComponent(actualMimeType), {
         method: 'POST',
         headers: { 'Content-Type': 'application/octet-stream' },
         body: encryptedBlob
@@ -943,16 +1110,20 @@
       if (!uploadResp.ok) throw new Error('Upload failed: ' + uploadResp.status);
       var uploadData = await uploadResp.json();
 
-      // Add voice message entry to GitHub chat.json
-      var msg = {
-        id: uploadData.id || key,
-        type: 'voice',
-        sender: myRole,
-        ts: Date.now(),
-        voiceKey: uploadData.id || key,
-        duration: durationStr
-      };
+      // Update the message with the actual key from server
+      var actualKey = uploadData.id || tempKey;
+      msg.voiceKey = actualKey;
+      msg.id = actualKey;
 
+      // Update the DOM element's data attribute
+      var el = document.querySelector('[data-msg-id="' + tempKey + '"]');
+      if (el) {
+        el.dataset.msgId = actualKey;
+        var playBtn = el.querySelector('.voice-play-btn');
+        if (playBtn) playBtn.dataset.voiceKey = actualKey;
+      }
+
+      // Step 2: Save voice meta to GitHub chat.json
       try {
         var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
         if (data.sha) chatFileSha = data.sha;
@@ -969,12 +1140,23 @@
         console.error('[Chat] Voice meta save failed:', e);
       }
 
-      // Show locally
-      appendMessage(msg);
-      scrollToBottom();
-
     } catch (err) {
       console.error('[Chat] VM send error:', err.message);
+      // Show error on the message
+      var errEl = document.querySelector('[data-msg-id="' + msg.id + '"]');
+      if (errEl) {
+        var errDiv = document.createElement('div');
+        errDiv.style.cssText = 'font-size:8px;color:#ef4444;margin-top:2px;';
+        errDiv.textContent = 'Failed to send — tap to retry';
+        errDiv.addEventListener('click', function(){ 
+          errEl.style.transition = 'all 0.25s';
+          errEl.style.opacity = '0';
+          setTimeout(function(){ if (errEl.parentNode) errEl.parentNode.removeChild(errEl); }, 300);
+          // Re-send
+          sendVoiceInBackground(blob, recStart);
+        });
+        errEl.appendChild(errDiv);
+      }
     }
   }
 
@@ -1132,7 +1314,19 @@
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendTextMessage();
+        stopTypingStatus();
       }
+    });
+    // Typing indicator: send typing status on input
+    chatInput.addEventListener('input', function(){
+      if (!myRole) return;
+      isTypingNow = true;
+      sendTypingStatus();
+      // Auto-stop typing after 3 seconds of no input
+      if (typingTimer) clearTimeout(typingTimer);
+      typingTimer = setTimeout(function(){
+        isTypingNow = false;
+      }, 3000);
     });
 
     // Mic: toggle recording
@@ -1211,7 +1405,9 @@
     stopPolling();
     stopRecTimer();
     cancelRecording();
+    stopTypingStatus();
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    currentPlayBtn = null;
     if (seenSaveTimer) { clearTimeout(seenSaveTimer); seenSaveTimer = null; }
 
     // Clear all in-memory data — NO persistent storage
@@ -1220,9 +1416,14 @@
     chatFileSha = null;
     lastMessageCount = 0;
     pendingSeenUpdates = [];
+    isTypingNow = false;
 
     // Clear DOM messages
     if (messagesContainer) messagesContainer.innerHTML = '';
+
+    // Hide typing indicator
+    var typingEl = document.getElementById('chat-typing-indicator');
+    if (typingEl) typingEl.classList.remove('visible');
 
     // Stop any playing audio buttons
     document.querySelectorAll('.voice-play-btn.playing').forEach(function(b){ b.classList.remove('playing'); });
