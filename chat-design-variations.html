@@ -91,6 +91,14 @@
 
   /* Encrypted tag */
   .enc-tag { font-size: 6px; opacity: 0.3; letter-spacing: 0.5px; margin-top: 1px; }
+
+  /* Long-press delete popup */
+  .delete-popup { position: absolute; top: -28px; right: 4px; background: #ef4444; color: #fff; font-size: 8px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; animation: popIn 0.15s ease; }
+  .delete-popup::after { content: ''; position: absolute; bottom: -4px; right: 12px; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid #ef4444; }
+  @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* No-storage badge */
+  .no-storage-badge { font-size: 7px; opacity: 0.25; padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); display: inline-block; margin-top: 2px; letter-spacing: 0.5px; }
 </style>
 </head>
 <body>
@@ -133,7 +141,7 @@ const designs = [
     typingBg: "#1a1d24", typingDot: "#555c6e",
     shieldColor: "#d4af37", timerColor: "#d4af37",
     style: "neumorphic",
-    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+    roleIcon1: "\uD83D\uDC78\uD83C\uDFFB", roleIcon2: "\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB"
   },
   // 2. Midnight Emerald — Glassmorphism
   {
@@ -152,7 +160,7 @@ const designs = [
     typingBg: "rgba(52,211,153,0.08)", typingDot: "#34d399",
     shieldColor: "#34d399", timerColor: "#34d399",
     style: "glass",
-    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+    roleIcon1: "\uD83D\uDC78\uD83C\uDFFB", roleIcon2: "\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB"
   },
   // 3. Crimson Night — Bold & Vibrant
   {
@@ -171,7 +179,7 @@ const designs = [
     typingBg: "#251a1e", typingDot: "#f43f5e",
     shieldColor: "#f43f5e", timerColor: "#f43f5e",
     style: "bold",
-    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+    roleIcon1: "\uD83D\uDC78\uD83C\uDFFB", roleIcon2: "\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB"
   },
   // 4. Arctic Slate — Clean Minimal
   {
@@ -190,7 +198,7 @@ const designs = [
     typingBg: "#252a35", typingDot: "#60a5fa",
     shieldColor: "#60a5fa", timerColor: "#60a5fa",
     style: "minimal",
-    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+    roleIcon1: "\uD83D\uDC78\uD83C\uDFFB", roleIcon2: "\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB"
   },
   // 5. Amber Forge — Warm & Industrial
   {
@@ -209,7 +217,7 @@ const designs = [
     typingBg: "#2a2318", typingDot: "#f59e0b",
     shieldColor: "#f59e0b", timerColor: "#f59e0b",
     style: "neumorphic",
-    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+    roleIcon1: "\uD83D\uDC78\uD83C\uDFFB", roleIcon2: "\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB"
   },
   // 6. Violet Haze — Soft Gradient
   {
@@ -228,7 +236,7 @@ const designs = [
     typingBg: "rgba(167,139,250,0.08)", typingDot: "#a78bfa",
     shieldColor: "#a78bfa", timerColor: "#a78bfa",
     style: "gradient",
-    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+    roleIcon1: "\uD83D\uDC78\uD83C\uDFFB", roleIcon2: "\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB"
   },
   // 7. Ivory Gold — White Interior Bubbles
   {
@@ -247,7 +255,7 @@ const designs = [
     typingBg: "#e8e8e2", typingDot: "#7a8394",
     shieldColor: "#d4af37", timerColor: "#d4af37",
     style: "white-bubbles",
-    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+    roleIcon1: "\uD83D\uDC78\uD83C\uDFFB", roleIcon2: "\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB"
   },
   // 8. Cyber Teal — Futuristic Terminal
   {
@@ -266,7 +274,7 @@ const designs = [
     typingBg: "rgba(0,255,200,0.06)", typingDot: "#00ffc8",
     shieldColor: "#00ffc8", timerColor: "#00ffc8",
     style: "terminal",
-    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+    roleIcon1: "\uD83D\uDC78\uD83C\uDFFB", roleIcon2: "\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB"
   },
   // 9. Rose Quartz — Soft Pink Elegance
   {
@@ -360,8 +368,9 @@ designs.forEach(function(d, i) {
             '<div class="enc-tag" style="color:' + d.accent + '">AES-256</div>' +
           '</div>' +
 
-          // Sent message
-          '<div class="msg msg-sent" style="background:' + d.sentBg + ';color:' + d.sentText + ';box-shadow:' + (d.style === 'neumorphic' ? neumOut : 'none') + '">' +
+          // Sent message (with long-press delete popup shown)
+          '<div class="msg msg-sent" style="background:' + d.sentBg + ';color:' + d.sentText + ';box-shadow:' + (d.style === 'neumorphic' ? neumOut : 'none') + ';position:relative">' +
+            '<div class="delete-popup">Delete</div>' +
             'Almost done! Making notes on DPSP now' +
             '<div class="msg-time">3:44 PM</div>' +
             '<div class="enc-tag" style="color:' + (sentIsGrad ? '#ffffff80' : d.accent) + '">AES-256</div>' +
@@ -389,6 +398,7 @@ designs.forEach(function(d, i) {
 
           // Delete notice
           '<div class="delete-notice" style="color:' + d.text + '">Messages auto-delete in 24h</div>' +
+          '<div class="no-storage-badge" style="color:' + d.text + '">No local storage</div>' +
 
         '</div>' +
 
