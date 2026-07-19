@@ -110,7 +110,12 @@
     combined.set(new Uint8Array(encryptedBuffer), offset);
 
     // Step 8: Base64 encode
-    return btoa(String.fromCharCode.apply(null, combined));
+    var chunks = [];
+    var chunkSize = 8192;
+    for (var ci = 0; ci < combined.length; ci += chunkSize) {
+      chunks.push(String.fromCharCode.apply(null, combined.subarray(ci, Math.min(ci + chunkSize, combined.length))));
+    }
+    return btoa(chunks.join(''));
   }
 
   // ===== OVERLAY HTML =====
