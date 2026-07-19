@@ -312,21 +312,22 @@
     btn.disabled = true;
     
     try {
-      // Fetch encrypted message
+      // Fetch encrypted binary data
       var res = await fetch(WORKER_URL + '/message/' + key, {
         headers: { 'X-Owner-Token': ownerToken },
       });
-      var data = await res.json();
       
-      if (!data.encrypted) {
+      if (!res.ok) {
         btn.innerHTML = '&#9654;';
         btn.disabled = false;
-        alert('Message data not found');
+        alert('Message not found');
         return;
       }
       
+      var encryptedBuffer = await res.arrayBuffer();
+      
       // Decrypt
-      var audioBlob = await decryptAudio(data.encrypted);
+      var audioBlob = await decryptAudio(encryptedBuffer);
       
       // Play
       if (currentAudioUrl) URL.revokeObjectURL(currentAudioUrl);
@@ -350,16 +351,12 @@
   }
   
   // ===== DECRYPT =====
-  async function decryptAudio(encryptedBase64) {
-    // Decode base64
-    var binaryStr = atob(encryptedBase64);
-    var bytes = new Uint8Array(binaryStr.length);
-    for (var i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-    
-    // Parse: [IV (12 bytes)] [encrypted AES key length (4 bytes)] [encrypted AES key] [encrypted audio]
+  async function decryptAudio(encryptedBuffer) {
+    // Parse binary: [IV (12 bytes)] [encrypted AES key length (4 bytes)] [encrypted AES key] [encrypted audio]
+    var bytes = new Uint8Array(encryptedBuffer);
     var offset = 0;
     var iv = bytes.slice(offset, offset + 12); offset += 12;
-    var encAesLen = new DataView(bytes.buffer).getUint32(offset); offset += 4;
+    var encAesLen = new DataView(encryptedBuffer).getUint32(offset); offset += 4;
     var encryptedAesKey = bytes.slice(offset, offset + encAesLen); offset += encAesLen;
     var encryptedAudio = bytes.slice(offset);
     
