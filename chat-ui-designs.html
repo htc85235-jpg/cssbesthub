@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Aspirants Chat — 9 UI Designs</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0f14; color: #c9d1e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; }
+  h1 { text-align: center; font-size: 22px; margin-bottom: 6px; color: #e2e8f0; }
+  .subtitle { text-align: center; font-size: 13px; color: #555c6e; margin-bottom: 30px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 28px; max-width: 1500px; margin: 0 auto; }
+  .card { border-radius: 16px; padding: 16px; background: #12141a; box-shadow: 6px 6px 14px #08090c, -4px -4px 10px #1e2230; }
+  .card-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; opacity: 0.7; }
+
+  /* Chat mockup base */
+  .chat-box { border-radius: 14px; padding: 10px; max-width: 360px; margin: 0 auto; position: relative; display: flex; flex-direction: column; }
+  .chat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 0 2px 4px; }
+  .chat-header-left { display: flex; align-items: center; gap: 4px; }
+  .chat-timer { font-size: 8px; font-weight: 600; }
+  .chat-timer svg { width: 8px; height: 8px; }
+  .chat-sync { font-size: 8px; opacity: 0.5; display: flex; align-items: center; gap: 2px; }
+  .chat-sync svg { width: 8px; height: 8px; }
+
+  .chat-messages { flex: 1; overflow-y: auto; min-height: 220px; max-height: 220px; padding: 6px 4px; display: flex; flex-direction: column; gap: 6px; }
+  .chat-input-row { display: flex; align-items: center; gap: 5px; margin-top: 6px; }
+
+  /* Shared elements */
+  .mic-btn { width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mic-btn svg { width: 15px; height: 15px; }
+  .send-btn { width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .send-btn svg { width: 14px; height: 14px; }
+  .text-input { flex: 1; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; outline: none; font-family: inherit; resize: none; min-height: 18px; max-height: 60px; }
+</style>
+</head>
+<body>
+
+<h1>CSS Aspirants Chat — 9 UI Designs</h1>
+<p class="subtitle">Auto-delete: 24 hours · Pick your favourite · No changes to live site</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const micSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+const sendSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>';
+const clockSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+const syncSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>';
+
+const grid = document.getElementById('grid');
+
+const designs = [
+  // Design 1: WhatsApp-style bubbles
+  {
+    name: "Bubble Chat",
+    desc: "WhatsApp-style left/right bubbles",
+    bg: "#1a1d24", shadowD: "#0d0f14", shadowL: "#2a2f3a", accent: "#d4af37",
+    inputBg: "#1a1d24", inputColor: "#c9d1e0", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#252830", sendColor: "#d4af37",
+    msgAreaBg: "transparent",
+    render: function(el) {
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg}">
+          <div style="align-self:flex-start;max-width:75%;background:#252830;border-radius:14px 14px 14px 4px;padding:8px 11px;font-size:11px;color:#a8b0c0;line-height:1.4;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a">
+            <div style="font-size:8px;font-weight:700;color:#d4af37;margin-bottom:3px">Dumbo</div>
+            Hey did you finish the CSS grid task?
+            <div style="font-size:7px;color:#555c6e;margin-top:3px;text-align:right">2:34 PM</div>
+          </div>
+          <div style="align-self:flex-end;max-width:75%;background:#1a2e24;border-radius:14px 14px 4px 14px;padding:8px 11px;font-size:11px;color:#b8d4c8;line-height:1.4;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #1a3a2a">
+            <div style="font-size:8px;font-weight:700;color:#3ba776;margin-bottom:3px">Dumbi</div>
+            Almost done! Just fixing the responsive part
+            <div style="font-size:7px;color:#4a6e5c;margin-top:3px;text-align:right">2:35 PM ✓✓</div>
+          </div>
+          <div style="align-self:flex-start;max-width:75%;background:#252830;border-radius:14px 14px 14px 4px;padding:8px 11px;font-size:11px;color:#a8b0c0;line-height:1.4;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a">
+            <div style="font-size:8px;font-weight:700;color:#d4af37;margin-bottom:3px">Dumbo</div>
+            Nice! Send me a voice note when you're done
+            <div style="font-size:7px;color:#555c6e;margin-top:3px;text-align:right">2:36 PM</div>
+          </div>
+          <div style="align-self:flex-end;max-width:75%;background:#1a2e24;border-radius:14px 14px 4px 14px;padding:8px 11px;font-size:11px;color:#b8d4c8;line-height:1.4;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #1a3a2a;display:flex;align-items:center;gap:8px">
+            <div style="width:28px;height:28px;border-radius:50%;background:#252830;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a">
+              <span style="color:#3ba776;width:12px;height:12px;display:flex">${playSvg}</span>
+            </div>
+            <div style="flex:1">
+              <div style="height:4px;background:#3ba776;border-radius:2px;width:60%"></div>
+              <div style="font-size:7px;color:#4a6e5c;margin-top:2px">0:12</div>
+            </div>
+            <div style="font-size:7px;color:#4a6e5c">2:37 PM ✓✓</div>
+          </div>
+        </div>`;
+    }
+  },
+
+  // Design 2: Minimal lines
+  {
+    name: "Minimal Lines",
+    desc: "No bubbles, just clean text lines",
+    bg: "#1a1d24", shadowD: "#0d0f14", shadowL: "#2a2f3a", accent: "#d4af37",
+    inputBg: "#1a1d24", inputColor: "#c9d1e0", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#252830", sendColor: "#d4af37",
+    msgAreaBg: "transparent",
+    render: function(el) {
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg};gap:10px">
+          <div style="font-size:11px;line-height:1.4">
+            <span style="font-size:8px;font-weight:700;color:#d4af37;margin-right:6px">Dumbo</span>
+            <span style="color:#a8b0c0">Hey did you finish the CSS grid task?</span>
+            <span style="font-size:7px;color:#555c6e;margin-left:6px">2:34</span>
+          </div>
+          <div style="font-size:11px;line-height:1.4;text-align:right">
+            <span style="font-size:7px;color:#4a6e5c;margin-right:6px">2:35 ✓✓</span>
+            <span style="color:#8bc4a8">Almost done! Just fixing the responsive part</span>
+            <span style="font-size:8px;font-weight:700;color:#3ba776;margin-left:6px">Dumbi</span>
+          </div>
+          <div style="font-size:11px;line-height:1.4">
+            <span style="font-size:8px;font-weight:700;color:#d4af37;margin-right:6px">Dumbo</span>
+            <span style="color:#a8b0c0">Nice! Send a voice note</span>
+            <span style="font-size:7px;color:#555c6e;margin-left:6px">2:36</span>
+          </div>
+          <div style="font-size:11px;line-height:1.4;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:6px">
+            <span style="font-size:7px;color:#4a6e5c">2:37 ✓✓</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;color:#8bc4a8"><span style="width:16px;height:16px;border-radius:50%;background:#252830;display:inline-flex;align-items:center;justify-content:center;box-shadow:1px 1px 2px #0d0f14,-1px -1px 2px #2a2f3a"><span style="width:8px;height:8px;color:#3ba776">${playSvg}</span></span> 🎤 0:12</span>
+            <span style="font-size:8px;font-weight:700;color:#3ba776">Dumbi</span>
+          </div>
+        </div>`;
+    }
+  },
+
+  // Design 3: iMessage-style
+  {
+    name: "iMessage Style",
+    desc: "Colored bubbles, iOS feel",
+    bg: "#1a1d24", shadowD: "#0d0f14", shadowL: "#2a2f3a", accent: "#d4af37",
+    inputBg: "#1a1d24", inputColor: "#c9d1e0", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#252830", sendColor: "#d4af37",
+    msgAreaBg: "transparent",
+    render: function(el) {
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg}">
+          <div style="align-self:flex-start;max-width:72%;background:#2a2f3a;border-radius:18px 18px 18px 4px;padding:9px 12px;font-size:11px;color:#c9d1e0;line-height:1.4">
+            Hey did you finish the CSS grid task?
+            <div style="font-size:7px;color:#7a8394;margin-top:3px;text-align:right">2:34 PM</div>
+          </div>
+          <div style="align-self:flex-end;max-width:72%;background:#1a5c3a;border-radius:18px 18px 4px 18px;padding:9px 12px;font-size:11px;color:#d4edda;line-height:1.4">
+            Almost done! Just fixing the responsive part
+            <div style="font-size:7px;color:#86efac;margin-top:3px;text-align:right">2:35 PM</div>
+          </div>
+          <div style="align-self:flex-start;max-width:72%;background:#2a2f3a;border-radius:18px 18px 18px 4px;padding:9px 12px;font-size:11px;color:#c9d1e0;line-height:1.4">
+            Nice! Send a voice note when done
+            <div style="font-size:7px;color:#7a8394;margin-top:3px;text-align:right">2:36 PM</div>
+          </div>
+          <div style="align-self:flex-end;max-width:72%;background:#1a5c3a;border-radius:18px 18px 4px 18px;padding:9px 12px;font-size:11px;color:#d4edda;line-height:1.4;display:flex;align-items:center;gap:8px">
+            <span style="width:26px;height:26px;border-radius:50%;background:rgba(134,239,172,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:11px;height:11px;color:#86efac">${playSvg}</span></span>
+            <span>Voice · 0:12</span>
+            <span style="font-size:7px;color:#86efac;margin-left:auto">2:37</span>
+          </div>
+        </div>`;
+    }
+  },
+
+  // Design 4: Terminal/Hacker
+  {
+    name: "Terminal Mode",
+    desc: "Monospace, green on black, hacker feel",
+    bg: "#0a0c0f", shadowD: "#050607", shadowL: "#151820", accent: "#3ba776",
+    inputBg: "#0a0c0f", inputColor: "#3ba776", micBg: "#0f1318", micColor: "#3ba776",
+    sendBg: "#0f1318", sendColor: "#3ba776",
+    msgAreaBg: "transparent",
+    render: function(el) {
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg};font-family:'Courier New',monospace;gap:8px">
+          <div style="font-size:10px;line-height:1.5;color:#3ba776">
+            <span style="color:#555c6e">[2:34]</span> <span style="color:#d4af37">&lt;Dumbo&gt;</span> Hey did you finish the CSS grid task?
+          </div>
+          <div style="font-size:10px;line-height:1.5;color:#3ba776">
+            <span style="color:#555c6e">[2:35]</span> <span style="color:#3ba776">&lt;Dumbi&gt;</span> Almost done! Just fixing the responsive part
+          </div>
+          <div style="font-size:10px;line-height:1.5;color:#3ba776">
+            <span style="color:#555c6e">[2:36]</span> <span style="color:#d4af37">&lt;Dumbo&gt;</span> Nice! Send a voice note
+          </div>
+          <div style="font-size:10px;line-height:1.5;color:#3ba776">
+            <span style="color:#555c6e">[2:37]</span> <span style="color:#3ba776">&lt;Dumbi&gt;</span> 🎤 [voice:0:12] ▶━━━━━━━━━━━━░
+          </div>
+          <div style="font-size:10px;color:#555c6e;margin-top:4px">─</div>
+        </div>`;
+    }
+  },
+
+  // Design 5: Card-style messages
+  {
+    name: "Card Messages",
+    desc: "Each message in its own neumorphic card",
+    bg: "#1a1d24", shadowD: "#0d0f14", shadowL: "#2a2f3a", accent: "#d4af37",
+    inputBg: "#1a1d24", inputColor: "#c9d1e0", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#252830", sendColor: "#d4af37",
+    msgAreaBg: "transparent",
+    render: function(el) {
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg};gap:5px">
+          <div style="background:#1a1d24;border-radius:10px;padding:8px 10px;box-shadow:3px 3px 6px #0d0f14,-3px -3px 6px #2a2f3a;font-size:11px;line-height:1.4">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:8px;font-weight:700;color:#d4af37">Dumbo</span><span style="font-size:7px;color:#555c6e">2:34 PM</span></div>
+            <span style="color:#a8b0c0">Hey did you finish the CSS grid task?</span>
+          </div>
+          <div style="background:#1a1d24;border-radius:10px;padding:8px 10px;box-shadow:3px 3px 6px #0d0f14,-3px -3px 6px #2a2f3a;font-size:11px;line-height:1.4;border-left:2px solid #3ba776">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:8px;font-weight:700;color:#3ba776">Dumbi</span><span style="font-size:7px;color:#555c6e">2:35 PM</span></div>
+            <span style="color:#a8b0c0">Almost done! Just fixing the responsive part</span>
+          </div>
+          <div style="background:#1a1d24;border-radius:10px;padding:8px 10px;box-shadow:3px 3px 6px #0d0f14,-3px -3px 6px #2a2f3a;font-size:11px;line-height:1.4">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:8px;font-weight:700;color:#d4af37">Dumbo</span><span style="font-size:7px;color:#555c6e">2:36 PM</span></div>
+            <span style="color:#a8b0c0">Nice! Send a voice note</span>
+          </div>
+          <div style="background:#1a1d24;border-radius:10px;padding:8px 10px;box-shadow:3px 3px 6px #0d0f14,-3px -3px 6px #2a2f3a;font-size:11px;line-height:1.4;border-left:2px solid #3ba776;display:flex;align-items:center;gap:8px">
+            <div style="width:26px;height:26px;border-radius:50%;background:#252830;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a;flex-shrink:0"><span style="width:11px;height:11px;color:#3ba776">${playSvg}</span></div>
+            <div><div style="font-size:8px;font-weight:700;color:#3ba776">Dumbi · Voice</div><div style="font-size:7px;color:#555c6e">0:12 · 2:37 PM</div></div>
+          </div>
+        </div>`;
+    }
+  },
+
+  // Design 6: Split screen (Dumbi/Dumbo columns)
+  {
+    name: "Split Columns",
+    desc: "Your messages left, friend's right — like current vault layout",
+    bg: "#1a1d24", shadowD: "#0d0f14", shadowL: "#2a2f3a", accent: "#d4af37",
+    inputBg: "#1a1d24", inputColor: "#c9d1e0", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#252830", sendColor: "#d4af37",
+    msgAreaBg: "transparent",
+    render: function(el) {
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg};flex-direction:row;gap:5px;min-height:220px">
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;border-right:1px solid rgba(42,47,58,0.4);padding-right:4px">
+            <div style="font-size:8px;font-weight:700;color:#3ba776;margin-bottom:2px">✦ Dumbi (You)</div>
+            <div style="font-size:10px;color:#8bc4a8;line-height:1.4;padding:4px 0;border-bottom:1px solid rgba(42,47,58,0.2)">Almost done! Just fixing the responsive part<span style="font-size:7px;color:#4a6e5c;display:block">2:35 PM</span></div>
+            <div style="font-size:10px;color:#8bc4a8;line-height:1.4;padding:4px 0;display:flex;align-items:center;gap:4px"><span style="width:14px;height:14px;border-radius:50%;background:#252830;display:inline-flex;align-items:center;justify-content:center"><span style="width:7px;height:7px;color:#3ba776">${playSvg}</span></span> 🎤 0:12<span style="font-size:7px;color:#4a6e5c;display:block">2:37 PM</span></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;padding-left:4px">
+            <div style="font-size:8px;font-weight:700;color:#d4af37;margin-bottom:2px">✦ Dumbo</div>
+            <div style="font-size:10px;color:#a8b0c0;line-height:1.4;padding:4px 0;border-bottom:1px solid rgba(42,47,58,0.2)">Hey did you finish the CSS grid task?<span style="font-size:7px;color:#555c6e;display:block">2:34 PM</span></div>
+            <div style="font-size:10px;color:#a8b0c0;line-height:1.4;padding:4px 0">Nice! Send a voice note when done<span style="font-size:7px;color:#555c6e;display:block">2:36 PM</span></div>
+          </div>
+        </div>`;
+    }
+  },
+
+  // Design 7: Glassmorphism
+  {
+    name: "Glass Chat",
+    desc: "Frosted glass translucent bubbles",
+    bg: "#1a1d24", shadowD: "#0d0f14", shadowL: "#2a2f3a", accent: "#d4af37",
+    inputBg: "rgba(26,29,36,0.7)", inputColor: "#c9d1e0", micBg: "rgba(37,40,48,0.7)", micColor: "#d4af37",
+    sendBg: "rgba(37,40,48,0.7)", sendColor: "#d4af37",
+    msgAreaBg: "linear-gradient(145deg, rgba(26,29,36,0.5), rgba(13,15,20,0.3))",
+    render: function(el) {
+      el.style.background = "linear-gradient(145deg, #1a1d24, #12141a)";
+      el.style.backdropFilter = "blur(10px)";
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg};border-radius:10px;border:1px solid rgba(42,47,58,0.3)">
+          <div style="align-self:flex-start;max-width:72%;background:rgba(42,47,58,0.25);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.06);border-radius:16px 16px 16px 4px;padding:9px 12px;font-size:11px;color:#a8b0c0;line-height:1.4">
+            <div style="font-size:8px;font-weight:700;color:#d4af37;margin-bottom:3px">Dumbo</div>
+            Hey did you finish the CSS grid task?
+            <div style="font-size:7px;color:#555c6e;margin-top:3px;text-align:right">2:34 PM</div>
+          </div>
+          <div style="align-self:flex-end;max-width:72%;background:rgba(59,167,118,0.12);backdrop-filter:blur(8px);border:1px solid rgba(59,167,118,0.15);border-radius:16px 16px 4px 16px;padding:9px 12px;font-size:11px;color:#b8d4c8;line-height:1.4">
+            <div style="font-size:8px;font-weight:700;color:#3ba776;margin-bottom:3px">Dumbi</div>
+            Almost done! Just fixing the responsive part
+            <div style="font-size:7px;color:#4a6e5c;margin-top:3px;text-align:right">2:35 PM</div>
+          </div>
+          <div style="align-self:flex-start;max-width:72%;background:rgba(42,47,58,0.25);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.06);border-radius:16px 16px 16px 4px;padding:9px 12px;font-size:11px;color:#a8b0c0;line-height:1.4">
+            <div style="font-size:8px;font-weight:700;color:#d4af37;margin-bottom:3px">Dumbo</div>
+            Nice! Send a voice note
+            <div style="font-size:7px;color:#555c6e;margin-top:3px;text-align:right">2:36 PM</div>
+          </div>
+          <div style="align-self:flex-end;max-width:72%;background:rgba(59,167,118,0.12);backdrop-filter:blur(8px);border:1px solid rgba(59,167,118,0.15);border-radius:16px 16px 4px 16px;padding:9px 12px;font-size:11px;color:#b8d4c8;line-height:1.4;display:flex;align-items:center;gap:8px">
+            <span style="width:24px;height:24px;border-radius:50%;background:rgba(59,167,118,0.15);display:flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;color:#3ba776">${playSvg}</span></span>
+            🎤 0:12 <span style="font-size:7px;color:#4a6e5c;margin-left:auto">2:37</span>
+          </div>
+        </div>`;
+    }
+  },
+
+  // Design 8: Discord-style
+  {
+    name: "Discord Style",
+    desc: "Flat messages with avatar dots, no bubbles",
+    bg: "#1a1d24", shadowD: "#0d0f14", shadowL: "#2a2f3a", accent: "#d4af37",
+    inputBg: "#252830", inputColor: "#c9d1e0", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#252830", sendColor: "#d4af37",
+    msgAreaBg: "transparent",
+    render: function(el) {
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg};gap:8px">
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <div style="width:24px;height:24px;border-radius:50%;background:#d4af37;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a1d24">D</div>
+            <div>
+              <div style="font-size:9px"><span style="font-weight:700;color:#d4af37">Dumbo</span> <span style="color:#555c6e;font-size:7px">2:34 PM</span></div>
+              <div style="font-size:11px;color:#a8b0c0;margin-top:1px">Hey did you finish the CSS grid task?</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <div style="width:24px;height:24px;border-radius:50%;background:#3ba776;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a1d24">D</div>
+            <div>
+              <div style="font-size:9px"><span style="font-weight:700;color:#3ba776">Dumbi</span> <span style="color:#555c6e;font-size:7px">2:35 PM</span></div>
+              <div style="font-size:11px;color:#a8b0c0;margin-top:1px">Almost done! Just fixing the responsive part</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <div style="width:24px;height:24px;border-radius:50%;background:#d4af37;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a1d24">D</div>
+            <div>
+              <div style="font-size:9px"><span style="font-weight:700;color:#d4af37">Dumbo</span> <span style="color:#555c6e;font-size:7px">2:36 PM</span></div>
+              <div style="font-size:11px;color:#a8b0c0;margin-top:1px">Nice! Send a voice note</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <div style="width:24px;height:24px;border-radius:50%;background:#3ba776;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a1d24">D</div>
+            <div>
+              <div style="font-size:9px"><span style="font-weight:700;color:#3ba776">Dumbi</span> <span style="color:#555c6e;font-size:7px">2:37 PM</span></div>
+              <div style="font-size:11px;color:#a8b0c0;margin-top:1px;display:flex;align-items:center;gap:6px"><span style="width:22px;height:22px;border-radius:50%;background:#252830;display:inline-flex;align-items:center;justify-content:center;box-shadow:1px 1px 2px #0d0f14"><span style="width:9px;height:9px;color:#3ba776">${playSvg}</span></span> Voice message · 0:12</div>
+            </div>
+          </div>
+        </div>`;
+    }
+  },
+
+  // Design 9: Timeline/chat feed
+  {
+    name: "Chat Feed",
+    desc: "Social media style feed with date dividers",
+    bg: "#1a1d24", shadowD: "#0d0f14", shadowL: "#2a2f3a", accent: "#d4af37",
+    inputBg: "#1a1d24", inputColor: "#c9d1e0", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#252830", sendColor: "#d4af37",
+    msgAreaBg: "transparent",
+    render: function(el) {
+      el.innerHTML += `
+        <div class="chat-messages" style="background:${this.msgAreaBg};gap:2px">
+          <div style="text-align:center;font-size:7px;color:#555c6e;margin:6px 0 8px;position:relative"><span style="background:#1a1d24;padding:0 8px;position:relative;z-index:1">TODAY</span><div style="position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(42,47,58,0.4)"></div></div>
+          <div style="padding:6px 8px;border-radius:10px;background:#252830;margin-bottom:2px;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+              <span style="width:6px;height:6px;border-radius:50%;background:#d4af37"></span>
+              <span style="font-size:8px;font-weight:700;color:#d4af37">Dumbo</span>
+              <span style="font-size:7px;color:#555c6e">2:34 PM</span>
+            </div>
+            <div style="font-size:11px;color:#a8b0c0;padding-left:12px">Hey did you finish the CSS grid task?</div>
+          </div>
+          <div style="padding:6px 8px;border-radius:10px;background:#1a2e24;margin-bottom:2px;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #1a3a2a">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+              <span style="width:6px;height:6px;border-radius:50%;background:#3ba776"></span>
+              <span style="font-size:8px;font-weight:700;color:#3ba776">Dumbi</span>
+              <span style="font-size:7px;color:#4a6e5c">2:35 PM</span>
+            </div>
+            <div style="font-size:11px;color:#b8d4c8;padding-left:12px">Almost done! Just fixing the responsive part</div>
+          </div>
+          <div style="padding:6px 8px;border-radius:10px;background:#252830;margin-bottom:2px;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+              <span style="width:6px;height:6px;border-radius:50%;background:#d4af37"></span>
+              <span style="font-size:8px;font-weight:700;color:#d4af37">Dumbo</span>
+              <span style="font-size:7px;color:#555c6e">2:36 PM</span>
+            </div>
+            <div style="font-size:11px;color:#a8b0c0;padding-left:12px">Nice! Send a voice note</div>
+          </div>
+          <div style="padding:6px 8px;border-radius:10px;background:#1a2e24;box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #1a3a2a">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+              <span style="width:6px;height:6px;border-radius:50%;background:#3ba776"></span>
+              <span style="font-size:8px;font-weight:700;color:#3ba776">Dumbi</span>
+              <span style="font-size:7px;color:#4a6e5c">2:37 PM</span>
+            </div>
+            <div style="font-size:11px;color:#b8d4c8;padding-left:12px;display:flex;align-items:center;gap:6px"><span style="width:20px;height:20px;border-radius:50%;background:#252830;display:inline-flex;align-items:center;justify-content:center;box-shadow:1px 1px 2px #0d0f14"><span style="width:9px;height:9px;color:#3ba776">${playSvg}</span></span> 🎤 0:12</div>
+          </div>
+        </div>`;
+    }
+  }
+];
+
+designs.forEach(function(d, i) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const neumInset = 'inset 2px 2px 4px ' + d.shadowD + ', inset -2px -2px 4px ' + d.shadowL;
+  const neumOut = '3px 3px 6px ' + d.shadowD + ', -3px -3px 6px ' + d.shadowL;
+  const neumOutBig = '4px 4px 8px ' + d.shadowD + ', -4px -4px 8px ' + d.shadowL;
+
+  card.innerHTML =
+    '<div class="card-label" style="color:' + d.accent + '">' + (i+1) + '. ' + d.name + '</div>' +
+    '<div style="font-size:10px;color:#555c6e;text-align:center;margin-bottom:8px">' + d.desc + '</div>' +
+    '<div class="chat-box" style="background:' + d.bg + ';box-shadow:' + neumOutBig + '">' +
+      '<div class="chat-header">' +
+        '<div class="chat-header-left">' +
+          '<div class="chat-timer" style="color:' + d.accent + '">' + clockSvg + '<span>23:47</span></div>' +
+        '</div>' +
+        '<div class="chat-sync" style="color:#555c6e">' + syncSvg + '<span>2:37 PM</span></div>' +
+      '</div>';
+
+  // Render messages
+  d.render(card.querySelector('.chat-box') || card);
+
+  // Add input row
+  const chatBox = card.querySelector('.chat-box');
+  if (chatBox) {
+    const inputRow = document.createElement('div');
+    inputRow.className = 'chat-input-row';
+    inputRow.innerHTML =
+      '<textarea class="text-input" style="background:' + d.inputBg + ';color:' + d.inputColor + ';box-shadow:' + neumInset + '" placeholder="Type a message..." rows="1"></textarea>' +
+      '<button class="mic-btn" style="background:' + d.micBg + ';color:' + d.micColor + ';box-shadow:' + neumOut + '">' + micSvg + '</button>' +
+      '<button class="send-btn" style="background:' + d.sendBg + ';color:' + d.sendColor + ';box-shadow:' + neumOut + '">' + sendSvg + '</button>';
+    chatBox.appendChild(inputRow);
+  }
+
+  grid.appendChild(card);
+});
+</script>
+
+</body>
+</html>
