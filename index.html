@@ -363,14 +363,26 @@
       .then(function(r){ return r.json(); });
   }
 
+  // ===== PARSE CHAT CONTENT (handle both encrypted and plain format) =====
+  async function parseChatContent(b64Content) {
+    var jsonStr = atob(b64Content.replace(/\n/g, ''));
+    var parsed = JSON.parse(jsonStr);
+    // Encrypted format: {v:1, ciphertext: "...", updatedAt: "..."}
+    if (parsed.ciphertext) {
+      var decrypted = await decryptText(parsed.ciphertext, ENCRYPT_PASSWORD);
+      return JSON.parse(decrypted);
+    }
+    // Plain format: {messages: [...], updatedAt: "..."}
+    return parsed;
+  }
+
   // ===== LOAD MESSAGES FROM GITHUB =====
   async function loadMessages() {
     try {
       var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
       if (data.sha) chatFileSha = data.sha;
       if (data.content) {
-        var jsonStr = atob(data.content.replace(/\n/g, ''));
-        var chatData = JSON.parse(jsonStr);
+        var chatData = await parseChatContent(data.content);
         var now = Date.now();
 
         // Filter out messages older than 24 hours (client-side auto-delete)
@@ -463,8 +475,7 @@
       var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
       if (data.sha) chatFileSha = data.sha;
       if (data.content) {
-        var jsonStr = atob(data.content.replace(/\n/g, ''));
-        var chatData = JSON.parse(jsonStr);
+        var chatData = await parseChatContent(data.content);
         var now = Date.now();
         var msgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
         msgs.push(msg);
@@ -507,8 +518,7 @@
       var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
       if (data.sha) chatFileSha = data.sha;
       if (data.content) {
-        var jsonStr = atob(data.content.replace(/\n/g, ''));
-        var chatData = JSON.parse(jsonStr);
+        var chatData = await parseChatContent(data.content);
         var now = Date.now();
         var msgs = (chatData.messages || [])
           .filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; })
@@ -807,8 +817,7 @@
         var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
         if (data.sha) chatFileSha = data.sha;
         if (data.content) {
-          var jsonStr = atob(data.content.replace(/\n/g, ''));
-          var chatData = JSON.parse(jsonStr);
+          var chatData = await parseChatContent(data.content);
           var now = Date.now();
           var msgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
           msgs.push(msg);
