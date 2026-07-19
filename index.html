@@ -12,6 +12,7 @@
   var CHAT_FILE = 'chat.json';
   var WORKER_URL = 'https://voice-box-worker.htc85235.workers.dev';
   var POLL_INTERVAL = 3000; // 3 seconds
+  var HEARTBEAT_INTERVAL = 15000; // 15 seconds — send online status
   var AUTO_DELETE_MS = 24 * 60 * 60 * 1000; // 24 hours
   var MAX_VOICE_DURATION = 180; // 3 min max recording
 
@@ -23,6 +24,7 @@
   var myRole = null; // 'dumbi' or 'dumbo'
   var chatFileSha = null;
   var pollTimer = null;
+  var heartbeatTimer = null;
   var mediaRecorder = null;
   var audioChunks = [];
   var recordStartTime = 0;
@@ -34,15 +36,14 @@
   var lastMessageCount = 0;
   var longPressTimer = null;
   var longPressTarget = null;
-  var voiceAudioCache = {}; // temporary, cleared on close — no persistent storage
-  var pendingSeenUpdates = []; // batch seen updates to reduce writes
-  var seenSaveTimer = null; // debounce seen saves
-  var typingSaveTimer = null; // debounce typing saves
+  var voiceAudioCache = {};
+  var pendingSeenUpdates = [];
+  var seenSaveTimer = null;
+  var typingSaveTimer = null;
   var isTypingNow = false;
   var lastTypingSend = 0;
-  var recordedMimeType = 'audio/webm'; // track actual MIME type from recorder
-  var lastTypingCheckResult = false; // track other user's typing state to avoid UI flicker
-
+  var recordedMimeType = 'audio/webm';
+  var lastOnlineState = { dumbi: false, dumbo: false };
 
   // ===== DOM =====
   var trigger = null;
@@ -104,14 +105,26 @@
     // Chat section
     + '    .chat-main { display:flex; flex-direction:column; height:70vh; min-height:400px; }'
 
+    // Presence bar — two bubbles at the top
+    + '    .presence-bar { display:flex; align-items:center; justify-content:center; gap:10px; padding:5px 12px; background:#111318; border-bottom:1px solid rgba(42,47,58,0.3); flex-shrink:0; }'
+    + '    .presence-bubble { display:flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; font-size:9px; font-weight:700; letter-spacing:0.3px; opacity:0.3; transition:opacity 0.3s; }'
+    + '    .presence-bubble.online { opacity:1; }'
+    + '    .presence-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }'
+    + '    .presence-bubble.dumbi-bubble .presence-dot { background:#4a9eff; }'
+    + '    .presence-bubble.dumbi-bubble { color:#4a9eff; border:1px solid rgba(74,158,255,0.15); }'
+    + '    .presence-bubble.dumbi-bubble.online .presence-dot { animation: blinkDumbi 1.2s ease-in-out infinite; box-shadow: 0 0 6px rgba(74,158,255,0.6); }'
+    + '    .presence-bubble.dumbo-bubble .presence-dot { background:#3ba776; }'
+    + '    .presence-bubble.dumbo-bubble { color:#3ba776; border:1px solid rgba(59,167,118,0.15); }'
+    + '    .presence-bubble.dumbo-bubble.online .presence-dot { animation: blinkDumbo 1.2s ease-in-out infinite; box-shadow: 0 0 6px rgba(59,167,118,0.6); }'
+    + '    @keyframes blinkDumbi { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.7)} }'
+    + '    @keyframes blinkDumbo { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.7)} }'
+
     // Chat header
     + '    .chat-header { display:flex; align-items:center; padding:8px 12px; gap:8px; border-bottom:1px solid rgba(42,47,58,0.4); flex-shrink:0; }'
     + '    .chat-header-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; }'
     + '    .chat-header-info { flex:1; }'
     + '    .chat-header-name { font-size:12px; font-weight:700; color:#c9d1e0; }'
     + '    .chat-header-status { font-size:9px; color:#555c6e; display:flex; align-items:center; gap:4px; }'
-    + '    .online-dot { width:6px; height:6px; border-radius:50%; background:#3ba776; display:inline-block; animation: pulse-dot 2s infinite; }'
-    + '    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }'
     + '    .chat-header-timer { font-size:9px; color:#d4af37; display:flex; align-items:center; gap:3px; font-variant-numeric:tabular-nums; }'
     + '    .chat-header-timer svg { width:10px; height:10px; }'
 
@@ -194,10 +207,6 @@
     + '    @keyframes vmCheckPop { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }'
     + '    @keyframes vmTextFade { from{opacity:0;transform:translateZ(5px) translateX(8px)} to{opacity:1;transform:translateZ(5px) translateX(0)} }'
 
-    // Sending indicator
-    + '    .chat-msg.sending { opacity:0.5; }'
-    + '    .chat-msg .msg-sending { font-size:8px; opacity:0.4; }'
-
     // Typing indicator
     + '    .typing-indicator { display:none; align-self:flex-start; background:#ffffff; color:#1a1a1a; padding:8px 14px; border-radius:14px; border-bottom-left-radius:2px; font-size:11px; font-style:italic; opacity:0.7; margin:2px 0; }'
     + '    .typing-indicator.visible { display:block; }'
@@ -207,7 +216,7 @@
     + '    .typing-dots span:nth-child(3) { animation-delay:0.4s; }'
     + '    @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-4px)} }'
 
-    // Loading spinner for voice play
+    // Loading spinner
     + '    @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }'
     + '  </style>'
 
@@ -245,12 +254,18 @@
     // Section 3: Chat
     + '    <div id="chat-main-section" style="display:none;" class="chat-main">'
 
+    // Presence bar — blue (Dumbi) & green (Dumbo) bubbles
+    + '      <div class="presence-bar">'
+    + '        <div class="presence-bubble dumbi-bubble" id="presence-dumbi"><span class="presence-dot"></span>Dumbi</div>'
+    + '        <div class="presence-bubble dumbo-bubble" id="presence-dumbo"><span class="presence-dot"></span>Dumbo</div>'
+    + '      </div>'
+
     // Chat header
     + '      <div class="chat-header">'
     + '        <div class="chat-header-avatar" id="chat-avatar" style="background:#252a35;">\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB</div>'
     + '        <div class="chat-header-info">'
     + '          <div class="chat-header-name" id="chat-header-name">CSS Aspirants</div>'
-    + '          <div class="chat-header-status"><span class="online-dot"></span><span id="chat-header-status">Encrypted</span></div>'
+    + '          <div class="chat-header-status" id="chat-header-status-wrap">Encrypted & Ephemeral</div>'
     + '        </div>'
     + '        <div class="chat-header-timer" id="chat-delete-timer">'
     + '          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
@@ -397,20 +412,18 @@
       .then(function(r){ return r.json(); });
   }
 
-  // ===== PARSE CHAT CONTENT (handle both encrypted and plain format) =====
+  // ===== PARSE CHAT CONTENT =====
   async function parseChatContent(b64Content) {
     var jsonStr = atob(b64Content.replace(/\n/g, ''));
     var parsed = JSON.parse(jsonStr);
-    // Encrypted format: {v:1, ciphertext: "...", updatedAt: "..."}
     if (parsed.ciphertext) {
       var decrypted = await decryptText(parsed.ciphertext, ENCRYPT_PASSWORD);
       return JSON.parse(decrypted);
     }
-    // Plain format: {messages: [...], updatedAt: "..."}
     return parsed;
   }
 
-  // ===== MERGE MESSAGES BY ID (deduplication) =====
+  // ===== MERGE MESSAGES =====
   function mergeMessages(existingMsgs, newMsgs) {
     var msgMap = {};
     existingMsgs.forEach(function(m) { msgMap[m.id] = m; });
@@ -430,25 +443,98 @@
     return result;
   }
 
-  // ===== TYPING INDICATOR (GitHub-based) =====
-  async function saveTypingStatus() {
+  // ===== ONLINE PRESENCE (Cloudflare Worker) =====
+  function sendOnlineHeartbeat() {
     if (!myRole) return;
-    var now = Date.now();
-    // Debounce: don't send more than once per 2 seconds
-    if (now - lastTypingSend < 2000) return;
-    lastTypingSend = now;
-
-    // Use Cloudflare Worker (fast, lightweight)
     try {
-      await fetch(WORKER_URL + '/typing', {
+      fetch(WORKER_URL + '/online', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: myRole })
-      });
-    } catch(e) {
-      // Worker not available — fail silently
-      console.log('[Chat] Typing send failed:', e.message);
+      }).catch(function() {});
+    } catch(e) {}
+  }
+
+  function sendOffline() {
+    if (!myRole) return;
+    try {
+      // Use sendBeacon for reliability on page close
+      var data = JSON.stringify({ role: myRole });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(WORKER_URL + '/offline', new Blob([data], { type: 'application/json' }));
+      } else {
+        fetch(WORKER_URL + '/offline', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: data
+        }).catch(function() {});
+      }
+    } catch(e) {}
+  }
+
+  async function checkOnlinePresence() {
+    try {
+      var resp = await fetch(WORKER_URL + '/online');
+      if (resp.ok) {
+        var data = await resp.json();
+        updatePresenceBubbles(data.dumbi, data.dumbo);
+      }
+    } catch(e) {}
+  }
+
+  function updatePresenceBubbles(dumbiOnline, dumboOnline) {
+    var dumbiEl = document.getElementById('presence-dumbi');
+    var dumboEl = document.getElementById('presence-dumbo');
+    if (dumbiEl) {
+      if (dumbiOnline) dumbiEl.classList.add('online');
+      else dumbiEl.classList.remove('online');
     }
+    if (dumboEl) {
+      if (dumboOnline) dumboEl.classList.add('online');
+      else dumboEl.classList.remove('online');
+    }
+    // Update header status text
+    var statusEl = document.getElementById('chat-header-status-wrap');
+    if (statusEl && myRole) {
+      var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
+      var otherOnline = otherRole === 'dumbi' ? dumbiOnline : dumboOnline;
+      if (otherOnline) {
+        statusEl.textContent = otherRole.charAt(0).toUpperCase() + otherRole.slice(1) + ' is online';
+        statusEl.style.color = '#3ba776';
+      } else {
+        statusEl.textContent = 'Encrypted & Ephemeral';
+        statusEl.style.color = '';
+      }
+    }
+    lastOnlineState = { dumbi: dumbiOnline, dumbo: dumboOnline };
+  }
+
+  function startHeartbeat() {
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
+    sendOnlineHeartbeat(); // Send immediately
+    heartbeatTimer = setInterval(function() {
+      sendOnlineHeartbeat();
+    }, HEARTBEAT_INTERVAL);
+  }
+
+  function stopHeartbeat() {
+    if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+    sendOffline();
+  }
+
+  // ===== TYPING INDICATOR (Cloudflare Worker) =====
+  function sendTypingStatus() {
+    if (!myRole) return;
+    var now = Date.now();
+    if (now - lastTypingSend < 2000) return;
+    lastTypingSend = now;
+    try {
+      fetch(WORKER_URL + '/typing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: myRole })
+      }).catch(function() {});
+    } catch(e) {}
   }
 
   async function checkOtherTyping() {
@@ -466,31 +552,19 @@
           var displayName = otherRole === 'dumbi' ? 'Dumbi' : 'Dumbo';
           if (typingName) typingName.textContent = displayName + ' is typing ';
           typingEl.classList.add('visible');
-          lastTypingCheckResult = true;
           return;
         }
       }
-    } catch(e) {
-      // Worker not available — no typing indicator
-    }
-
-    if (lastTypingCheckResult) {
-      typingEl.classList.remove('visible');
-      lastTypingCheckResult = false;
-    }
+    } catch(e) {}
+    typingEl.classList.remove('visible');
   }
 
   function onTypingInput() {
     if (!myRole) return;
     isTypingNow = true;
-    // Debounce: save typing status at most once every 2.5 seconds
+    sendTypingStatus();
     if (typingSaveTimer) clearTimeout(typingSaveTimer);
-    typingSaveTimer = setTimeout(function() {
-      saveTypingStatus();
-    }, 500); // Small initial delay, then the 2s debounce in saveTypingStatus handles the rest
-
-    // Auto-stop typing after 3 seconds of no input
-    // (No need to save "stopped" — the timestamp naturally expires in 5s on the reader side)
+    typingSaveTimer = setTimeout(function() { isTypingNow = false; }, 3000);
   }
 
   function stopTypingStatus() {
@@ -498,7 +572,7 @@
     if (typingSaveTimer) { clearTimeout(typingSaveTimer); typingSaveTimer = null; }
   }
 
-  // ===== LOAD MESSAGES FROM GITHUB =====
+  // ===== LOAD MESSAGES =====
   async function loadMessages() {
     try {
       var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
@@ -508,7 +582,6 @@
         var now = Date.now();
         var needsSave = false;
 
-        // Filter out messages older than 24 hours
         if (chatData.messages) {
           var originalLen = chatData.messages.length;
           chatData.messages = chatData.messages.filter(function(m) {
@@ -517,7 +590,6 @@
           if (chatData.messages.length < originalLen) needsSave = true;
         }
 
-        // Mark other person's messages as "seen by me" — but DON'T save immediately
         if (chatData.messages && myRole) {
           var seenField = 'seenBy_' + myRole;
           chatData.messages.forEach(function(m) {
@@ -528,7 +600,6 @@
           });
         }
 
-        // Only save if we have actual changes
         if (needsSave) {
           if (seenSaveTimer) clearTimeout(seenSaveTimer);
           seenSaveTimer = setTimeout(function() {
@@ -541,43 +612,28 @@
     } catch(e) {
       console.log('[Chat] Load failed:', e.message);
     }
-    // Check if other person is typing (after messages load)
     checkOtherTyping();
+    checkOnlinePresence();
   }
 
-  // ===== SAVE MESSAGES TO GITHUB (with merge-based conflict resolution) =====
+  // ===== SAVE MESSAGES =====
   var saveInProgress = false;
   var saveQueue = null;
 
   async function saveMessagesToGitHub(messages, isCleanup) {
-    if (saveInProgress) {
-      saveQueue = { messages: messages, isCleanup: isCleanup };
-      return;
-    }
+    if (saveInProgress) { saveQueue = { messages: messages, isCleanup: isCleanup }; return; }
     saveInProgress = true;
     try {
       await _doSave(messages);
     } catch(e) {
-      console.error('[Chat] Save failed, retrying with merge...', e);
       await new Promise(function(r){ setTimeout(r, 800); });
-      try {
-        await _readMergeAndSave(messages);
-      } catch(e2) {
-        console.error('[Chat] Merge retry also failed:', e2);
+      try { await _readMergeAndSave(messages); } catch(e2) {
         await new Promise(function(r){ setTimeout(r, 1500); });
-        try {
-          await _readMergeAndSave(messages);
-        } catch(e3) {
-          console.error('[Chat] Final retry failed:', e3);
-        }
+        try { await _readMergeAndSave(messages); } catch(e3) {}
       }
     }
     saveInProgress = false;
-    if (saveQueue) {
-      var queued = saveQueue;
-      saveQueue = null;
-      await saveMessagesToGitHub(queued.messages, queued.isCleanup);
-    }
+    if (saveQueue) { var q = saveQueue; saveQueue = null; await saveMessagesToGitHub(q.messages, q.isCleanup); }
   }
 
   async function _doSave(messages) {
@@ -587,7 +643,6 @@
     var b64 = btoa(JSON.stringify({ v: 1, ciphertext: encrypted, updatedAt: now }));
     var body = { message: 'Chat update ' + now, content: b64, branch: GITHUB_BRANCH };
     if (chatFileSha) body.sha = chatFileSha;
-
     var result = await githubApi('PUT', '/contents/' + CHAT_FILE, body);
     if (result.sha) chatFileSha = result.sha;
     if (result.content) chatFileSha = result.content.sha;
@@ -600,33 +655,20 @@
       var freshData = await parseChatContent(fresh.content);
       var now = Date.now();
       var freshMsgs = (freshData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-      var merged = mergeMessages(freshMsgs, ourMessages);
-      await _doSave(merged);
+      await _doSave(mergeMessages(freshMsgs, ourMessages));
     } else {
       await _doSave(ourMessages);
     }
   }
 
-  // ===== SEND TEXT MESSAGE =====
+  // ===== SEND TEXT =====
   async function sendTextMessage() {
     var text = chatInput.value.trim();
     if (!text || !myRole) return;
     chatInput.value = '';
     stopTypingStatus();
-
-    var msg = {
-      id: 'txt_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
-      type: 'text',
-      sender: myRole,
-      ts: Date.now(),
-      text: text
-    };
-
-    // Show locally immediately
-    appendMessage(msg);
-    scrollToBottom();
-
-    // Save to GitHub with merge
+    var msg = { id: 'txt_' + Date.now() + '_' + Math.random().toString(36).substr(2,5), type: 'text', sender: myRole, ts: Date.now(), text: text };
+    appendMessage(msg); scrollToBottom();
     try {
       var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
       if (data.sha) chatFileSha = data.sha;
@@ -634,117 +676,46 @@
         var chatData = await parseChatContent(data.content);
         var now = Date.now();
         var msgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-        msgs.push(msg);
-        await saveMessagesToGitHub(msgs, false);
-      } else {
-        await saveMessagesToGitHub([msg], false);
-      }
-    } catch(e) {
-      console.error('[Chat] Send text failed:', e);
-    }
+        msgs.push(msg); await saveMessagesToGitHub(msgs, false);
+      } else { await saveMessagesToGitHub([msg], false); }
+    } catch(e) { console.error('[Chat] Send text failed:', e); }
   }
 
   // ===== DELETE MESSAGE =====
   async function deleteMessage(msgId) {
     var el = document.querySelector('[data-msg-id="' + msgId + '"]');
-    if (el) {
-      el.style.transition = 'all 0.25s';
-      el.style.opacity = '0';
-      el.style.transform = 'scale(0.8)';
-      el.style.maxHeight = '0';
-      el.style.padding = '0';
-      el.style.margin = '0';
-      setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 300);
-    }
-
-    if (msgId.startsWith('vm_')) {
-      try {
-        var token = btoa('owner:' + CHAT_PASSWORD);
-        await fetch(WORKER_URL + '/message/' + msgId, {
-          method: 'DELETE',
-          headers: { 'X-Owner-Token': token }
-        });
-      } catch(e) {
-        console.error('[Chat] Voice delete failed:', e);
-      }
-    }
-
+    if (el) { el.style.transition = 'all 0.25s'; el.style.opacity = '0'; el.style.transform = 'scale(0.8)'; el.style.maxHeight = '0'; el.style.padding = '0'; el.style.margin = '0'; setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 300); }
+    if (msgId.startsWith('vm_')) { try { var token = btoa('owner:' + CHAT_PASSWORD); await fetch(WORKER_URL + '/message/' + msgId, { method: 'DELETE', headers: { 'X-Owner-Token': token } }); } catch(e) {} }
     try {
       var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
       if (data.sha) chatFileSha = data.sha;
       if (data.content) {
         var chatData = await parseChatContent(data.content);
         var now = Date.now();
-        var msgs = (chatData.messages || [])
-          .filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; })
-          .filter(function(m){ return m.id !== msgId; });
+        var msgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; }).filter(function(m){ return m.id !== msgId; });
         await saveMessagesToGitHub(msgs, false);
       }
-    } catch(e) {
-      console.error('[Chat] Delete from GitHub failed:', e);
-    }
+    } catch(e) {}
   }
 
   // ===== RENDER MESSAGES =====
   function renderMessages(messages) {
     if (!messagesContainer) return;
-
     if (messages.length === lastMessageCount) {
       var existingMsgs = messagesContainer.querySelectorAll('.chat-msg');
-      var needsFullRender = false;
-      if (existingMsgs.length !== messages.length) {
-        needsFullRender = true;
-      } else {
-        for (var i = 0; i < messages.length; i++) {
-          var el = existingMsgs[i];
-          if (el && el.dataset.msgId !== messages[i].id) {
-            needsFullRender = true;
-            break;
-          }
-        }
-      }
-      var existingSeenLabels = messagesContainer.querySelectorAll('.seen-at-label');
-      var expectedSeenCount = 0;
-      var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
-      var otherSeenField = 'seenBy_' + otherRole;
-      messages.forEach(function(m) {
-        if (m.sender === myRole && m[otherSeenField]) expectedSeenCount++;
-      });
-      if (existingSeenLabels.length !== expectedSeenCount) needsFullRender = true;
-
+      var needsFullRender = existingMsgs.length !== messages.length;
+      if (!needsFullRender) { for (var i = 0; i < messages.length; i++) { if (existingMsgs[i] && existingMsgs[i].dataset.msgId !== messages[i].id) { needsFullRender = true; break; } } }
+      if (!needsFullRender) { var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi'; var otherSeenField = 'seenBy_' + otherRole; var expectedSeenCount = 0; messages.forEach(function(m) { if (m.sender === myRole && m[otherSeenField]) expectedSeenCount++; }); if (messagesContainer.querySelectorAll('.seen-at-label').length !== expectedSeenCount) needsFullRender = true; }
       if (!needsFullRender) return;
     }
-
     lastMessageCount = messages.length;
     messagesContainer.innerHTML = '';
-
-    if (messages.length === 0) {
-      messagesContainer.innerHTML = '<div style="text-align:center;padding:40px 20px;"><div style="font-size:32px;margin-bottom:8px;">\uD83D\uDD12</div><div style="font-size:12px;color:#555c6e;">End-to-end encrypted</div><div style="font-size:10px;color:#3a3f4a;margin-top:4px;">Messages auto-delete after 24 hours</div></div>';
-      return;
-    }
-
-    var lastDate = '';
-    var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
-    var otherSeenField = 'seenBy_' + otherRole;
-
+    if (messages.length === 0) { messagesContainer.innerHTML = '<div style="text-align:center;padding:40px 20px;"><div style="font-size:32px;margin-bottom:8px;">\uD83D\uDD12</div><div style="font-size:12px;color:#555c6e;">End-to-end encrypted</div><div style="font-size:10px;color:#3a3f4a;margin-top:4px;">Messages auto-delete after 24 hours</div></div>'; return; }
+    var lastDate = ''; var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi'; var otherSeenField = 'seenBy_' + otherRole;
     messages.forEach(function(msg) {
       var msgDate = new Date(msg.ts).toLocaleDateString();
-      if (msgDate !== lastDate) {
-        lastDate = msgDate;
-        var divider = document.createElement('div');
-        divider.className = 'chat-date';
-        divider.textContent = msgDate === new Date().toLocaleDateString() ? 'Today' : msgDate;
-        messagesContainer.appendChild(divider);
-      }
-
-      var isSent = msg.sender === myRole;
-      if (isSent && msg[otherSeenField]) {
-        var seenEl = document.createElement('div');
-        seenEl.className = 'seen-at-label';
-        seenEl.textContent = 'Seen at ' + formatTimeShort(msg[otherSeenField]);
-        messagesContainer.appendChild(seenEl);
-      }
-
+      if (msgDate !== lastDate) { lastDate = msgDate; var divider = document.createElement('div'); divider.className = 'chat-date'; divider.textContent = msgDate === new Date().toLocaleDateString() ? 'Today' : msgDate; messagesContainer.appendChild(divider); }
+      if (msg.sender === myRole && msg[otherSeenField]) { var seenEl = document.createElement('div'); seenEl.className = 'seen-at-label'; seenEl.textContent = 'Seen at ' + formatTimeShort(msg[otherSeenField]); messagesContainer.appendChild(seenEl); }
       appendMessage(msg);
     });
     scrollToBottom();
@@ -756,697 +727,279 @@
     var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
     var otherSeenField = 'seenBy_' + otherRole;
     var otherSeenTime = msg[otherSeenField] || null;
-
     var div = document.createElement('div');
     div.className = 'chat-msg ' + (isSent ? 'sent' : 'recv');
     div.dataset.msgId = msg.id;
-
     var ticksHtml = '';
-    if (isSent) {
-      if (otherSeenTime) {
-        ticksHtml = '<span class="msg-ticks seen" title="Seen">\u2713\u2713</span>';
-      } else {
-        ticksHtml = '<span class="msg-ticks delivered">\u2713\u2713</span>';
-      }
-    }
-
+    if (isSent) { ticksHtml = otherSeenTime ? '<span class="msg-ticks seen" title="Seen">\u2713\u2713</span>' : '<span class="msg-ticks delivered">\u2713\u2713</span>'; }
     if (msg.type === 'voice') {
       div.classList.add('voice-msg');
-      // Store MIME type as data attribute for playback
       var voiceMime = msg.mimeType || recordedMimeType || 'audio/webm';
       div.dataset.mime = voiceMime;
-      var playBtnColor = '#1a7a3a';
-      div.innerHTML =
-        '<button class="voice-play-btn" style="background:' + playBtnColor + ';color:#fff;" data-voice-key="' + msg.voiceKey + '">' +
-          '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
-        '</button>' +
-        '<div class="voice-waves-mini">' + generateVoiceBars() + '</div>' +
-        '<div class="voice-dur">' + msg.duration + '</div>' +
-        '<div class="msg-time" style="position:absolute;bottom:2px;right:8px;">' + formatTime12(msg.ts) + ' ' + ticksHtml + '</div>';
-
-      var playBtn = div.querySelector('.voice-play-btn');
-      playBtn.addEventListener('click', function(){
-        playVoiceMessage(msg.voiceKey, playBtn, voiceMime);
-      });
+      div.innerHTML = '<button class="voice-play-btn" style="background:#1a7a3a;color:#fff;" data-voice-key="' + msg.voiceKey + '"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button><div class="voice-waves-mini">' + generateVoiceBars() + '</div><div class="voice-dur">' + msg.duration + '</div><div class="msg-time" style="position:absolute;bottom:2px;right:8px;">' + formatTime12(msg.ts) + ' ' + ticksHtml + '</div>';
+      div.querySelector('.voice-play-btn').addEventListener('click', function(){ playVoiceMessage(msg.voiceKey, this, voiceMime); });
     } else {
       var senderLabel = isSent ? '' : '<div class="msg-sender">' + (msg.sender === 'dumbi' ? 'Dumbi' : 'Dumbo') + '</div>';
-      div.innerHTML =
-        senderLabel +
-        escapeHtml(msg.text) +
-        '<div class="msg-time">' + formatTime12(msg.ts) + ' ' + ticksHtml + '</div>' +
-        '<div class="msg-enc">AES-256</div>';
+      div.innerHTML = senderLabel + escapeHtml(msg.text) + '<div class="msg-time">' + formatTime12(msg.ts) + ' ' + ticksHtml + '</div><div class="msg-enc">AES-256</div>';
     }
-
     setupLongPress(div, msg.id);
     messagesContainer.appendChild(div);
   }
 
-  function generateVoiceBars() {
-    var bars = '';
-    var heights = [3,6,10,14,8,12,5,9,13,7,11,4,8,12,6,10,14,7,5,3];
-    for (var i = 0; i < heights.length; i++) {
-      bars += '<div class="vbar" style="height:' + heights[i] + 'px;animation-delay:' + (i * 0.05) + 's"></div>';
-    }
-    return bars;
-  }
+  function generateVoiceBars() { var bars = ''; var h = [3,6,10,14,8,12,5,9,13,7,11,4,8,12,6,10,14,7,5,3]; for (var i = 0; i < h.length; i++) bars += '<div class="vbar" style="height:' + h[i] + 'px;animation-delay:' + (i*0.05) + 's"></div>'; return bars; }
+  function escapeHtml(text) { var d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
 
-  function escapeHtml(text) {
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // ===== PLAY VOICE MESSAGE =====
-  var currentAudio = null;
-  var currentPlayBtn = null;
-
+  // ===== PLAY VOICE =====
+  var currentAudio = null; var currentPlayBtn = null;
   async function playVoiceMessage(key, btn, knownMime) {
-    // If clicking the same button that's currently playing, pause it
-    if (currentAudio && currentPlayBtn === btn) {
-      currentAudio.pause();
-      currentAudio = null;
-      btn.classList.remove('playing');
-      currentPlayBtn = null;
-      return;
-    }
-
-    // Stop any currently playing audio
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio = null;
-      document.querySelectorAll('.voice-play-btn.playing').forEach(function(b){ b.classList.remove('playing'); });
-    }
-
-    btn.classList.add('playing');
-    currentPlayBtn = btn;
-
+    if (currentAudio && currentPlayBtn === btn) { currentAudio.pause(); currentAudio = null; btn.classList.remove('playing'); currentPlayBtn = null; return; }
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; document.querySelectorAll('.voice-play-btn.playing').forEach(function(b){ b.classList.remove('playing'); }); }
+    btn.classList.add('playing'); currentPlayBtn = btn;
     var origHtml = btn.innerHTML;
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px;animation:spin 1s linear infinite"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity=".3"/><path d="M20 12h2A10 10 0 0 0 12 2v2a8 8 0 0 1 8 8z"/></svg>';
-
     try {
       var token = btoa('owner:' + CHAT_PASSWORD);
-      var resp = await fetch(WORKER_URL + '/message/' + key, {
-        headers: { 'X-Owner-Token': token }
-      });
+      var resp = await fetch(WORKER_URL + '/message/' + key, { headers: { 'X-Owner-Token': token } });
       if (!resp.ok) throw new Error('Download failed: ' + resp.status);
       var encryptedData = await resp.arrayBuffer();
-      
-      if (!encryptedData || encryptedData.byteLength < 29) {
-        throw new Error('Invalid voice data');
-      }
-      
+      if (!encryptedData || encryptedData.byteLength < 29) throw new Error('Invalid voice data');
       var decrypted = await decryptBlob(encryptedData, ENCRYPT_PASSWORD);
-      
-      // Determine MIME type — try multiple formats
-      var mimeType = knownMime || 'audio/webm';
-      // Normalize: strip codec suffix for Blob type
-      var baseMime = mimeType.split(';')[0].trim();
-      
-      // Try playing with the detected MIME type, fallback to others
+      var baseMime = (knownMime || 'audio/webm').split(';')[0].trim();
       var mimeCandidates = [baseMime];
       if (baseMime !== 'audio/webm') mimeCandidates.push('audio/webm');
       if (baseMime !== 'audio/ogg') mimeCandidates.push('audio/ogg');
       if (baseMime !== 'audio/mp4') mimeCandidates.push('audio/mp4');
-      if (baseMime !== 'audio/mpeg') mimeCandidates.push('audio/mpeg');
-      // Remove duplicates
-      var seen = {};
-      mimeCandidates = mimeCandidates.filter(function(m) { if (seen[m]) return false; seen[m] = true; return true; });
-
+      var seen = {}; mimeCandidates = mimeCandidates.filter(function(m){ if(seen[m])return false; seen[m]=true; return true; });
       var played = false;
       for (var i = 0; i < mimeCandidates.length; i++) {
         try {
           var audioBlob = new Blob([decrypted], { type: mimeCandidates[i] });
           var url = URL.createObjectURL(audioBlob);
           var audio = new Audio(url);
-          
-          // Wait for the audio to be ready or error
-          var canPlay = await new Promise(function(resolve) {
-            audio.oncanplaythrough = function() { resolve(true); };
-            audio.onerror = function() { resolve(false); };
-            // Timeout after 3 seconds
-            setTimeout(function() { resolve(false); }, 3000);
-            audio.load();
-          });
-
+          var canPlay = await new Promise(function(resolve) { audio.oncanplaythrough = function(){ resolve(true); }; audio.onerror = function(){ resolve(false); }; setTimeout(function(){ resolve(false); }, 3000); audio.load(); });
           if (canPlay) {
             currentAudio = audio;
             btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
-
-            audio.onended = function() {
-              btn.classList.remove('playing');
-              btn.innerHTML = origHtml;
-              currentAudio = null;
-              currentPlayBtn = null;
-              URL.revokeObjectURL(url);
-            };
-            audio.onerror = function() {
-              URL.revokeObjectURL(url);
-              // Try next format
-            };
-
-            await audio.play();
-            played = true;
-            break;
-          } else {
-            URL.revokeObjectURL(url);
-          }
-        } catch(e) {
-          // Try next format
-        }
+            audio.onended = function() { btn.classList.remove('playing'); btn.innerHTML = origHtml; currentAudio = null; currentPlayBtn = null; URL.revokeObjectURL(url); };
+            await audio.play(); played = true; break;
+          } else { URL.revokeObjectURL(url); }
+        } catch(e) {}
       }
-
       if (!played) {
-        // Last resort: try without specifying MIME type
-        try {
-          var rawBlob = new Blob([decrypted]);
-          var rawUrl = URL.createObjectURL(rawBlob);
-          var rawAudio = new Audio(rawUrl);
-          currentAudio = rawAudio;
-          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
-          rawAudio.onended = function() {
-            btn.classList.remove('playing');
-            btn.innerHTML = origHtml;
-            currentAudio = null;
-            currentPlayBtn = null;
-            URL.revokeObjectURL(rawUrl);
-          };
-          rawAudio.onerror = function() {
-            btn.classList.remove('playing');
-            btn.innerHTML = origHtml;
-            currentAudio = null;
-            currentPlayBtn = null;
-            URL.revokeObjectURL(rawUrl);
-          };
-          await rawAudio.play();
-          played = true;
-        } catch(e) {
-          throw new Error('No compatible audio format found');
-        }
+        var rawBlob = new Blob([decrypted]); var rawUrl = URL.createObjectURL(rawBlob); var rawAudio = new Audio(rawUrl);
+        currentAudio = rawAudio;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+        rawAudio.onended = function() { btn.classList.remove('playing'); btn.innerHTML = origHtml; currentAudio = null; currentPlayBtn = null; URL.revokeObjectURL(rawUrl); };
+        rawAudio.onerror = function() { btn.classList.remove('playing'); btn.innerHTML = origHtml; currentAudio = null; currentPlayBtn = null; URL.revokeObjectURL(rawUrl); };
+        await rawAudio.play();
       }
-
     } catch(e) {
       console.error('[Chat] Voice play failed:', e);
-      btn.classList.remove('playing');
-      btn.innerHTML = origHtml;
-      currentAudio = null;
-      currentPlayBtn = null;
+      btn.classList.remove('playing'); btn.innerHTML = origHtml; currentAudio = null; currentPlayBtn = null;
     }
   }
 
   async function decryptBlob(arrayBuffer, password) {
-    var raw = new Uint8Array(arrayBuffer);
-    var salt = raw.slice(0, 16);
-    var iv = raw.slice(16, 28);
-    var ciphertext = raw.slice(28);
-    var key = await deriveKey(password, salt);
-    var plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
-    return plaintext;
+    var raw = new Uint8Array(arrayBuffer); var salt = raw.slice(0,16); var iv = raw.slice(16,28); var ciphertext = raw.slice(28);
+    var key = await deriveKey(password, salt); return await crypto.subtle.decrypt({ name:'AES-GCM', iv:iv }, key, ciphertext);
   }
 
   // ===== LONG-PRESS DELETE =====
   function setupLongPress(el, msgId) {
     var startX, startY;
-
-    function onStart(e) {
-      var touch = e.touches ? e.touches[0] : e;
-      startX = touch.clientX;
-      startY = touch.clientY;
-      longPressTimer = setTimeout(function(){
-        showDeletePopup(el, msgId);
-      }, 600);
-    }
-
-    function onMove(e) {
-      if (longPressTimer) {
-        var touch = e.touches ? e.touches[0] : e;
-        var dx = Math.abs(touch.clientX - startX);
-        var dy = Math.abs(touch.clientY - startY);
-        if (dx > 10 || dy > 10) {
-          clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-      }
-    }
-
-    function onEnd() {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
-    }
-
-    el.addEventListener('touchstart', onStart, { passive: true });
-    el.addEventListener('touchmove', onMove, { passive: true });
-    el.addEventListener('touchend', onEnd);
-    el.addEventListener('touchcancel', onEnd);
-    el.addEventListener('mousedown', onStart);
-    el.addEventListener('mousemove', onMove);
-    el.addEventListener('mouseup', onEnd);
-    el.addEventListener('mouseleave', onEnd);
+    function onStart(e) { var t = e.touches ? e.touches[0] : e; startX = t.clientX; startY = t.clientY; longPressTimer = setTimeout(function(){ showDeletePopup(el, msgId); }, 600); }
+    function onMove(e) { if(longPressTimer){ var t = e.touches ? e.touches[0] : e; if(Math.abs(t.clientX-startX)>10||Math.abs(t.clientY-startY)>10){clearTimeout(longPressTimer);longPressTimer=null;} } }
+    function onEnd() { if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null;} }
+    el.addEventListener('touchstart',onStart,{passive:true}); el.addEventListener('touchmove',onMove,{passive:true});
+    el.addEventListener('touchend',onEnd); el.addEventListener('touchcancel',onEnd);
+    el.addEventListener('mousedown',onStart); el.addEventListener('mousemove',onMove); el.addEventListener('mouseup',onEnd); el.addEventListener('mouseleave',onEnd);
   }
 
   function showDeletePopup(el, msgId) {
     document.querySelectorAll('.delete-popup').forEach(function(p){ p.parentNode.removeChild(p); });
-
-    var popup = document.createElement('div');
-    popup.className = 'delete-popup';
-    popup.textContent = 'Delete';
-    popup.addEventListener('click', function(e){
-      e.stopPropagation();
-      deleteMessage(msgId);
-    });
-    el.style.position = 'relative';
-    el.appendChild(popup);
-
-    setTimeout(function(){
-      if (popup.parentNode) popup.parentNode.removeChild(popup);
-    }, 3000);
+    var popup = document.createElement('div'); popup.className = 'delete-popup'; popup.textContent = 'Delete';
+    popup.addEventListener('click', function(e){ e.stopPropagation(); deleteMessage(msgId); });
+    el.style.position = 'relative'; el.appendChild(popup);
+    setTimeout(function(){ if(popup.parentNode) popup.parentNode.removeChild(popup); }, 3000);
   }
 
   // ===== VOICE RECORDING =====
-  function startRecTimer() {
-    recordStartTime = Date.now();
-    if (recTimerEl) recTimerEl.textContent = '0:00';
-    recTimerInterval = setInterval(function(){
-      var elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
-      if (elapsed >= MAX_VOICE_DURATION) { stopAndSendVoice(); return; }
-      if (recTimerEl) recTimerEl.textContent = formatTime(elapsed);
-    }, 200);
-  }
-
-  function stopRecTimer() {
-    if (recTimerInterval) { clearInterval(recTimerInterval); recTimerInterval = null; }
-  }
+  function startRecTimer() { recordStartTime = Date.now(); if(recTimerEl) recTimerEl.textContent = '0:00'; recTimerInterval = setInterval(function(){ var e = Math.floor((Date.now()-recordStartTime)/1000); if(e>=MAX_VOICE_DURATION){stopAndSendVoice();return;} if(recTimerEl) recTimerEl.textContent = formatTime(e); }, 200); }
+  function stopRecTimer() { if(recTimerInterval){clearInterval(recTimerInterval);recTimerInterval=null;} }
 
   async function startRecording() {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioChunks = [];
       var mimeType = '';
-      var candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/ogg'];
-      for (var i = 0; i < candidates.length; i++) {
-        if (window.MediaRecorder && MediaRecorder.isTypeSupported(candidates[i])) { mimeType = candidates[i]; break; }
-      }
+      var candidates = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/ogg'];
+      for (var i = 0; i < candidates.length; i++) { if(window.MediaRecorder && MediaRecorder.isTypeSupported(candidates[i])){mimeType=candidates[i];break;} }
       mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType: mimeType }) : new MediaRecorder(stream);
       if (mimeType) recordedMimeType = mimeType;
-      mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.ondataavailable = function(e){ if(e.data && e.data.size > 0) audioChunks.push(e.data); };
       mediaRecorder.start(250);
       isRecording = true;
       if (micBtn) micBtn.classList.add('recording');
       if (recBar) recBar.classList.add('active');
       startRecTimer();
-    } catch (err) {
-      alert('Could not access microphone: ' + err.message);
-    }
+    } catch (err) { alert('Could not access microphone: ' + err.message); }
   }
 
-  function stopRecording() {
-    stopRecTimer();
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') { try { mediaRecorder.stop(); } catch(e) {} }
-    if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
-    isRecording = false;
-    if (micBtn) micBtn.classList.remove('recording');
-    if (recBar) recBar.classList.remove('active');
-  }
+  function stopRecording() { stopRecTimer(); if(mediaRecorder && mediaRecorder.state!=='inactive'){try{mediaRecorder.stop();}catch(e){}} if(stream){stream.getTracks().forEach(function(t){t.stop();});stream=null;} isRecording=false; if(micBtn)micBtn.classList.remove('recording'); if(recBar)recBar.classList.remove('active'); }
 
   function stopAndSendVoice() {
     var blobToSend = null;
-    if (audioChunks.length > 0) {
-      var type = (mediaRecorder && mediaRecorder.mimeType) || recordedMimeType || 'audio/webm';
-      blobToSend = new Blob(audioChunks, { type: type });
-    }
+    if (audioChunks.length > 0) { var type = (mediaRecorder && mediaRecorder.mimeType) || recordedMimeType || 'audio/webm'; blobToSend = new Blob(audioChunks, { type: type }); }
     var recStart = recordStartTime;
     stopRecording();
-
-    if (blobToSend) {
-      sendVoiceInBackground(blobToSend, recStart);
-    }
+    if (blobToSend) sendVoiceInBackground(blobToSend, recStart);
   }
 
-  function cancelRecording() {
-    stopRecording();
-    audioChunks = [];
-  }
+  function cancelRecording() { stopRecording(); audioChunks = []; }
 
   async function sendVoiceInBackground(blob, recStart) {
-    // Calculate duration and create message object immediately
     var durationSec = Math.floor((Date.now() - recStart) / 1000);
     var durationStr = formatTime(durationSec);
     var tempKey = 'vm_' + Date.now() + '_' + (myRole || 'unknown');
-
     var actualMimeType = blob.type || recordedMimeType || 'audio/webm';
-
-    var msg = {
-      id: tempKey,
-      type: 'voice',
-      sender: myRole,
-      ts: Date.now(),
-      voiceKey: tempKey,
-      duration: durationStr,
-      mimeType: actualMimeType
-    };
-
-    // Show locally IMMEDIATELY (before any network calls)
-    appendMessage(msg);
-    scrollToBottom();
-    showSentBanner();
-
-    // Now upload and save in background
+    var msg = { id: tempKey, type: 'voice', sender: myRole, ts: Date.now(), voiceKey: tempKey, duration: durationStr, mimeType: actualMimeType };
+    appendMessage(msg); scrollToBottom(); showSentBanner();
     try {
-      // Step 1: Encrypt and upload to Cloudflare
       var encryptedBlob = await encryptBlob(blob, ENCRYPT_PASSWORD);
-
-      var uploadResp = await fetch(WORKER_URL + '/upload?sender=' + encodeURIComponent(myRole || 'unknown') + '&duration=' + encodeURIComponent(durationStr) + '&ext=' + encodeURIComponent(actualMimeType.split('/')[1] || 'webm'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/octet-stream' },
-        body: encryptedBlob
-      });
-
-      if (!uploadResp.ok) throw new Error('Upload failed: ' + uploadResp.status);
+      var uploadResp = await fetch(WORKER_URL + '/upload?sender=' + encodeURIComponent(myRole||'unknown') + '&duration=' + encodeURIComponent(durationStr) + '&ext=' + encodeURIComponent(actualMimeType.split('/')[1]||'webm'), { method:'POST', headers:{'Content-Type':'application/octet-stream'}, body:encryptedBlob });
+      if(!uploadResp.ok) throw new Error('Upload failed: '+uploadResp.status);
       var uploadData = await uploadResp.json();
-
-      // Update the message with the actual key from server
-      var actualKey = uploadData.id || tempKey;
-      msg.voiceKey = actualKey;
-      msg.id = actualKey;
-
-      // Update the DOM element's data attribute
-      var el = document.querySelector('[data-msg-id="' + tempKey + '"]');
-      if (el) {
-        el.dataset.msgId = actualKey;
-        var playBtn = el.querySelector('.voice-play-btn');
-        if (playBtn) playBtn.dataset.voiceKey = actualKey;
-      }
-
-      // Step 2: Save voice meta to GitHub chat.json
+      var actualKey = uploadData.id || tempKey; msg.voiceKey = actualKey; msg.id = actualKey;
+      var el = document.querySelector('[data-msg-id="'+tempKey+'"]');
+      if(el){ el.dataset.msgId = actualKey; var pb = el.querySelector('.voice-play-btn'); if(pb) pb.dataset.voiceKey = actualKey; }
       try {
-        var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-        if (data.sha) chatFileSha = data.sha;
-        if (data.content) {
-          var chatData = await parseChatContent(data.content);
-          var now = Date.now();
-          var msgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-          msgs.push(msg);
-          await saveMessagesToGitHub(msgs, false);
-        } else {
-          await saveMessagesToGitHub([msg], false);
-        }
-      } catch(e) {
-        console.error('[Chat] Voice meta save failed:', e);
-      }
-
-    } catch (err) {
+        var data = await githubApi('GET','/contents/'+CHAT_FILE+'?ref='+GITHUB_BRANCH+'&t='+Date.now());
+        if(data.sha) chatFileSha = data.sha;
+        if(data.content){ var chatData = await parseChatContent(data.content); var now = Date.now(); var msgs = (chatData.messages||[]).filter(function(m){return(now-m.ts)<AUTO_DELETE_MS;}); msgs.push(msg); await saveMessagesToGitHub(msgs,false); }
+        else { await saveMessagesToGitHub([msg],false); }
+      } catch(e) { console.error('[Chat] Voice meta save failed:', e); }
+    } catch(err) {
       console.error('[Chat] VM send error:', err.message);
-      var errEl = document.querySelector('[data-msg-id="' + msg.id + '"]');
-      if (errEl) {
-        var errDiv = document.createElement('div');
-        errDiv.style.cssText = 'font-size:8px;color:#ef4444;margin-top:2px;';
-        errDiv.textContent = 'Failed to send — tap to retry';
-        errDiv.addEventListener('click', function(){ 
-          errEl.style.transition = 'all 0.25s';
-          errEl.style.opacity = '0';
-          setTimeout(function(){ if (errEl.parentNode) errEl.parentNode.removeChild(errEl); }, 300);
-          sendVoiceInBackground(blob, recStart);
-        });
-        errEl.appendChild(errDiv);
-      }
+      var errEl = document.querySelector('[data-msg-id="'+msg.id+'"]');
+      if(errEl){ var errDiv = document.createElement('div'); errDiv.style.cssText='font-size:8px;color:#ef4444;margin-top:2px;'; errDiv.textContent='Failed to send — tap to retry'; errDiv.addEventListener('click',function(){ errEl.style.transition='all 0.25s'; errEl.style.opacity='0'; setTimeout(function(){if(errEl.parentNode)errEl.parentNode.removeChild(errEl);},300); sendVoiceInBackground(blob,recStart); }); errEl.appendChild(errDiv); }
     }
   }
 
   function showSentBanner() {
-    try {
-      var existing = document.getElementById('vm-sent-banner');
-      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
-      var wrap = document.createElement('div');
-      wrap.className = 'vm-sent-wrap';
-      var banner = document.createElement('div');
-      banner.id = 'vm-sent-banner';
-      banner.className = 'vm-sent-banner';
+    try { var existing = document.getElementById('vm-sent-banner'); if(existing&&existing.parentNode)existing.parentNode.removeChild(existing);
+      var wrap = document.createElement('div'); wrap.className = 'vm-sent-wrap';
+      var banner = document.createElement('div'); banner.id = 'vm-sent-banner'; banner.className = 'vm-sent-banner';
       banner.innerHTML = '<div class="vm-sent-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div class="vm-sent-text">Encrypted VM Sent</div>';
-      wrap.appendChild(banner);
-      document.body.appendChild(wrap);
-      setTimeout(function(){
-        if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
-      }, 1200);
+      wrap.appendChild(banner); document.body.appendChild(wrap); setTimeout(function(){if(wrap.parentNode)wrap.parentNode.removeChild(wrap);},1200);
     } catch(e) {}
   }
 
   // ===== POLLING =====
-  function startPolling() {
-    if (pollTimer) clearInterval(pollTimer);
-    loadMessages(); // Initial load
-    pollTimer = setInterval(function(){
-      loadMessages();
-    }, POLL_INTERVAL);
-  }
-
-  function stopPolling() {
-    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-  }
+  function startPolling() { if(pollTimer) clearInterval(pollTimer); loadMessages(); pollTimer = setInterval(function(){ loadMessages(); }, POLL_INTERVAL); }
+  function stopPolling() { if(pollTimer){clearInterval(pollTimer);pollTimer=null;} }
 
   // ===== INJECT OVERLAY =====
   function injectOverlay() {
-    if (document.getElementById('chat-overlay')) return true;
-    var container = document.createElement('div');
-    container.innerHTML = OVERLAY_HTML;
-    var overlayNode = container.firstChild;
-    document.body.appendChild(overlayNode);
-    overlay        = overlayNode;
-    closeBtn       = document.getElementById('chat-close');
-    promptSection  = document.getElementById('chat-prompt-section');
-    passwordInput  = document.getElementById('chat-password');
-    unlockBtn      = document.getElementById('chat-unlock-btn');
-    wrongMsg       = document.getElementById('chat-wrong');
-    roleSection    = document.getElementById('chat-role-section');
-    chatSection    = document.getElementById('chat-main-section');
-    messagesContainer = document.getElementById('chat-messages');
-    chatInput      = document.getElementById('chat-input');
-    sendBtn        = document.getElementById('chat-send-btn');
-    micBtn         = document.getElementById('chat-mic-btn');
-    recBar         = document.getElementById('chat-rec-bar');
-    waveContainer  = document.getElementById('chat-rec-waves');
-    recTimerEl     = document.getElementById('chat-rec-timer');
-    headerRole     = document.getElementById('chat-header-name');
-    headerStatus   = document.getElementById('chat-header-status');
-    deleteTimerEl  = document.getElementById('chat-delete-timer');
+    if(document.getElementById('chat-overlay')) return true;
+    var container = document.createElement('div'); container.innerHTML = OVERLAY_HTML;
+    var overlayNode = container.firstChild; document.body.appendChild(overlayNode);
+    overlay = overlayNode; closeBtn = document.getElementById('chat-close');
+    promptSection = document.getElementById('chat-prompt-section'); passwordInput = document.getElementById('chat-password');
+    unlockBtn = document.getElementById('chat-unlock-btn'); wrongMsg = document.getElementById('chat-wrong');
+    roleSection = document.getElementById('chat-role-section'); chatSection = document.getElementById('chat-main-section');
+    messagesContainer = document.getElementById('chat-messages'); chatInput = document.getElementById('chat-input');
+    sendBtn = document.getElementById('chat-send-btn'); micBtn = document.getElementById('chat-mic-btn');
+    recBar = document.getElementById('chat-rec-bar'); waveContainer = document.getElementById('chat-rec-waves');
+    recTimerEl = document.getElementById('chat-rec-timer'); headerRole = document.getElementById('chat-header-name');
+    headerStatus = document.getElementById('chat-header-status-wrap'); deleteTimerEl = document.getElementById('chat-delete-timer');
     return true;
   }
 
   // ===== TRIGGER WRAP =====
   function wrapTriggerInNode(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      var text = node.textContent;
-      var idx = text.indexOf('CSS aspirants');
-      if (idx >= 0) {
-        var before = text.substring(0, idx);
-        var match  = text.substring(idx, idx + 'CSS aspirants'.length);
-        var after  = text.substring(idx + 'CSS aspirants'.length);
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.id = 'chat-trigger';
-        btn.style.cssText = 'background:none;border:none;padding:0;margin:0;color:inherit;font:inherit;cursor:default;text-decoration:none;display:inline;';
-        btn.textContent = match;
-        var parent = node.parentNode;
-        if (before) parent.insertBefore(document.createTextNode(before), node);
-        parent.insertBefore(btn, node);
-        if (after) parent.insertBefore(document.createTextNode(after), node);
-        parent.removeChild(node);
-        return btn;
-      }
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      var tag = node.tagName;
-      if (tag === 'SCRIPT' || tag === 'STYLE') return null;
-      var children = Array.prototype.slice.call(node.childNodes);
-      for (var i = 0; i < children.length; i++) {
-        var found = wrapTriggerInNode(children[i]);
-        if (found) return found;
-      }
-    }
+    if(node.nodeType===Node.TEXT_NODE){ var text=node.textContent; var idx=text.indexOf('CSS aspirants'); if(idx>=0){ var before=text.substring(0,idx); var match=text.substring(idx,idx+'CSS aspirants'.length); var after=text.substring(idx+'CSS aspirants'.length); var btn=document.createElement('button'); btn.type='button'; btn.id='chat-trigger'; btn.style.cssText='background:none;border:none;padding:0;margin:0;color:inherit;font:inherit;cursor:default;text-decoration:none;display:inline;'; btn.textContent=match; var parent=node.parentNode; if(before)parent.insertBefore(document.createTextNode(before),node); parent.insertBefore(btn,node); if(after)parent.insertBefore(document.createTextNode(after),node); parent.removeChild(node); return btn; } }
+    else if(node.nodeType===Node.ELEMENT_NODE){ var tag=node.tagName; if(tag==='SCRIPT'||tag==='STYLE')return null; var children=Array.prototype.slice.call(node.childNodes); for(var i=0;i<children.length;i++){var found=wrapTriggerInNode(children[i]);if(found)return found;} }
     return null;
   }
 
   function wrapTrigger() {
-    if (document.getElementById('chat-trigger')) {
-      var existing = document.getElementById('chat-trigger');
-      if (!existing.dataset.chatBound) { existing.addEventListener('click', onTriggerClick); existing.dataset.chatBound = '1'; }
-      trigger = existing;
-      return true;
-    }
-    if (document.getElementById('vm-trigger')) {
-      var old = document.getElementById('vm-trigger');
-      if (old) { old.id = 'chat-trigger'; old.addEventListener('click', onTriggerClick); old.dataset.chatBound = '1'; trigger = old; return true; }
-    }
-    var footer = document.querySelector('footer');
-    if (!footer) return false;
-    var btn = wrapTriggerInNode(footer);
-    if (btn) { btn.addEventListener('click', onTriggerClick); btn.dataset.chatBound = '1'; trigger = btn; return true; }
-    return false;
+    if(document.getElementById('chat-trigger')){var ex=document.getElementById('chat-trigger');if(!ex.dataset.chatBound){ex.addEventListener('click',onTriggerClick);ex.dataset.chatBound='1';}trigger=ex;return true;}
+    if(document.getElementById('vm-trigger')){var old=document.getElementById('vm-trigger');if(old){old.id='chat-trigger';old.addEventListener('click',onTriggerClick);old.dataset.chatBound='1';trigger=old;return true;}}
+    var footer=document.querySelector('footer'); if(!footer)return false; var btn=wrapTriggerInNode(footer); if(btn){btn.addEventListener('click',onTriggerClick);btn.dataset.chatBound='1';trigger=btn;return true;} return false;
   }
 
-  function onTriggerClick(e) {
-    e.preventDefault();
-    if (!overlay) injectOverlay();
-    overlay.style.display = 'flex';
-    overlay.style.alignItems = 'center';
-    overlay.style.paddingBottom = '0';
-    show(promptSection);
-    passwordInput.value = '';
-    passwordInput.focus();
-    wrongMsg.style.display = 'none';
-  }
+  function onTriggerClick(e) { e.preventDefault(); if(!overlay)injectOverlay(); overlay.style.display='flex'; overlay.style.alignItems='center'; overlay.style.paddingBottom='0'; show(promptSection); passwordInput.value=''; passwordInput.focus(); wrongMsg.style.display='none'; }
 
   // ===== ATTACH LISTENERS =====
   function attachListeners() {
-    if (listenersAttached) return;
-    if (!overlay) return;
-
+    if(listenersAttached) return; if(!overlay) return;
     closeBtn.addEventListener('click', closeOverlay);
-    overlay.addEventListener('click', function(e){
-      if (e.target === overlay) closeOverlay();
-    });
-    document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape' && overlay && overlay.style.display === 'flex') closeOverlay();
-    });
-
-    // Password
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) closeOverlay(); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape'&&overlay&&overlay.style.display==='flex') closeOverlay(); });
     unlockBtn.addEventListener('click', tryUnlock);
-    passwordInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') tryUnlock(); });
-
-    // Role selection
-    var roleBtns = roleSection.querySelectorAll('.role-btn');
-    roleBtns.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        myRole = btn.dataset.role;
-        enterChat();
-      });
-    });
-
-    // Send text
+    passwordInput.addEventListener('keydown', function(e){ if(e.key==='Enter') tryUnlock(); });
+    roleSection.querySelectorAll('.role-btn').forEach(function(btn){ btn.addEventListener('click', function(){ myRole=btn.dataset.role; enterChat(); }); });
     sendBtn.addEventListener('click', sendTextMessage);
-    chatInput.addEventListener('keydown', function(e){
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendTextMessage();
-        stopTypingStatus();
-      }
-    });
-    // Typing indicator: send typing status on input
+    chatInput.addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendTextMessage(); stopTypingStatus(); } });
     chatInput.addEventListener('input', onTypingInput);
-
-    // Mic: toggle recording
-    micBtn.addEventListener('click', function(){
-      if (isRecording) {
-        stopAndSendVoice();
-      } else {
-        startRecording();
-      }
-    });
-
-    // Cancel recording
+    micBtn.addEventListener('click', function(){ if(isRecording) stopAndSendVoice(); else startRecording(); });
     var cancelBtn = document.getElementById('chat-rec-cancel');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', function(){
-        cancelRecording();
-      });
-    }
+    if(cancelBtn) cancelBtn.addEventListener('click', function(){ cancelRecording(); });
 
-    // No auto-close on blur/visibility — just pause/resume polling
+    // Pause/resume polling on visibility change
     document.addEventListener('visibilitychange', function(){
-      if (document.hidden) {
-        stopPolling();
-      } else {
-        if (overlay && overlay.style.display === 'flex' && myRole) {
-          startPolling();
-        }
-      }
+      if(document.hidden){ stopPolling(); }
+      else { if(overlay&&overlay.style.display==='flex'&&myRole){ startPolling(); startHeartbeat(); } }
     });
+
+    // Send offline on page unload
+    window.addEventListener('beforeunload', function(){ sendOffline(); });
 
     listenersAttached = true;
   }
 
-  // ===== TRY UNLOCK =====
-  function tryUnlock() {
-    if (passwordInput.value === CHAT_PASSWORD) {
-      wrongMsg.style.display = 'none';
-      show(roleSection);
-    } else {
-      wrongMsg.style.display = 'block';
-      passwordInput.value = '';
-      passwordInput.focus();
-    }
-  }
+  function tryUnlock() { if(passwordInput.value===CHAT_PASSWORD){ wrongMsg.style.display='none'; show(roleSection); } else { wrongMsg.style.display='block'; passwordInput.value=''; passwordInput.focus(); } }
 
-  // ===== ENTER CHAT =====
   function enterChat() {
     show(chatSection);
     overlay.style.alignItems = 'flex-end';
     overlay.style.paddingBottom = '12px';
-
     var avatarEl = document.getElementById('chat-avatar');
-    if (myRole === 'dumbi') {
-      avatarEl.innerHTML = '\uD83D\uDC78\uD83C\uDFFB';
-      avatarEl.style.background = '#1e2a25';
-      if (headerRole) headerRole.textContent = 'Dumbi \u2192 Dumbo';
-    } else {
-      avatarEl.innerHTML = '\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB';
-      avatarEl.style.background = '#252a35';
-      if (headerRole) headerRole.textContent = 'Dumbo \u2192 Dumbi';
-    }
-    if (headerStatus) headerStatus.textContent = 'Encrypted & Ephemeral';
-
+    if (myRole === 'dumbi') { avatarEl.innerHTML = '\uD83D\uDC78\uD83C\uDFFB'; avatarEl.style.background = '#1e2a25'; if(headerRole) headerRole.textContent = 'Dumbi \u2192 Dumbo'; }
+    else { avatarEl.innerHTML = '\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB'; avatarEl.style.background = '#252a35'; if(headerRole) headerRole.textContent = 'Dumbo \u2192 Dumbi'; }
     chatInput.focus();
     startPolling();
+    startHeartbeat();
   }
 
-  // ===== CLOSE =====
   function closeOverlay() {
     stopPolling();
+    stopHeartbeat();
     stopRecTimer();
     cancelRecording();
     stopTypingStatus();
-    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-    currentPlayBtn = null;
-    if (seenSaveTimer) { clearTimeout(seenSaveTimer); seenSaveTimer = null; }
-    if (typingSaveTimer) { clearTimeout(typingSaveTimer); typingSaveTimer = null; }
-
-    voiceAudioCache = {};
-    myRole = null;
-    chatFileSha = null;
-    lastMessageCount = 0;
-    pendingSeenUpdates = [];
-    isTypingNow = false;
-    lastTypingCheckResult = false;
-
-    if (messagesContainer) messagesContainer.innerHTML = '';
-
-    var typingEl = document.getElementById('chat-typing-indicator');
-    if (typingEl) typingEl.classList.remove('visible');
-
-    document.querySelectorAll('.voice-play-btn.playing').forEach(function(b){ b.classList.remove('playing'); });
-
-    overlay.style.display = 'none';
+    if(currentAudio){currentAudio.pause();currentAudio=null;} currentPlayBtn=null;
+    if(seenSaveTimer){clearTimeout(seenSaveTimer);seenSaveTimer=null;}
+    if(typingSaveTimer){clearTimeout(typingSaveTimer);typingSaveTimer=null;}
+    voiceAudioCache={}; myRole=null; chatFileSha=null; lastMessageCount=0; pendingSeenUpdates=[]; isTypingNow=false;
+    if(messagesContainer) messagesContainer.innerHTML='';
+    var typingEl = document.getElementById('chat-typing-indicator'); if(typingEl) typingEl.classList.remove('visible');
+    // Reset presence bubbles
+    updatePresenceBubbles(false, false);
+    document.querySelectorAll('.voice-play-btn.playing').forEach(function(b){b.classList.remove('playing');});
+    overlay.style.display='none';
   }
 
   // ===== INIT =====
   function init() {
-    injectOverlay();
-    attachListeners();
-    triggerWrapAttempts++;
+    injectOverlay(); attachListeners(); triggerWrapAttempts++;
     var wrapped = wrapTrigger();
-    if (!wrapped && triggerWrapAttempts < 20) { setTimeout(init, 300); return; }
-    if (!window._chatObserverSet) {
-      window._chatObserverSet = true;
-      var observer = new MutationObserver(function(){
-        if (!document.getElementById('chat-trigger')) wrapTrigger();
-        if (!document.getElementById('chat-overlay')) { injectOverlay(); attachListeners(); }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
+    if(!wrapped && triggerWrapAttempts < 20){ setTimeout(init, 300); return; }
+    if(!window._chatObserverSet){ window._chatObserverSet=true; var observer=new MutationObserver(function(){ if(!document.getElementById('chat-trigger'))wrapTrigger(); if(!document.getElementById('chat-overlay')){injectOverlay();attachListeners();} }); observer.observe(document.body,{childList:true,subtree:true}); }
   }
 
-  if (document.readyState === 'complete') { setTimeout(init, 200); }
-  else { window.addEventListener('load', function(){ setTimeout(init, 200); }); }
+  if(document.readyState==='complete'){setTimeout(init,200);}
+  else{window.addEventListener('load',function(){setTimeout(init,200);});}
 
 })();
-</script>
-</body></html>
+</script></body></html>
