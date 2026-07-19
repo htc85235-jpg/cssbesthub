@@ -55,48 +55,58 @@
     + '<div id="vm-overlay" style="display:none;position:fixed;inset:0;background:rgba(8,10,14,0.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:99998;align-items:flex-end;justify-content:center;padding:0 12px 20px;">'
     + '  <style>'
     + '    #vm-modal, #vm-modal * { font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif; }'
-    + '    #vm-modal { background:#1a1d24; color:#c9d1e0; border-radius:20px 20px 16px 16px; max-width:400px; width:100%; padding:22px 18px 16px; position:relative; max-height:85vh; overflow-y:auto; box-shadow: 10px 10px 20px #0d0f14, -10px -10px 20px #2a2f3a; }'
-    + '    #vm-close { position:absolute; top:10px; right:10px; width:28px; height:28px; border-radius:50%; background:#1a1d24; border:none; color:#a8b0c0; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-modal { background:#1a1d24; color:#c9d1e0; border-radius:16px 16px 12px 12px; max-width:380px; width:100%; padding:10px 10px 8px; position:relative; max-height:85vh; overflow-y:auto; box-shadow: 8px 8px 16px #0d0f14, -8px -8px 16px #2a2f3a; }'
+    + '    #vm-close { position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%; background:#1a1d24; border:none; color:#a8b0c0; font-size:11px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; transition:all 0.15s; z-index:2; }'
     + '    #vm-close:active { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; }'
-    + '    #vm-modal h2 { margin:0 0 14px; font-size:16px; font-weight:700; color:#c9d1e0; text-align:center; }'
-    + '    #vm-password { width:100%; background:#1a1d24; border:none; border-radius:12px; padding:12px 14px; color:#c9d1e0; font-size:15px; outline:none; margin-bottom:12px; letter-spacing:2px; box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; transition:all 0.2s; }'
+    + '    #vm-modal h2 { margin:0 0 8px; font-size:14px; font-weight:700; color:#c9d1e0; text-align:center; }'
+    + '    #vm-password { width:100%; background:#1a1d24; border:none; border-radius:10px; padding:10px 12px; color:#c9d1e0; font-size:14px; outline:none; margin-bottom:8px; letter-spacing:2px; box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; transition:all 0.2s; }'
     + '    #vm-password:focus { color:#d4af37; }'
     + '    #vm-password::placeholder { color:#555c6e; letter-spacing:4px; }'
-    + '    #vm-unlock-btn { width:100%; background:#1a1d24; color:#c9d1e0; border:none; border-radius:12px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-unlock-btn { width:100%; background:#1a1d24; color:#c9d1e0; border:none; border-radius:10px; padding:10px; font-size:13px; font-weight:700; cursor:pointer; box-shadow: 4px 4px 8px #0d0f14, -4px -4px 8px #2a2f3a; transition:all 0.15s; }'
     + '    #vm-unlock-btn:hover { color:#d4af37; }'
     + '    #vm-unlock-btn:active { box-shadow: inset 5px 5px 10px #0d0f14, inset -5px -5px 10px #2a2f3a; }'
     + '    #vm-wrong { color:#e57373; font-size:12px; margin:8px 0 0; text-align:center; }'
-    + '    .vault-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }'
-    + '    .vault-countdown { font-size:12px; font-weight:600; color:#d4af37; font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:3px; }'
-    + '    .vault-countdown svg { width:12px; height:12px; }'
+    + '    .vault-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; padding:2px 2px 4px; border-bottom:1px solid rgba(42,47,58,0.5); }'
+    + '    .vault-countdown { font-size:9px; font-weight:600; color:#d4af37; font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:2px; }'
+    + '    .vault-countdown svg { width:9px; height:9px; }'
     + '    .vault-countdown.urgent { color:#ef4444; }'
-    + '    .vault-sync { font-size:10px; color:#555c6e; display:flex; align-items:center; gap:3px; }'
-    + '    .vault-sync svg { width:11px; height:11px; opacity:0.5; }'
-    + '    .vault-cols { display:flex; gap:8px; }'
+    + '    .vault-sync { font-size:9px; color:#555c6e; display:flex; align-items:center; gap:2px; }'
+    + '    .vault-sync svg { width:9px; height:9px; opacity:0.5; }'
+    + '    .vault-cols { display:flex; gap:5px; }'
     + '    .vault-col { flex:1; display:flex; flex-direction:column; }'
-    + '    .vault-label { font-size:10px; font-weight:700; color:#7a8394; margin-bottom:4px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; }'
-    + '    .vault-dot { width:6px; height:6px; border-radius:50%; display:inline-block; }'
-    + '    .vault-ta { width:100%; background:#1a1d24; border:none; border-radius:12px; padding:10px 12px; color:#c9d1e0; font-size:13px; outline:none; resize:none; font-family:inherit; box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; flex:1; min-height:160px; line-height:1.5; }'
+    + '    .vault-label { font-size:9px; font-weight:700; color:#7a8394; margin-bottom:2px; letter-spacing:0.5px; display:flex; align-items:center; gap:3px; }'
+    + '    .vault-dot { width:5px; height:5px; border-radius:50%; display:inline-block; }'
+    + '    .vault-ta { width:100%; background:#1a1d24; border:none; border-radius:10px; padding:8px 10px; color:#c9d1e0; font-size:13px; outline:none; resize:none; font-family:inherit; box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; flex:1; min-height:180px; line-height:1.45; }'
     + '    .vault-ta::placeholder { color:#555c6e; }'
     + '    .vault-ta:focus { color:#d4af37; }'
-    + '    .vault-bottom { display:flex; gap:8px; margin-top:10px; align-items:center; }'
-    + '    .vault-rec-bar { display:flex; align-items:center; gap:6px; background:#1a1d24; border-radius:10px; padding:5px 8px; box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; flex:1; transition:all 0.2s; }'
-    + '    .vault-rec-bar.recording { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a, 0 0 10px rgba(239,68,68,0.12); }'
-    + '    .vault-mic-sm { width:32px; height:32px; border-radius:50%; background:#252830; border:none; color:#d4af37; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; flex-shrink:0; transition:all 0.15s; }'
+    + '    .vault-bottom { display:flex; gap:6px; margin-top:5px; align-items:center; }'
+    + '    .vault-mic-wrap { flex-shrink:0; }'
+    + '    .vault-mic-sm { width:30px; height:30px; border-radius:50%; background:#252830; border:none; color:#d4af37; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; position:relative; z-index:1; }'
     + '    .vault-mic-sm:hover { color:#ef4444; }'
-    + '    .vault-mic-sm.recording { color:#ef4444; animation: pulse-rec 1.5s ease-in-out infinite; }'
-    + '    @keyframes pulse-rec { 0%,100%{ box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; } 50%{ box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a, 0 0 10px rgba(239,68,68,0.25); } }'
-    + '    .vault-mic-sm svg { width:14px; height:14px; }'
-    + '    .vault-waves { flex:1; display:flex; align-items:center; gap:2px; height:18px; }'
-    + '    .vault-wb { width:2px; background:#3ba776; border-radius:2px; animation: vwave 1.2s ease-in-out infinite; }'
-    + '    .vault-wb:nth-child(1){height:5px;animation-delay:0s} .vault-wb:nth-child(2){height:12px;animation-delay:.1s} .vault-wb:nth-child(3){height:17px;animation-delay:.15s} .vault-wb:nth-child(4){height:9px;animation-delay:.25s} .vault-wb:nth-child(5){height:14px;animation-delay:.35s} .vault-wb:nth-child(6){height:7px;animation-delay:.45s} .vault-wb:nth-child(7){height:12px;animation-delay:.55s} .vault-wb:nth-child(8){height:5px;animation-delay:.65s}'
-    + '    @keyframes vwave { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(0.35)} }'
-    + '    .vault-rec-timer { font-size:10px; color:#7a8394; font-variant-numeric:tabular-nums; white-space:nowrap; }'
-    + '    .vault-save-btn { background:#1a1d24; color:#2e8b6a; border:none; border-radius:10px; padding:9px 14px; font-size:12px; font-weight:700; cursor:pointer; box-shadow: 4px 4px 8px #0d0f14, -4px -4px 8px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
+    + '    .vault-mic-sm.recording { color:#ef4444; animation: pulse-rec 1.5s ease-in-out infinite; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a, 0 0 8px rgba(239,68,68,0.2); }'
+    + '    @keyframes pulse-rec { 0%,100%{ box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a, 0 0 8px rgba(239,68,68,0.2); } 50%{ box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a, 0 0 14px rgba(239,68,68,0.35); } }'
+    + '    .vault-mic-sm svg { width:13px; height:13px; }'
+    + '    .vault-rec-bar { display:flex; align-items:center; gap:5px; background:#1a1d24; border-radius:8px; padding:4px 7px; box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; flex:1; min-height:24px; transition:all 0.2s; }'
+    + '    .vault-rec-bar.recording { box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a, 0 0 8px rgba(239,68,68,0.1); }'
+    + '    .vault-waves { flex:1; display:flex; align-items:center; gap:1.5px; height:14px; overflow:hidden; }'
+    + '    .vault-waves.idle { opacity:0.2; }'
+    + '    .vault-waves.idle .vault-wb { animation:none !important; height:3px !important; }'
+    + '    .vault-wb { width:1.5px; background:#3ba776; border-radius:1px; animation: vwave 1.2s ease-in-out infinite; transition:height 0.2s; }'
+    + '    .vault-wb:nth-child(1){height:4px;animation-delay:0s} .vault-wb:nth-child(2){height:9px;animation-delay:.1s} .vault-wb:nth-child(3){height:12px;animation-delay:.15s} .vault-wb:nth-child(4){height:7px;animation-delay:.25s} .vault-wb:nth-child(5){height:10px;animation-delay:.35s} .vault-wb:nth-child(6){height:5px;animation-delay:.45s} .vault-wb:nth-child(7){height:9px;animation-delay:.55s} .vault-wb:nth-child(8){height:4px;animation-delay:.65s}'
+    + '    @keyframes vwave { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(0.3)} }'
+    + '    .vault-rec-timer { font-size:9px; color:#7a8394; font-variant-numeric:tabular-nums; white-space:nowrap; }'
+    + '    .vault-save-btn { background:#1a1d24; color:#2e8b6a; border:none; border-radius:8px; padding:7px 12px; font-size:11px; font-weight:700; cursor:pointer; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
     + '    .vault-save-btn:hover { color:#3fbf8e; }'
-    + '    .vault-save-btn:active { box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; }'
+    + '    .vault-save-btn:active { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; }'
     + '    .vault-save-btn.saving { color:#d4af37; }'
-    + '    .vm-sent-banner { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:999999; color:#0000; background:linear-gradient(120deg,#0e6b3d 0%,#1aa05a 40%,#c9a227 100%); -webkit-background-clip:text; background-clip:text; font-family:Georgia,Playfair,serif; font-size:42px; font-weight:700; padding:0; line-height:1.1; pointer-events:none; letter-spacing:1px; text-shadow:none; -webkit-text-fill-color:transparent; }'
+    + '    .vm-sent-wrap { position:fixed; inset:0; z-index:999999; display:flex; align-items:center; justify-content:center; pointer-events:none; perspective:800px; }'
+    + '    .vm-sent-banner { display:flex; flex-direction:column; align-items:center; gap:10px; animation: vmSentPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; transform: scale(0.3) rotateX(40deg); opacity:0; }'
+    + '    .vm-sent-circle { width:60px; height:60px; border-radius:50%; background: linear-gradient(145deg, #1a3d2a, #0e2618); box-shadow: 6px 6px 12px rgba(0,0,0,0.6), -3px -3px 8px rgba(40,80,55,0.15), inset 2px 2px 4px rgba(134,239,172,0.15), inset -2px -2px 4px rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; transform: translateZ(20px); }'
+    + '    .vm-sent-circle svg { width:28px; height:28px; color:#86efac; filter: drop-shadow(0 0 4px rgba(134,239,172,0.4)); animation: vmCheckDraw 0.4s ease 0.3s forwards; stroke-dasharray:30; stroke-dashoffset:30; }'
+    + '    .vm-sent-text { font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif; font-size:18px; font-weight:700; color:#d4edda; text-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 0 12px rgba(134,239,172,0.25); letter-spacing:0.5px; transform: translateZ(10px); animation: vmTextFade 0.3s ease 0.35s forwards; opacity:0; }'
+    + '    @keyframes vmSentPop { 0%{transform:scale(0.3) rotateX(40deg);opacity:0} 60%{transform:scale(1.08) rotateX(-5deg);opacity:1} 100%{transform:scale(1) rotateX(0);opacity:1} }'
+    + '    @keyframes vmCheckDraw { to{stroke-dashoffset:0} }'
+    + '    @keyframes vmTextFade { from{opacity:0;transform:translateZ(10px) translateY(6px)} to{opacity:1;transform:translateZ(10px) translateY(0)} }'
     + '  </style>'
     + '  <div id="vm-modal">'
     + '    <button id="vm-close" aria-label="Close">&times;</button>'
@@ -122,14 +132,16 @@
     + '        </div>'
     + '      </div>'
     + '      <div class="vault-bottom">'
-    + '        <div id="vm-rec-bar" class="vault-rec-bar">'
+    + '        <div class="vault-mic-wrap">'
     + '          <button id="vm-mic-btn" class="vault-mic-sm" type="button">'
     + '            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>'
     + '          </button>'
-    + '          <div id="vm-waves" class="vault-waves">'
+    + '        </div>'
+    + '        <div id="vm-rec-bar" class="vault-rec-bar">'
+    + '          <div id="vm-waves" class="vault-waves idle">'
     + '            <div class="vault-wb"></div><div class="vault-wb"></div><div class="vault-wb"></div><div class="vault-wb"></div><div class="vault-wb"></div><div class="vault-wb"></div><div class="vault-wb"></div><div class="vault-wb"></div>'
     + '          </div>'
-    + '          <div id="vm-rec-timer" class="vault-rec-timer">0:00</div>'
+    + '          <div id="vm-rec-timer" class="vault-rec-timer"></div>'
     + '        </div>'
     + '        <button id="vm-save-btn" class="vault-save-btn" type="button">Save</button>'
     + '      </div>'
@@ -419,6 +431,7 @@
     isRecording = false;
     if (micBtn) micBtn.classList.remove('recording');
     if (recBar) recBar.classList.remove('recording');
+    if (waveContainer) waveContainer.classList.add('idle');
   }
 
   function tryUnlock() {
@@ -470,6 +483,7 @@
       isRecording = true;
       if (micBtn) micBtn.classList.add('recording');
       if (recBar) recBar.classList.add('recording');
+      if (waveContainer) waveContainer.classList.remove('idle');
       startRecTimer();
     } catch (err) {
       alert('Could not access microphone: ' + err.message);
@@ -483,6 +497,7 @@
     isRecording = false;
     if (micBtn) micBtn.classList.remove('recording');
     if (recBar) recBar.classList.remove('recording');
+    if (waveContainer) waveContainer.classList.add('idle');
   }
 
   // Stop recording, then immediately send
@@ -555,14 +570,17 @@
     try {
       var existing = document.getElementById('vm-sent-banner');
       if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      var wrap = document.createElement('div');
+      wrap.className = 'vm-sent-wrap';
       var banner = document.createElement('div');
       banner.id = 'vm-sent-banner';
       banner.className = 'vm-sent-banner';
-      banner.textContent = 'Encrypted VM Sent';
-      document.body.appendChild(banner);
+      banner.innerHTML = '<div class="vm-sent-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div class="vm-sent-text">Encrypted VM Sent</div>';
+      wrap.appendChild(banner);
+      document.body.appendChild(wrap);
       setTimeout(function(){
-        if (banner.parentNode) banner.parentNode.removeChild(banner);
-      }, 1000);
+        if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      }, 1200);
     } catch(e) {}
   }
 
