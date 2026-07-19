@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Aspirants Vault — 12 Color Variations</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0f14; color: #c9d1e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; }
+  h1 { text-align: center; font-size: 22px; margin-bottom: 6px; color: #e2e8f0; }
+  .subtitle { text-align: center; font-size: 13px; color: #555c6e; margin-bottom: 30px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; max-width: 1400px; margin: 0 auto; }
+  .card { border-radius: 16px; padding: 16px; position: relative; }
+  .card-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; opacity: 0.7; }
+
+  /* Mini vault mockup */
+  .vault { border-radius: 14px; padding: 10px 10px 8px; position: relative; max-width: 340px; margin: 0 auto; }
+  .vault-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; padding: 0 2px 3px; border-bottom: 1px solid rgba(255,255,255,0.06); line-height: 1; }
+  .vault-countdown { font-size: 8px; font-weight: 600; display: flex; align-items: center; gap: 2px; }
+  .vault-countdown svg { width: 8px; height: 8px; }
+  .vault-sync { font-size: 8px; opacity: 0.5; display: flex; align-items: center; gap: 2px; }
+  .vault-sync svg { width: 8px; height: 8px; }
+  .vault-cols { display: flex; gap: 5px; }
+  .vault-col { flex: 1; display: flex; flex-direction: column; }
+  .vault-label { font-size: 9px; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 3px; }
+  .vault-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+  .vault-ta { width: 100%; border: none; border-radius: 10px; padding: 8px 10px; font-size: 11px; outline: none; resize: none; font-family: inherit; flex: 1; min-height: 90px; line-height: 1.45; }
+  .vault-ta::placeholder { opacity: 0.4; }
+  .vault-bottom { display: flex; gap: 6px; margin-top: 5px; align-items: center; }
+  .vault-mic-sm { width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; }
+  .vault-mic-sm svg { width: 15px; height: 15px; }
+  .vault-rec-bar { display: flex; align-items: center; gap: 5px; border-radius: 8px; padding: 4px 7px; flex: 1; min-height: 24px; }
+  .vault-waves { flex: 1; display: flex; align-items: center; gap: 1.5px; height: 14px; overflow: hidden; opacity: 0.25; }
+  .vault-wb { width: 1.5px; border-radius: 1px; }
+  .vault-wb:nth-child(1){height:4px} .vault-wb:nth-child(2){height:9px} .vault-wb:nth-child(3){height:12px} .vault-wb:nth-child(4){height:7px} .vault-wb:nth-child(5){height:10px} .vault-wb:nth-child(6){height:5px} .vault-wb:nth-child(7){height:9px} .vault-wb:nth-child(8){height:4px}
+  .vault-rec-timer { font-size: 9px; opacity: 0.4; white-space: nowrap; }
+  .vault-save-btn { border: none; border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<h1>CSS Aspirants Vault — 12 Color Variations</h1>
+<p class="subtitle">Pick your favourite. No changes to the live site until you decide.</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const variations = [
+  {
+    name: "Obsidian Gold",
+    bg: "#1a1d24", accent: "#d4af37", text: "#c9d1e0", shadowD: "#0d0f14", shadowL: "#2a2f3a",
+    taBg: "#1a1d24", taText: "#c9d1e0", micBg: "#252830", micColor: "#d4af37", barBg: "#1a1d24",
+    saveColor: "#2e8b6a", dot1: "#3ba776", dot2: "#d4af37", label: "#7a8394", waveBg: "#3ba776",
+    syncColor: "#555c6e", cardBg: "#12141a", countdownColor: "#d4af37"
+  },
+  {
+    name: "Midnight Emerald",
+    bg: "#0f1a17", accent: "#34d399", text: "#c6ddd4", shadowD: "#060e0b", shadowL: "#1a2f27",
+    taBg: "#0f1a17", taText: "#c6ddd4", micBg: "#162922", micColor: "#34d399", barBg: "#0f1a17",
+    saveColor: "#34d399", dot1: "#34d399", dot2: "#6ee7b7", label: "#5e8a78", waveBg: "#34d399",
+    syncColor: "#4a6e60", cardBg: "#0a120f", countdownColor: "#34d399"
+  },
+  {
+    name: "Crimson Night",
+    bg: "#1a1215", accent: "#f43f5e", text: "#e0c9cf", shadowD: "#0e080a", shadowL: "#2f1a22",
+    taBg: "#1a1215", taText: "#e0c9cf", micBg: "#2a161c", micColor: "#f43f5e", barBg: "#1a1215",
+    saveColor: "#f43f5e", dot1: "#f43f5e", dot2: "#fb7185", label: "#8a5e6a", waveBg: "#f43f5e",
+    syncColor: "#6e4a54", cardBg: "#120c0e", countdownColor: "#f43f5e"
+  },
+  {
+    name: "Arctic Slate",
+    bg: "#1c2028", accent: "#60a5fa", text: "#c9d4e8", shadowD: "#0e1015", shadowL: "#2c3340",
+    taBg: "#1c2028", taText: "#c9d4e8", micBg: "#252d3a", micColor: "#60a5fa", barBg: "#1c2028",
+    saveColor: "#60a5fa", dot1: "#60a5fa", dot2: "#93c5fd", label: "#6b7d96", waveBg: "#60a5fa",
+    syncColor: "#4a5a72", cardBg: "#13161c", countdownColor: "#60a5fa"
+  },
+  {
+    name: "Amber Forge",
+    bg: "#1a1710", accent: "#f59e0b", text: "#e0d5c0", shadowD: "#0e0c08", shadowL: "#2f2818",
+    taBg: "#1a1710", taText: "#e0d5c0", micBg: "#2a2318", micColor: "#f59e0b", barBg: "#1a1710",
+    saveColor: "#f59e0b", dot1: "#f59e0b", dot2: "#fbbf24", label: "#8a7a5a", waveBg: "#f59e0b",
+    syncColor: "#6e6040", cardBg: "#120f0a", countdownColor: "#f59e0b"
+  },
+  {
+    name: "Violet Haze",
+    bg: "#18141f", accent: "#a78bfa", text: "#d0c8e4", shadowD: "#0c0a12", shadowL: "#28203a",
+    taBg: "#18141f", taText: "#d0c8e4", micBg: "#221c30", micColor: "#a78bfa", barBg: "#18141f",
+    saveColor: "#a78bfa", dot1: "#a78bfa", dot2: "#c4b5fd", label: "#7a6e96", waveBg: "#a78bfa",
+    syncColor: "#5a5072", cardBg: "#100d16", countdownColor: "#a78bfa"
+  },
+  {
+    name: "Ivory Gold",
+    bg: "#1a1d24", accent: "#d4af37", text: "#2a2d34", shadowD: "#0d0f14", shadowL: "#2a2f3a",
+    taBg: "#f5f5f0", taText: "#1a1d24", micBg: "#252830", micColor: "#d4af37", barBg: "#1a1d24",
+    saveColor: "#2e8b6a", dot1: "#3ba776", dot2: "#d4af37", label: "#5a5e6a", waveBg: "#3ba776",
+    syncColor: "#555c6e", cardBg: "#12141a", countdownColor: "#d4af37", whiteBox: true
+  },
+  {
+    name: "Pearl Emerald",
+    bg: "#0f1a17", accent: "#34d399", text: "#1a2e24", shadowD: "#060e0b", shadowL: "#1a2f27",
+    taBg: "#f2f5f3", taText: "#0f1a17", micBg: "#162922", micColor: "#34d399", barBg: "#0f1a17",
+    saveColor: "#34d399", dot1: "#34d399", dot2: "#6ee7b7", label: "#4a6e5c", waveBg: "#34d399",
+    syncColor: "#4a6e60", cardBg: "#0a120f", countdownColor: "#34d399", whiteBox: true
+  },
+  {
+    name: "Snow Rose",
+    bg: "#1a1215", accent: "#f43f5e", text: "#2e1a22", shadowD: "#0e080a", shadowL: "#2f1a22",
+    taBg: "#faf2f4", taText: "#1a1215", micBg: "#2a161c", micColor: "#f43f5e", barBg: "#1a1215",
+    saveColor: "#f43f5e", dot1: "#f43f5e", dot2: "#fb7185", label: "#7a4a58", waveBg: "#f43f5e",
+    syncColor: "#6e4a54", cardBg: "#120c0e", countdownColor: "#f43f5e", whiteBox: true
+  },
+  {
+    name: "Frost Azure",
+    bg: "#1c2028", accent: "#60a5fa", text: "#1c2a40", shadowD: "#0e1015", shadowL: "#2c3340",
+    taBg: "#f0f4fa", taText: "#1c2028", micBg: "#252d3a", micColor: "#60a5fa", barBg: "#1c2028",
+    saveColor: "#60a5fa", dot1: "#60a5fa", dot2: "#93c5fd", label: "#4a6080", waveBg: "#60a5fa",
+    syncColor: "#4a5a72", cardBg: "#13161c", countdownColor: "#60a5fa", whiteBox: true
+  },
+  {
+    name: "Blush Amber",
+    bg: "#1a1710", accent: "#f59e0b", text: "#2e2410", shadowD: "#0e0c08", shadowL: "#2f2818",
+    taBg: "#faf6ee", taText: "#1a1710", micBg: "#2a2318", micColor: "#f59e0b", barBg: "#1a1710",
+    saveColor: "#f59e0b", dot1: "#f59e0b", dot2: "#fbbf24", label: "#7a6a3a", waveBg: "#f59e0b",
+    syncColor: "#6e6040", cardBg: "#120f0a", countdownColor: "#f59e0b", whiteBox: true
+  },
+  {
+    name: "Orchid Mist",
+    bg: "#18141f", accent: "#a78bfa", text: "#221838", shadowD: "#0c0a12", shadowL: "#28203a",
+    taBg: "#f4f1fa", taText: "#18141f", micBg: "#221c30", micColor: "#a78bfa", barBg: "#18141f",
+    saveColor: "#a78bfa", dot1: "#a78bfa", dot2: "#c4b5fd", label: "#5e4e80", waveBg: "#a78bfa",
+    syncColor: "#5a5072", cardBg: "#100d16", countdownColor: "#a78bfa", whiteBox: true
+  }
+];
+
+const micSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+const clockSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+const syncSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+
+const grid = document.getElementById('grid');
+
+variations.forEach(function(v, i) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.background = v.cardBg;
+  card.style.boxShadow = '6px 6px 14px #08090c, -4px -4px 10px ' + v.shadowL;
+
+  const neumInset = 'inset 2px 2px 4px ' + v.shadowD + ', inset -2px -2px 4px ' + v.shadowL;
+  const neumOut = '3px 3px 6px ' + v.shadowD + ', -3px -3px 6px ' + v.shadowL;
+  const neumOutBig = '4px 4px 8px ' + v.shadowD + ', -4px -4px 8px ' + v.shadowL;
+  const neumOutXl = '6px 6px 14px ' + v.shadowD + ', -6px -6px 14px ' + v.shadowL;
+  const taShadow = v.whiteBox
+    ? 'inset 1px 1px 3px rgba(0,0,0,0.08), inset -1px -1px 3px rgba(0,0,0,0.04)'
+    : neumInset;
+
+  const waveBars = Array(8).fill(0).map(function() {
+    return '<div class="vault-wb" style="background:' + v.waveBg + '"></div>';
+  }).join('');
+
+  const tag = v.whiteBox ? ' ✦ WHITE BOX' : '';
+
+  card.innerHTML =
+    '<div class="card-label" style="color:' + v.accent + '">' + v.name + tag + '</div>' +
+    '<div class="vault" style="background:' + v.bg + ';color:' + v.text + ';box-shadow:' + neumOutXl + '">' +
+      '<div class="vault-header">' +
+        '<div class="vault-countdown" style="color:' + v.countdownColor + '">' + clockSvg + '<span>4:32</span></div>' +
+        '<div class="vault-sync" style="color:' + v.syncColor + '">' + syncSvg + '<span>3:47 PM</span></div>' +
+      '</div>' +
+      '<div class="vault-cols">' +
+        '<div class="vault-col">' +
+          '<div class="vault-label" style="color:' + v.label + '"><span class="vault-dot" style="background:' + v.dot1 + '"></span>Dumbi</div>' +
+          '<textarea class="vault-ta" style="background:' + v.taBg + ';color:' + v.taText + ';box-shadow:' + taShadow + '" placeholder="Write here..." readonly></textarea>' +
+        '</div>' +
+        '<div class="vault-col">' +
+          '<div class="vault-label" style="color:' + v.label + '"><span class="vault-dot" style="background:' + v.dot2 + '"></span>Dumbo</div>' +
+          '<textarea class="vault-ta" style="background:' + v.taBg + ';color:' + v.taText + ';box-shadow:' + taShadow + '" placeholder="Write here..." readonly></textarea>' +
+        '</div>' +
+      '</div>' +
+      '<div class="vault-bottom">' +
+        '<button class="vault-mic-sm" style="background:' + v.micBg + ';color:' + v.micColor + ';box-shadow:' + neumOutBig + '">' + micSvg + '</button>' +
+        '<div class="vault-rec-bar" style="background:' + v.barBg + ';box-shadow:' + neumInset + '">' +
+          '<div class="vault-waves">' + waveBars + '</div>' +
+          '<div class="vault-rec-timer" style="color:' + v.syncColor + '">0:00</div>' +
+        '</div>' +
+        '<button class="vault-save-btn" style="background:' + v.bg + ';color:' + v.saveColor + ';box-shadow:' + neumOut + '">Save</button>' +
+      '</div>' +
+    '</div>';
+
+  grid.appendChild(card);
+});
+</script>
+
+</body>
+</html>
