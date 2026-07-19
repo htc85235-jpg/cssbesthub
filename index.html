@@ -113,25 +113,34 @@
     + '    .chat-messages::-webkit-scrollbar-track { background:transparent; }'
     + '    .chat-messages::-webkit-scrollbar-thumb { background:#2a2f3a; border-radius:2px; }'
 
-    + '    .chat-msg { max-width:80%; padding:7px 10px; border-radius:14px; font-size:12px; line-height:1.5; position:relative; word-wrap:break-word; user-select:none; -webkit-user-select:none; }'
-    + '    .chat-msg.sent { align-self:flex-end; background:#252a35; color:#c9d1e0; border-bottom-right-radius:4px; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; }'
-    + '    .chat-msg.recv { align-self:flex-start; background:#1a1d24; color:#c9d1e0; border-bottom-left-radius:4px; box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; }'
-    + '    .chat-msg .msg-sender { font-size:9px; font-weight:700; margin-bottom:2px; opacity:0.6; }'
-    + '    .chat-msg.sent .msg-sender { color:#d4af37; }'
-    + '    .chat-msg.recv .msg-sender { color:#3ba776; }'
-    + '    .chat-msg .msg-time { font-size:8px; opacity:0.35; margin-top:3px; }'
-    + '    .chat-msg.sent .msg-time { text-align:right; }'
-    + '    .chat-msg .msg-enc { font-size:7px; opacity:0.2; letter-spacing:0.5px; margin-top:1px; }'
+    + '    .chat-msg { max-width:75%; padding:7px 10px; border-radius:14px; font-size:12px; line-height:1.5; position:relative; word-wrap:break-word; user-select:none; -webkit-user-select:none; margin:2px 30px 2px 0; }'
+    + '    .chat-msg.sent { align-self:flex-end; background:#d9fdd3; color:#1a1a1a; border-bottom-right-radius:4px; box-shadow: 1px 1px 2px rgba(0,0,0,0.15); margin:2px 0 2px 30px; }'
+    + '    .chat-msg.recv { align-self:flex-start; background:#ffffff; color:#1a1a1a; border-bottom-left-radius:4px; box-shadow: 1px 1px 2px rgba(0,0,0,0.15); }'
+    + '    .chat-msg .msg-sender { font-size:9px; font-weight:700; margin-bottom:2px; }'
+    + '    .chat-msg.sent .msg-sender { color:#1a7a3a; }'
+    + '    .chat-msg.recv .msg-sender { color:#1a7a3a; }'
+    + '    .chat-msg .msg-time { font-size:8px; opacity:0.45; margin-top:3px; display:flex; align-items:center; justify-content:flex-end; gap:3px; }'
+    + '    .chat-msg.recv .msg-time { justify-content:flex-start; }'
+    + '    .chat-msg .msg-enc { font-size:7px; opacity:0.15; letter-spacing:0.5px; margin-top:1px; }'
+    + '    .msg-ticks { display:inline-flex; align-items:center; font-size:11px; font-weight:700; line-height:1; }'
+    + '    .msg-ticks.sent-tick { color:#53bdeb; }'
+    + '    .msg-ticks.delivered-tick { color:#888; }'
+    + '    .msg-seen-at { font-size:7px; opacity:0.5; font-style:italic; white-space:nowrap; }'
+    + '    .msg-seen-label { display:flex; align-items:center; gap:3px; margin-top:1px; }'
+    + '    .seen-side { font-size:7px; opacity:0.5; font-style:italic; white-space:nowrap; pointer-events:none; margin-bottom:-1px; }'
+    + '    .seen-side.left { align-self:flex-start; padding-left:2px; color:#888; }'
+    + '    .seen-side.right { align-self:flex-end; padding-right:2px; color:#888; }'
+    + '    .seen-recv { font-size:7px; opacity:0.4; font-style:italic; color:#1a7a3a; margin-top:1px; }'
 
     // Voice message
     + '    .chat-msg.voice-msg { display:flex; align-items:center; gap:6px; padding:8px 10px; }'
-    + '    .voice-play-btn { width:26px; height:26px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; transition:all 0.15s; }'
-    + '    .voice-play-btn:active { box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; }'
+    + '    .voice-play-btn { width:26px; height:26px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); transition:all 0.15s; }'
+    + '    .voice-play-btn:active { box-shadow: inset 1px 1px 3px rgba(0,0,0,0.15); }'
     + '    .voice-play-btn svg { width:12px; height:12px; }'
     + '    .voice-play-btn.playing { background:#ef4444 !important; color:#fff !important; }'
     + '    .voice-waves-mini { flex:1; display:flex; align-items:center; gap:1px; height:18px; overflow:hidden; }'
-    + '    .voice-waves-mini .vbar { width:2px; border-radius:1px; background:#3ba776; transition:height 0.1s; }'
-    + '    .voice-dur { font-size:9px; opacity:0.4; white-space:nowrap; font-variant-numeric:tabular-nums; }'
+    + '    .voice-waves-mini .vbar { width:2px; border-radius:1px; background:#1a7a3a; transition:height 0.1s; }'
+    + '    .voice-dur { font-size:9px; opacity:0.5; white-space:nowrap; font-variant-numeric:tabular-nums; }'
 
     // Long-press delete popup
     + '    .delete-popup { position:absolute; top:-30px; right:6px; background:#ef4444; color:#fff; font-size:9px; font-weight:700; padding:4px 10px; border-radius:8px; white-space:nowrap; z-index:10; cursor:pointer; animation: deletePopIn 0.15s ease; box-shadow: 0 2px 8px rgba(239,68,68,0.3); }'
@@ -384,6 +393,7 @@
       if (data.content) {
         var chatData = await parseChatContent(data.content);
         var now = Date.now();
+        var needsSave = false;
 
         // Filter out messages older than 24 hours (client-side auto-delete)
         if (chatData.messages) {
@@ -391,10 +401,22 @@
           chatData.messages = chatData.messages.filter(function(m) {
             return (now - m.ts) < AUTO_DELETE_MS;
           });
-          // If we filtered some out, update the file
-          if (chatData.messages.length < originalLen) {
-            saveMessagesToGitHub(chatData.messages, true);
-          }
+          if (chatData.messages.length < originalLen) needsSave = true;
+        }
+
+        // Mark other person's messages as "seen by me"
+        if (chatData.messages && myRole) {
+          var seenField = 'seenBy_' + myRole;
+          chatData.messages.forEach(function(m) {
+            if (m.sender !== myRole && !m[seenField]) {
+              m[seenField] = Date.now();
+              needsSave = true;
+            }
+          });
+        }
+
+        if (needsSave) {
+          saveMessagesToGitHub(chatData.messages || [], true);
         }
 
         renderMessages(chatData.messages || []);
@@ -558,32 +580,71 @@
   function appendMessage(msg) {
     if (!messagesContainer) return;
     var isSent = msg.sender === myRole;
+    var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
+    var otherSeenField = 'seenBy_' + otherRole;
+    var mySeenField = 'seenBy_' + myRole;
+    var otherSeenTime = msg[otherSeenField] || null;
+    var mySeenTime = msg[mySeenField] || null;
+
+    // If I sent this, show "Seen at" as a small label above my bubble
+    if (isSent && otherSeenTime) {
+      var seenLabel = document.createElement('div');
+      seenLabel.className = 'seen-side right';
+      seenLabel.textContent = 'Seen at ' + formatTime12(otherSeenTime);
+      messagesContainer.appendChild(seenLabel);
+    }
+
+    // If the other person sent this, show "Seen at" as a small label above their bubble
+    if (!isSent && mySeenTime) {
+      var seenLabel2 = document.createElement('div');
+      seenLabel2.className = 'seen-side left';
+      seenLabel2.textContent = 'Seen at ' + formatTime12(mySeenTime);
+      messagesContainer.appendChild(seenLabel2);
+    }
+
     var div = document.createElement('div');
     div.className = 'chat-msg ' + (isSent ? 'sent' : 'recv');
     div.dataset.msgId = msg.id;
 
     if (msg.type === 'voice') {
       div.classList.add('voice-msg');
-      var playBtnColor = isSent ? '#d4af37' : '#3ba776';
+      var playBtnColor = '#1a7a3a';
+      var ticksHtml = '';
+      if (isSent) {
+        if (otherSeenTime) {
+          ticksHtml = '<span class="msg-ticks sent-tick" title="Seen">\u2713\u2713</span>';
+        } else {
+          ticksHtml = '<span class="msg-ticks delivered-tick">\u2713\u2713</span>';
+        }
+      }
       div.innerHTML =
-        '<button class="voice-play-btn" style="background:' + playBtnColor + ';color:#1a1d24;" data-voice-key="' + msg.voiceKey + '">' +
+        '<button class="voice-play-btn" style="background:' + playBtnColor + ';color:#fff;" data-voice-key="' + msg.voiceKey + '">' +
           '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
         '</button>' +
         '<div class="voice-waves-mini">' + generateVoiceBars() + '</div>' +
         '<div class="voice-dur">' + msg.duration + '</div>' +
-        '<div class="msg-time" style="position:absolute;bottom:2px;right:8px;">' + formatTime12(msg.ts) + '</div>';
+        '<div class="msg-time" style="position:absolute;bottom:2px;right:8px;">' + formatTime12(msg.ts) + ' ' + ticksHtml + '</div>';
 
-      // Play button handler
       var playBtn = div.querySelector('.voice-play-btn');
       playBtn.addEventListener('click', function(){
         playVoiceMessage(msg.voiceKey, playBtn);
       });
     } else {
       var senderLabel = isSent ? '' : '<div class="msg-sender">' + (msg.sender === 'dumbi' ? 'Dumbi' : 'Dumbo') + '</div>';
+      
+      var ticksHtml = '';
+      if (isSent) {
+        if (otherSeenTime) {
+          ticksHtml = '<span class="msg-ticks sent-tick" title="Seen">\u2713\u2713</span>';
+        } else {
+          ticksHtml = '<span class="msg-ticks delivered-tick">\u2713\u2713</span>';
+        }
+      }
+
       div.innerHTML =
         senderLabel +
         escapeHtml(msg.text) +
-        '<div class="msg-time">' + formatTime12(msg.ts) + '</div>' +
+        '<div class="msg-time">' + formatTime12(msg.ts) + ' ' + ticksHtml + '</div>' +
         '<div class="msg-enc">AES-256</div>';
     }
 
