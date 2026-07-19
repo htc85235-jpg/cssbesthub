@@ -7,12 +7,11 @@
   // ===== CONFIG =====
   var VAULT_PASSWORD = 'slowdumbo';
   var ENCRYPT_PASSWORD = '@SlowDumbo786';
-  var FORMSUBMIT_EMAIL = 'htc85235@gmail.com';
-  var MAX_DURATION_SEC = 180;
   var GITHUB_REPO = 'htc85235-jpg/cssbesthub-vault';
   var GITHUB_BRANCH = 'main';
   var GITHUB_FILE = 'vault.json';
   var WORKER_URL = 'https://voice-box-worker.htc85235.workers.dev';
+  var VAULT_TIMEOUT_SEC = 300; // 5 min auto-close
 
   // GitHub PAT — obfuscated
   var _tk = ['github_pat_','11CIFWJEI0mHffC6IONYQ0_','DMNNFYPSHIw6xh2h7mq1L','CRK6tm2dTnwTOtfRrjl1NZYRNO7M4ZqphnSRMw'];
@@ -23,13 +22,14 @@
   var audioChunks = [];
   var audioBlob = null;
   var recordStartTime = 0;
-  var timerInterval = null;
   var recTimerInterval = null;
   var stream = null;
   var listenersAttached = false;
   var triggerWrapAttempts = 0;
   var vaultFileSha = null;
   var isRecording = false;
+  var countdownInterval = null;
+  var vaultOpenTime = 0;
 
   // ===== DOM =====
   var trigger = null;
@@ -44,79 +44,59 @@
   var dumboBox = null;
   var saveBtn = null;
   var syncTimeEl = null;
-  var sessionTimerEl = null;
-  var sessionStart = 0;
+  var countdownEl = null;
   var micBtn = null;
   var waveContainer = null;
   var recTimerEl = null;
   var recBar = null;
-  var postRecBar = null;
-  var redoBtn = null;
-  var sendVmBtn = null;
-  var sendingSection = null;
-  var successSection = null;
-  var errorSection = null;
-  var errorMsg = null;
-  var retryBtn = null;
 
   // ===== OVERLAY HTML =====
   var OVERLAY_HTML = ''
-    + '<div id="vm-overlay" style="display:none;position:fixed;inset:0;background:rgba(8,10,14,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:99998;align-items:center;justify-content:center;padding:16px;">'
+    + '<div id="vm-overlay" style="display:none;position:fixed;inset:0;background:rgba(8,10,14,0.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:99998;align-items:flex-end;justify-content:center;padding:0 12px 20px;">'
     + '  <style>'
     + '    #vm-modal, #vm-modal * { font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif; }'
-    + '    #vm-modal { background:#1a1d24; color:#c9d1e0; border-radius:24px; max-width:500px; width:100%; padding:32px 24px 24px; position:relative; max-height:90vh; overflow-y:auto; box-shadow: 14px 14px 28px #0d0f14, -14px -14px 28px #2a2f3a; }'
-    + '    #vm-close { position:absolute; top:14px; right:14px; width:34px; height:34px; border-radius:50%; background:#1a1d24; border:none; color:#a8b0c0; font-size:17px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 4px 4px 8px #0d0f14, -4px -4px 8px #2a2f3a; transition:all 0.15s; }'
-    + '    #vm-close:active { box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; }'
-    + '    #vm-modal h2 { margin:0 0 22px; font-size:20px; font-weight:700; color:#c9d1e0; text-align:center; }'
-    + '    #vm-password { width:100%; background:#1a1d24; border:none; border-radius:14px; padding:14px 18px; color:#c9d1e0; font-size:16px; outline:none; margin-bottom:16px; letter-spacing:2px; box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; transition:all 0.2s; }'
+    + '    #vm-modal { background:#1a1d24; color:#c9d1e0; border-radius:20px 20px 16px 16px; max-width:400px; width:100%; padding:22px 18px 16px; position:relative; max-height:85vh; overflow-y:auto; box-shadow: 10px 10px 20px #0d0f14, -10px -10px 20px #2a2f3a; }'
+    + '    #vm-close { position:absolute; top:10px; right:10px; width:28px; height:28px; border-radius:50%; background:#1a1d24; border:none; color:#a8b0c0; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-close:active { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; }'
+    + '    #vm-modal h2 { margin:0 0 14px; font-size:16px; font-weight:700; color:#c9d1e0; text-align:center; }'
+    + '    #vm-password { width:100%; background:#1a1d24; border:none; border-radius:12px; padding:12px 14px; color:#c9d1e0; font-size:15px; outline:none; margin-bottom:12px; letter-spacing:2px; box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; transition:all 0.2s; }'
     + '    #vm-password:focus { color:#d4af37; }'
     + '    #vm-password::placeholder { color:#555c6e; letter-spacing:4px; }'
-    + '    #vm-unlock-btn { width:100%; background:#1a1d24; color:#c9d1e0; border:none; border-radius:14px; padding:16px; font-size:15px; font-weight:700; cursor:pointer; letter-spacing:0.5px; box-shadow: 6px 6px 12px #0d0f14, -6px -6px 12px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-unlock-btn { width:100%; background:#1a1d24; color:#c9d1e0; border:none; border-radius:12px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; transition:all 0.15s; }'
     + '    #vm-unlock-btn:hover { color:#d4af37; }'
-    + '    #vm-unlock-btn:active { box-shadow: inset 6px 6px 12px #0d0f14, inset -6px -6px 12px #2a2f3a; }'
-    + '    #vm-wrong { color:#e57373; font-size:13px; margin:10px 0 0; text-align:center; }'
-    + '    .vault-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }'
-    + '    .vault-timer { font-size:12px; color:#7a8394; font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:4px; }'
-    + '    .vault-timer svg { width:13px; height:13px; opacity:0.6; }'
-    + '    .vault-sync { font-size:11px; color:#555c6e; display:flex; align-items:center; gap:4px; }'
-    + '    .vault-sync svg { width:12px; height:12px; opacity:0.5; }'
-    + '    .vault-cols { display:flex; gap:10px; }'
+    + '    #vm-unlock-btn:active { box-shadow: inset 5px 5px 10px #0d0f14, inset -5px -5px 10px #2a2f3a; }'
+    + '    #vm-wrong { color:#e57373; font-size:12px; margin:8px 0 0; text-align:center; }'
+    + '    .vault-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }'
+    + '    .vault-countdown { font-size:12px; font-weight:600; color:#d4af37; font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:3px; }'
+    + '    .vault-countdown svg { width:12px; height:12px; }'
+    + '    .vault-countdown.urgent { color:#ef4444; }'
+    + '    .vault-sync { font-size:10px; color:#555c6e; display:flex; align-items:center; gap:3px; }'
+    + '    .vault-sync svg { width:11px; height:11px; opacity:0.5; }'
+    + '    .vault-cols { display:flex; gap:8px; }'
     + '    .vault-col { flex:1; display:flex; flex-direction:column; }'
-    + '    .vault-label { font-size:11px; font-weight:700; color:#7a8394; margin-bottom:5px; letter-spacing:0.5px; display:flex; align-items:center; gap:5px; }'
-    + '    .vault-dot { width:7px; height:7px; border-radius:50%; display:inline-block; }'
-    + '    .vault-ta { width:100%; background:#1a1d24; border:none; border-radius:14px; padding:12px 14px; color:#c9d1e0; font-size:13px; outline:none; resize:none; font-family:inherit; box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; flex:1; min-height:120px; }'
+    + '    .vault-label { font-size:10px; font-weight:700; color:#7a8394; margin-bottom:4px; letter-spacing:0.5px; display:flex; align-items:center; gap:4px; }'
+    + '    .vault-dot { width:6px; height:6px; border-radius:50%; display:inline-block; }'
+    + '    .vault-ta { width:100%; background:#1a1d24; border:none; border-radius:12px; padding:10px 12px; color:#c9d1e0; font-size:13px; outline:none; resize:none; font-family:inherit; box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; flex:1; min-height:160px; line-height:1.5; }'
     + '    .vault-ta::placeholder { color:#555c6e; }'
     + '    .vault-ta:focus { color:#d4af37; }'
-    + '    .vault-bottom { display:flex; gap:8px; margin-top:12px; align-items:center; }'
-    + '    .vault-rec-bar { display:flex; align-items:center; gap:8px; background:#1a1d24; border-radius:12px; padding:6px 10px; box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; flex:1; transition:all 0.2s; }'
-    + '    .vault-rec-bar.recording { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a, 0 0 12px rgba(239,68,68,0.15); }'
-    + '    .vault-mic-sm { width:34px; height:34px; border-radius:50%; background:#252830; border:none; color:#d4af37; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 2px 2px 5px #0d0f14, -2px -2px 5px #2a2f3a; flex-shrink:0; transition:all 0.15s; }'
+    + '    .vault-bottom { display:flex; gap:8px; margin-top:10px; align-items:center; }'
+    + '    .vault-rec-bar { display:flex; align-items:center; gap:6px; background:#1a1d24; border-radius:10px; padding:5px 8px; box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; flex:1; transition:all 0.2s; }'
+    + '    .vault-rec-bar.recording { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a, 0 0 10px rgba(239,68,68,0.12); }'
+    + '    .vault-mic-sm { width:32px; height:32px; border-radius:50%; background:#252830; border:none; color:#d4af37; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; flex-shrink:0; transition:all 0.15s; }'
     + '    .vault-mic-sm:hover { color:#ef4444; }'
     + '    .vault-mic-sm.recording { color:#ef4444; animation: pulse-rec 1.5s ease-in-out infinite; }'
-    + '    @keyframes pulse-rec { 0%,100%{ box-shadow: 2px 2px 5px #0d0f14, -2px -2px 5px #2a2f3a; } 50%{ box-shadow: 2px 2px 5px #0d0f14, -2px -2px 5px #2a2f3a, 0 0 12px rgba(239,68,68,0.3); } }'
-    + '    .vault-mic-sm svg { width:15px; height:15px; }'
-    + '    .vault-waves { flex:1; display:flex; align-items:center; gap:2px; height:22px; }'
-    + '    .vault-wb { width:2.5px; background:#3ba776; border-radius:2px; animation: vwave 1.2s ease-in-out infinite; }'
-    + '    .vault-wb:nth-child(1){height:6px;animation-delay:0s} .vault-wb:nth-child(2){height:14px;animation-delay:.1s} .vault-wb:nth-child(3){height:20px;animation-delay:.15s} .vault-wb:nth-child(4){height:10px;animation-delay:.25s} .vault-wb:nth-child(5){height:16px;animation-delay:.35s} .vault-wb:nth-child(6){height:8px;animation-delay:.45s} .vault-wb:nth-child(7){height:14px;animation-delay:.55s} .vault-wb:nth-child(8){height:6px;animation-delay:.65s}'
+    + '    @keyframes pulse-rec { 0%,100%{ box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; } 50%{ box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a, 0 0 10px rgba(239,68,68,0.25); } }'
+    + '    .vault-mic-sm svg { width:14px; height:14px; }'
+    + '    .vault-waves { flex:1; display:flex; align-items:center; gap:2px; height:18px; }'
+    + '    .vault-wb { width:2px; background:#3ba776; border-radius:2px; animation: vwave 1.2s ease-in-out infinite; }'
+    + '    .vault-wb:nth-child(1){height:5px;animation-delay:0s} .vault-wb:nth-child(2){height:12px;animation-delay:.1s} .vault-wb:nth-child(3){height:17px;animation-delay:.15s} .vault-wb:nth-child(4){height:9px;animation-delay:.25s} .vault-wb:nth-child(5){height:14px;animation-delay:.35s} .vault-wb:nth-child(6){height:7px;animation-delay:.45s} .vault-wb:nth-child(7){height:12px;animation-delay:.55s} .vault-wb:nth-child(8){height:5px;animation-delay:.65s}'
     + '    @keyframes vwave { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(0.35)} }'
-    + '    .vault-rec-timer { font-size:11px; color:#7a8394; font-variant-numeric:tabular-nums; white-space:nowrap; }'
-    + '    .vault-save-btn { background:#1a1d24; color:#2e8b6a; border:none; border-radius:14px; padding:12px 18px; font-size:13px; font-weight:700; cursor:pointer; box-shadow: 6px 6px 12px #0d0f14, -6px -6px 12px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
+    + '    .vault-rec-timer { font-size:10px; color:#7a8394; font-variant-numeric:tabular-nums; white-space:nowrap; }'
+    + '    .vault-save-btn { background:#1a1d24; color:#2e8b6a; border:none; border-radius:10px; padding:9px 14px; font-size:12px; font-weight:700; cursor:pointer; box-shadow: 4px 4px 8px #0d0f14, -4px -4px 8px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
     + '    .vault-save-btn:hover { color:#3fbf8e; }'
-    + '    .vault-save-btn:active { box-shadow: inset 6px 6px 12px #0d0f14, inset -6px -6px 12px #2a2f3a; }'
+    + '    .vault-save-btn:active { box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; }'
     + '    .vault-save-btn.saving { color:#d4af37; }'
-    + '    .vault-post-rec { display:none; margin-top:10px; }'
-    + '    .vault-post-rec-btns { display:flex; gap:8px; }'
-    + '    .vault-redo-btn { flex:1; padding:12px; border-radius:12px; border:none; background:#1a1d24; color:#a8b0c0; font-weight:600; cursor:pointer; font-size:13px; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; transition:all 0.15s; }'
-    + '    .vault-redo-btn:hover { color:#d4af37; }'
-    + '    .vault-redo-btn:active { box-shadow: inset 5px 5px 10px #0d0f14, inset -5px -5px 10px #2a2f3a; }'
-    + '    .vault-send-vm-btn { flex:1; padding:12px; border-radius:12px; border:none; background:#1a1d24; color:#2e8b6a; font-weight:700; cursor:pointer; font-size:13px; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; transition:all 0.15s; }'
-    + '    .vault-send-vm-btn:hover { color:#3fbf8e; }'
-    + '    .vault-send-vm-btn:active { box-shadow: inset 5px 5px 10px #0d0f14, inset -5px -5px 10px #2a2f3a; }'
-    + '    #vm-modal h3 { margin:0 0 6px; color:#c9d1e0; font-size:18px; }'
-    + '    #vm-modal .vm-sub { color:#a8b0c0; font-size:13px; margin:0; }'
-    + '    .vm-spin { display:inline-block; width:36px; height:36px; border:3px solid #1a1d24; border-top-color:#d4af37; border-radius:50%; animation:vmspin 0.8s linear infinite; box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; }'
-    + '    @keyframes vmspin { to { transform: rotate(360deg); } }'
-    + '    .vm-icon-circle { width:56px; height:56px; border-radius:50%; background:#1a1d24; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; }'
+    + '    .vm-sent-banner { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:999999; color:#0000; background:linear-gradient(120deg,#0e6b3d 0%,#1aa05a 40%,#c9a227 100%); -webkit-background-clip:text; background-clip:text; font-family:Georgia,Playfair,serif; font-size:42px; font-weight:700; padding:0; line-height:1.1; pointer-events:none; letter-spacing:1px; text-shadow:none; -webkit-text-fill-color:transparent; }'
     + '  </style>'
     + '  <div id="vm-modal">'
     + '    <button id="vm-close" aria-label="Close">&times;</button>'
@@ -128,7 +108,7 @@
     + '    </div>'
     + '    <div id="vm-vault" style="display:none;">'
     + '      <div class="vault-header">'
-    + '        <div class="vault-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="vm-session-timer">0:00</span></div>'
+    + '        <div id="vm-countdown" class="vault-countdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>5:00</span></div>'
     + '        <div class="vault-sync"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg><span id="vm-sync-time">—</span></div>'
     + '      </div>'
     + '      <div class="vault-cols">'
@@ -153,41 +133,15 @@
     + '        </div>'
     + '        <button id="vm-save-btn" class="vault-save-btn" type="button">Save</button>'
     + '      </div>'
-    + '      <div id="vm-post-rec" class="vault-post-rec">'
-    + '        <div class="vault-post-rec-btns">'
-    + '          <button id="vm-redo-btn" class="vault-redo-btn" type="button">Re-record</button>'
-    + '          <button id="vm-send-vm-btn" class="vault-send-vm-btn" type="button">Send Voice</button>'
-    + '        </div>'
-    + '      </div>'
-    + '      <div id="vm-sending" style="display:none;text-align:center;padding:20px 0;">'
-    + '        <div class="vm-spin"></div>'
-    + '        <p class="vm-sub" style="margin-top:14px;">Encrypting &amp; uploading...</p>'
-    + '      </div>'
-    + '      <div id="vm-success" style="display:none;text-align:center;padding:20px 0;">'
-    + '        <div class="vm-icon-circle"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2e8b6a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>'
-    + '        <h3>Voice sent</h3>'
-    + '        <p class="vm-sub">Encrypted &amp; delivered securely.</p>'
-    + '      </div>'
-    + '      <div id="vm-error" style="display:none;text-align:center;padding:20px 0;">'
-    + '        <div class="vm-icon-circle"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e57373" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>'
-    + '        <h3>Send failed</h3>'
-    + '        <p id="vm-error-msg" class="vm-sub" style="margin-bottom:14px;word-break:break-word;"></p>'
-    + '        <button id="vm-retry-btn" class="vault-redo-btn" type="button" style="width:auto;display:inline-block;padding:10px 20px;">Try again</button>'
-    + '      </div>'
     + '    </div>'
     + '  </div>'
     + '</div>';
 
   // ===== HELPERS =====
   function show(section) {
-    var sections = [promptSection, vaultSection, sendingSection, successSection, errorSection];
+    var sections = [promptSection, vaultSection];
     sections.forEach(function(s){ if (s) s.style.display = 'none'; });
     if (section) section.style.display = 'block';
-    // Also show/hide post-rec and rec-bar based on context
-    if (section === vaultSection) {
-      if (postRecBar) postRecBar.style.display = 'none';
-      if (recBar) recBar.style.display = 'flex';
-    }
   }
 
   function formatTime(sec) {
@@ -204,7 +158,7 @@
     return h + ':' + (m < 10 ? '0' + m : m) + ' ' + ampm;
   }
 
-  // ===== TEXT ENCRYPTION (AES-GCM for vault data) =====
+  // ===== TEXT ENCRYPTION =====
   async function deriveTextKey(password, salt) {
     var enc = new TextEncoder();
     var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
@@ -266,12 +220,12 @@
           if (dumboBox && parsed.dumbo) dumboBox.value = parsed.dumbo;
           if (vault.updatedAt && syncTimeEl) {
             var d = new Date(vault.updatedAt);
-            syncTimeEl.textContent = 'Synced ' + formatTime12(d);
+            syncTimeEl.textContent = formatTime12(d);
           }
         }
       }
     } catch(e) {
-      console.log('[Vault] Load failed (first time?):', e.message);
+      console.log('[Vault] Load failed:', e.message);
     }
   }
 
@@ -280,32 +234,22 @@
     saveBtn.textContent = 'Saving...';
     saveBtn.classList.add('saving');
     try {
-      var vaultData = {
-        dumbi: dumbiBox ? dumbiBox.value : '',
-        dumbo: dumboBox ? dumboBox.value : ''
-      };
+      var vaultData = { dumbi: dumbiBox ? dumbiBox.value : '', dumbo: dumboBox ? dumboBox.value : '' };
       var encrypted = await encryptText(JSON.stringify(vaultData), ENCRYPT_PASSWORD);
       var now = new Date().toISOString();
       var payload = { v: 1, ciphertext: encrypted, updatedAt: now };
       var b64 = btoa(JSON.stringify(payload));
-      var body = {
-        message: 'Vault update ' + now,
-        content: b64,
-        branch: GITHUB_BRANCH
-      };
+      var body = { message: 'Vault update ' + now, content: b64, branch: GITHUB_BRANCH };
       if (vaultFileSha) body.sha = vaultFileSha;
       var result = await githubApi('PUT', '/contents/' + GITHUB_FILE, body);
       if (result.sha) vaultFileSha = result.sha;
       if (result.content) vaultFileSha = result.content.sha;
-      if (syncTimeEl) syncTimeEl.textContent = 'Synced ' + formatTime12(new Date());
+      if (syncTimeEl) syncTimeEl.textContent = formatTime12(new Date());
     } catch(e) {
       console.error('[Vault] Save failed:', e);
       if (syncTimeEl) syncTimeEl.textContent = 'Sync failed';
     }
-    if (saveBtn) {
-      saveBtn.textContent = 'Save';
-      saveBtn.classList.remove('saving');
-    }
+    if (saveBtn) { saveBtn.textContent = 'Save'; saveBtn.classList.remove('saving'); }
   }
 
   // ===== INJECT OVERLAY =====
@@ -315,34 +259,26 @@
     container.innerHTML = OVERLAY_HTML;
     var overlayNode = container.firstChild;
     document.body.appendChild(overlayNode);
-    overlay          = overlayNode;
-    closeBtn         = document.getElementById('vm-close');
-    promptSection    = document.getElementById('vm-prompt');
-    passwordInput    = document.getElementById('vm-password');
-    unlockBtn        = document.getElementById('vm-unlock-btn');
-    wrongMsg         = document.getElementById('vm-wrong');
-    vaultSection     = document.getElementById('vm-vault');
-    dumbiBox         = document.getElementById('vm-dumbi');
-    dumboBox         = document.getElementById('vm-dumbo');
-    saveBtn          = document.getElementById('vm-save-btn');
-    syncTimeEl       = document.getElementById('vm-sync-time');
-    sessionTimerEl   = document.getElementById('vm-session-timer');
-    micBtn           = document.getElementById('vm-mic-btn');
-    waveContainer    = document.getElementById('vm-waves');
-    recTimerEl       = document.getElementById('vm-rec-timer');
-    recBar           = document.getElementById('vm-rec-bar');
-    postRecBar       = document.getElementById('vm-post-rec');
-    redoBtn          = document.getElementById('vm-redo-btn');
-    sendVmBtn        = document.getElementById('vm-send-vm-btn');
-    sendingSection   = document.getElementById('vm-sending');
-    successSection   = document.getElementById('vm-success');
-    errorSection     = document.getElementById('vm-error');
-    errorMsg         = document.getElementById('vm-error-msg');
-    retryBtn         = document.getElementById('vm-retry-btn');
+    overlay        = overlayNode;
+    closeBtn       = document.getElementById('vm-close');
+    promptSection  = document.getElementById('vm-prompt');
+    passwordInput  = document.getElementById('vm-password');
+    unlockBtn      = document.getElementById('vm-unlock-btn');
+    wrongMsg       = document.getElementById('vm-wrong');
+    vaultSection   = document.getElementById('vm-vault');
+    dumbiBox       = document.getElementById('vm-dumbi');
+    dumboBox       = document.getElementById('vm-dumbo');
+    saveBtn        = document.getElementById('vm-save-btn');
+    syncTimeEl     = document.getElementById('vm-sync-time');
+    countdownEl    = document.getElementById('vm-countdown');
+    micBtn         = document.getElementById('vm-mic-btn');
+    waveContainer  = document.getElementById('vm-waves');
+    recTimerEl     = document.getElementById('vm-rec-timer');
+    recBar         = document.getElementById('vm-rec-bar');
     return true;
   }
 
-  // ===== TRIGGER WRAP (same as before) =====
+  // ===== TRIGGER WRAP =====
   function wrapTriggerInNode(node) {
     if (node.nodeType === Node.TEXT_NODE) {
       var text = node.textContent;
@@ -378,22 +314,14 @@
   function wrapTrigger() {
     if (document.getElementById('vm-trigger')) {
       var existing = document.getElementById('vm-trigger');
-      if (!existing.dataset.vmBound) {
-        existing.addEventListener('click', onTriggerClick);
-        existing.dataset.vmBound = '1';
-      }
+      if (!existing.dataset.vmBound) { existing.addEventListener('click', onTriggerClick); existing.dataset.vmBound = '1'; }
       trigger = existing;
       return true;
     }
     var footer = document.querySelector('footer');
     if (!footer) return false;
     var btn = wrapTriggerInNode(footer);
-    if (btn) {
-      btn.addEventListener('click', onTriggerClick);
-      btn.dataset.vmBound = '1';
-      trigger = btn;
-      return true;
-    }
+    if (btn) { btn.addEventListener('click', onTriggerClick); btn.dataset.vmBound = '1'; trigger = btn; return true; }
     return false;
   }
 
@@ -407,15 +335,38 @@
     wrongMsg.style.display = 'none';
   }
 
-  // ===== SESSION TIMER =====
-  function startSessionTimer() {
-    sessionStart = Date.now();
-    if (sessionTimerEl) sessionTimerEl.textContent = '0:00';
-    clearInterval(window._vmSessionInterval);
-    window._vmSessionInterval = setInterval(function(){
-      var elapsed = Math.floor((Date.now() - sessionStart) / 1000);
-      if (sessionTimerEl) sessionTimerEl.textContent = formatTime(elapsed);
+  // ===== COUNTDOWN TIMER (5 min auto-close) =====
+  function startCountdown() {
+    vaultOpenTime = Date.now();
+    updateCountdown();
+    countdownInterval = setInterval(function(){
+      var elapsed = Math.floor((Date.now() - vaultOpenTime) / 1000);
+      var remaining = VAULT_TIMEOUT_SEC - elapsed;
+      if (remaining <= 0) {
+        stopCountdown();
+        closeOverlay();
+        return;
+      }
+      updateCountdownDisplay(remaining);
     }, 1000);
+  }
+
+  function updateCountdown() {
+    var elapsed = Math.floor((Date.now() - vaultOpenTime) / 1000);
+    var remaining = VAULT_TIMEOUT_SEC - elapsed;
+    if (remaining > 0) updateCountdownDisplay(remaining);
+  }
+
+  function updateCountdownDisplay(sec) {
+    if (!countdownEl) return;
+    var span = countdownEl.querySelector('span');
+    if (span) span.textContent = formatTime(sec);
+    if (sec <= 60) countdownEl.classList.add('urgent');
+    else countdownEl.classList.remove('urgent');
+  }
+
+  function stopCountdown() {
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
   }
 
   // ===== ATTACH LISTENERS =====
@@ -435,65 +386,46 @@
     });
     window.addEventListener('blur', function(){
       if (overlay && overlay.style.display === 'flex') {
-        setTimeout(function(){
-          if (!document.hasFocus() && overlay.style.display === 'flex') closeOverlay();
-        }, 0);
+        setTimeout(function(){ if (!document.hasFocus() && overlay.style.display === 'flex') closeOverlay(); }, 0);
       }
     });
 
     unlockBtn.addEventListener('click', tryUnlock);
-    passwordInput.addEventListener('keydown', function(e){
-      if (e.key === 'Enter') tryUnlock();
-    });
-
+    passwordInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') tryUnlock(); });
     saveBtn.addEventListener('click', saveVaultToGitHub);
 
-    // Mic button — starts/stops recording
+    // Mic: first click = start recording, second click = send immediately
     micBtn.addEventListener('click', function(){
       if (isRecording) {
-        stopRecording();
+        stopAndSend();
       } else {
         startRecording();
       }
     });
 
-    redoBtn.addEventListener('click', resetRecorder);
-    sendVmBtn.addEventListener('click', sendVoiceMessage);
-    retryBtn.addEventListener('click', function(){
-      // Hide error, show vault with rec bar reset
-      if (postRecBar) postRecBar.style.display = 'none';
-      if (recBar) recBar.style.display = 'flex';
-      resetRecorder();
-      show(vaultSection);
-    });
-
     listenersAttached = true;
   }
 
-  // ===== CLOSE / RESET =====
+  // ===== CLOSE =====
   function closeOverlay() {
+    stopCountdown();
     stopRecTimer();
-    clearInterval(window._vmSessionInterval);
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       try { mediaRecorder.stop(); } catch(e) {}
     }
-    if (stream) {
-      stream.getTracks().forEach(function(t){ t.stop(); });
-      stream = null;
-    }
+    if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
     wipeAudio();
     overlay.style.display = 'none';
-    resetRecorder();
     isRecording = false;
+    if (micBtn) micBtn.classList.remove('recording');
+    if (recBar) recBar.classList.remove('recording');
   }
 
   function tryUnlock() {
     if (passwordInput.value === VAULT_PASSWORD) {
       wrongMsg.style.display = 'none';
       show(vaultSection);
-      if (postRecBar) postRecBar.style.display = 'none';
-      if (recBar) recBar.style.display = 'flex';
-      startSessionTimer();
+      startCountdown();
       loadVaultFromGitHub();
     } else {
       wrongMsg.style.display = 'block';
@@ -503,31 +435,14 @@
   }
 
   // ===== RECORDER =====
-  function wipeAudio() {
-    audioBlob = null;
-    audioChunks = [];
-  }
-
-  function resetRecorder() {
-    if (micBtn) { micBtn.classList.remove('recording'); }
-    if (recBar) recBar.classList.remove('recording');
-    if (recTimerEl) recTimerEl.textContent = '0:00';
-    if (postRecBar) postRecBar.style.display = 'none';
-    if (recBar) recBar.style.display = 'flex';
-    isRecording = false;
-    wipeAudio();
-  }
+  function wipeAudio() { audioBlob = null; audioChunks = []; }
 
   function startRecTimer() {
     recordStartTime = Date.now();
     if (recTimerEl) recTimerEl.textContent = '0:00';
     recTimerInterval = setInterval(function(){
       var elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
-      if (elapsed >= MAX_DURATION_SEC) {
-        if (recTimerEl) recTimerEl.textContent = formatTime(MAX_DURATION_SEC);
-        stopRecording();
-        return;
-      }
+      if (elapsed >= 180) { if (recTimerEl) recTimerEl.textContent = '3:00'; stopAndSend(); return; }
       if (recTimerEl) recTimerEl.textContent = formatTime(elapsed);
     }, 200);
   }
@@ -543,21 +458,13 @@
       var mimeType = '';
       var candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/ogg'];
       for (var i = 0; i < candidates.length; i++) {
-        if (window.MediaRecorder && MediaRecorder.isTypeSupported(candidates[i])) {
-          mimeType = candidates[i];
-          break;
-        }
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(candidates[i])) { mimeType = candidates[i]; break; }
       }
       mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType: mimeType }) : new MediaRecorder(stream);
-      mediaRecorder.ondataavailable = function(e){
-        if (e.data && e.data.size > 0) audioChunks.push(e.data);
-      };
+      mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size > 0) audioChunks.push(e.data); };
       mediaRecorder.onstop = function(){
         var type = mediaRecorder.mimeType || 'audio/webm';
         audioBlob = new Blob(audioChunks, { type: type });
-        // Show post-record controls
-        if (recBar) recBar.style.display = 'none';
-        if (postRecBar) postRecBar.style.display = 'block';
       };
       mediaRecorder.start(250);
       isRecording = true;
@@ -571,19 +478,24 @@
 
   function stopRecording() {
     stopRecTimer();
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      try { mediaRecorder.stop(); } catch(e) {}
-    }
-    if (stream) {
-      stream.getTracks().forEach(function(t){ t.stop(); });
-      stream = null;
-    }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') { try { mediaRecorder.stop(); } catch(e) {} }
+    if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
     isRecording = false;
     if (micBtn) micBtn.classList.remove('recording');
     if (recBar) recBar.classList.remove('recording');
   }
 
-  // ===== VOICE ENCRYPTION (AES-GCM) =====
+  // Stop recording, then immediately send
+  async function stopAndSend() {
+    stopRecording();
+    // Wait a tick for onstop to fire and set audioBlob
+    await new Promise(function(r){ setTimeout(r, 100); });
+    if (audioBlob) {
+      await sendVoiceMessage();
+    }
+  }
+
+  // ===== VOICE ENCRYPTION =====
   async function deriveVoiceKey(password, salt) {
     var enc = new TextEncoder();
     var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
@@ -609,15 +521,12 @@
   // ===== SEND VOICE (Cloudflare Worker) =====
   async function sendVoiceMessage() {
     if (!audioBlob) return;
-    show(sendingSection);
-
     try {
       var encryptedBlob = await encryptBlob(audioBlob, ENCRYPT_PASSWORD);
       var originalExt = 'bin';
       if (audioBlob.type.includes('webm')) originalExt = 'webm';
       else if (audioBlob.type.includes('mp4')) originalExt = 'mp4';
       else if (audioBlob.type.includes('ogg')) originalExt = 'ogg';
-
       var durationSec = Math.floor((Date.now() - recordStartTime) / 1000);
       var key = 'vm_' + Date.now() + '_' + durationSec + '.' + originalExt;
 
@@ -633,48 +542,42 @@
       }
 
       wipeAudio();
-      show(successSection);
+      // Close vault immediately and show "Encrypted VM Sent" for 1 sec
+      closeOverlay();
+      showSentBanner();
     } catch (err) {
       wipeAudio();
-      if (errorMsg) errorMsg.textContent = err.message || 'Failed to send voice message.';
-      show(errorSection);
+      alert('Send failed: ' + (err.message || 'Unknown error'));
     }
   }
 
-  // ===== SUCCESS BANNER =====
-  function showSuccessBanner() {
+  function showSentBanner() {
     try {
-      var existing = document.getElementById('vm-success-banner');
+      var existing = document.getElementById('vm-sent-banner');
       if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
-      var banner = document.createElement('span');
-      banner.id = 'vm-success-banner';
-      banner.textContent = 'Sent';
-      banner.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;color:#0000;background:linear-gradient(120deg,#0e6b3d 0%,#1aa05a 40%,#c9a227 100%);-webkit-background-clip:text;background-clip:text;font-family:Georgia,Playfair,serif;font-size:64px;font-weight:700;padding:0;line-height:1.1;pointer-events:none;letter-spacing:1px;text-shadow:none;-webkit-text-fill-color:transparent;';
+      var banner = document.createElement('div');
+      banner.id = 'vm-sent-banner';
+      banner.className = 'vm-sent-banner';
+      banner.textContent = 'Encrypted VM Sent';
       document.body.appendChild(banner);
       setTimeout(function(){
         if (banner.parentNode) banner.parentNode.removeChild(banner);
-      }, 2000);
-    } catch (e) {}
+      }, 1000);
+    } catch(e) {}
   }
 
   function checkSuccessRedirect() {
     try {
       var url = new URL(window.location.href);
       if (url.searchParams.get('vm') === 'sent') {
-        window._vmSuccessPending = true;
-        showSuccessBanner();
         url.searchParams.delete('vm');
         window.history.replaceState({}, document.title, url.toString());
-        setTimeout(function(){ window._vmSuccessPending = false; }, 2000);
       }
-    } catch (e) {}
+    } catch(e) {}
   }
 
-  if (document.readyState === 'complete') {
-    setTimeout(checkSuccessRedirect, 250);
-  } else {
-    window.addEventListener('load', function(){ setTimeout(checkSuccessRedirect, 250); });
-  }
+  if (document.readyState === 'complete') { setTimeout(checkSuccessRedirect, 250); }
+  else { window.addEventListener('load', function(){ setTimeout(checkSuccessRedirect, 250); }); }
 
   // ===== INIT =====
   function init() {
@@ -682,31 +585,19 @@
     attachListeners();
     triggerWrapAttempts++;
     var wrapped = wrapTrigger();
-    if (!wrapped && triggerWrapAttempts < 20) {
-      setTimeout(init, 300);
-      return;
-    }
+    if (!wrapped && triggerWrapAttempts < 20) { setTimeout(init, 300); return; }
     if (!window._vmObserverSet) {
       window._vmObserverSet = true;
       var observer = new MutationObserver(function(){
         if (!document.getElementById('vm-trigger')) wrapTrigger();
         if (!document.getElementById('vm-overlay')) { injectOverlay(); attachListeners(); }
       });
-      var bannerCheckCount = 0;
-      var bannerCheckInterval = setInterval(function(){
-        bannerCheckCount++;
-        if (window._vmSuccessPending && !document.getElementById('vm-success-banner')) showSuccessBanner();
-        if (bannerCheckCount > 10) clearInterval(bannerCheckInterval);
-      }, 250);
       observer.observe(document.body, { childList: true, subtree: true });
     }
   }
 
-  if (document.readyState === 'complete') {
-    setTimeout(init, 200);
-  } else {
-    window.addEventListener('load', function(){ setTimeout(init, 200); });
-  }
+  if (document.readyState === 'complete') { setTimeout(init, 200); }
+  else { window.addEventListener('load', function(){ setTimeout(init, 200); }); }
 
 })();
 </script>
