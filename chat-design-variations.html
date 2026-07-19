@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Aspirants Chat — 9 Design Variations</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0f14; color: #c9d1e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; }
+  h1 { text-align: center; font-size: 22px; margin-bottom: 6px; color: #e2e8f0; }
+  .subtitle { text-align: center; font-size: 13px; color: #555c6e; margin-bottom: 30px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 28px; max-width: 1500px; margin: 0 auto; }
+  .card { border-radius: 16px; padding: 16px; position: relative; }
+  .card-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; opacity: 0.7; }
+  .card-sublabel { text-align: center; font-size: 9px; opacity: 0.4; margin-bottom: 14px; font-style: italic; }
+
+  /* Phone frame */
+  .phone { width: 280px; margin: 0 auto; border-radius: 18px; overflow: hidden; position: relative; }
+  .phone-inner { width: 100%; min-height: 440px; display: flex; flex-direction: column; position: relative; }
+
+  /* Role selection overlay */
+  .role-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; gap: 12px; }
+  .role-title { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.8; }
+  .role-subtitle { font-size: 9px; opacity: 0.4; margin-top: -6px; margin-bottom: 4px; }
+  .role-options { display: flex; gap: 10px; }
+  .role-btn { border-radius: 12px; padding: 12px 18px; text-align: center; cursor: pointer; border: none; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; transition: transform 0.15s; }
+  .role-btn:hover { transform: scale(1.04); }
+  .role-icon { font-size: 22px; margin-bottom: 4px; display: block; }
+
+  /* Chat header */
+  .chat-header { display: flex; align-items: center; padding: 8px 10px; gap: 8px; flex-shrink: 0; }
+  .chat-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+  .chat-info { flex: 1; }
+  .chat-name { font-size: 11px; font-weight: 700; }
+  .chat-status { font-size: 8px; opacity: 0.5; }
+  .chat-timer { font-size: 8px; opacity: 0.6; display: flex; align-items: center; gap: 3px; }
+  .chat-timer svg { width: 10px; height: 10px; }
+
+  /* Messages area */
+  .chat-messages { flex: 1; padding: 6px 10px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .msg { max-width: 78%; padding: 6px 9px; border-radius: 12px; font-size: 10px; line-height: 1.45; position: relative; }
+  .msg-sent { align-self: flex-end; border-bottom-right-radius: 4px; }
+  .msg-recv { align-self: flex-start; border-bottom-left-radius: 4px; }
+  .msg-time { font-size: 7px; opacity: 0.4; margin-top: 2px; }
+  .msg-sent .msg-time { text-align: right; }
+  .msg-name { font-size: 7px; font-weight: 700; opacity: 0.5; margin-bottom: 1px; }
+
+  /* Voice message */
+  .msg-voice { display: flex; align-items: center; gap: 5px; padding: 6px 9px; }
+  .voice-play { width: 20px; height: 20px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 8px; }
+  .voice-play svg { width: 10px; height: 10px; }
+  .voice-waves { flex: 1; display: flex; align-items: center; gap: 1px; height: 14px; }
+  .voice-bar { width: 1.5px; border-radius: 1px; }
+  .voice-dur { font-size: 7px; opacity: 0.4; white-space: nowrap; }
+
+  /* Typing indicator */
+  .typing { align-self: flex-start; padding: 5px 10px; border-radius: 10px; display: flex; gap: 3px; align-items: center; }
+  .typing-dot { width: 4px; height: 4px; border-radius: 50%; animation: typingBounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-4px)} }
+
+  /* Delete notice */
+  .delete-notice { text-align: center; font-size: 7px; opacity: 0.3; padding: 2px 0; font-style: italic; }
+
+  /* Input area */
+  .chat-input { display: flex; align-items: center; gap: 5px; padding: 6px 8px; flex-shrink: 0; }
+  .input-field { flex: 1; border: none; border-radius: 16px; padding: 7px 11px; font-size: 10px; outline: none; font-family: inherit; }
+  .input-field::placeholder { opacity: 0.35; }
+  .input-mic { width: 28px; height: 28px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .input-mic svg { width: 13px; height: 13px; }
+  .input-send { width: 28px; height: 28px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .input-send svg { width: 13px; height: 13px; }
+
+  /* Date divider */
+  .date-divider { text-align: center; font-size: 7px; opacity: 0.3; padding: 3px 0; position: relative; }
+  .date-divider::before, .date-divider::after { content: ''; position: absolute; top: 50%; width: 25%; height: 0.5px; opacity: 0.3; }
+  .date-divider::before { left: 5%; }
+  .date-divider::after { right: 5%; }
+
+  /* Online dot */
+  .online-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-left: 4px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Lock icon for password */
+  .lock-icon { width: 24px; height: 24px; opacity: 0.3; margin-bottom: 4px; }
+  .lock-icon svg { width: 100%; height: 100%; }
+
+  /* Badge for unread */
+  .unread-badge { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 800; flex-shrink: 0; }
+
+  /* Encrypted tag */
+  .enc-tag { font-size: 6px; opacity: 0.3; letter-spacing: 0.5px; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<h1>CSS Aspirants Chat — 9 Design Variations</h1>
+<p class="subtitle">Each shows: Password → Choose Role (Dumbo / Dumbi) → Chat. Pick your favourite.</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const lockSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+const clockSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+const playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+const micSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+const sendSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>';
+const shieldSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+
+function voiceBars(color, count) {
+  const heights = [3,5,8,11,7,10,5,8,12,6,9,4,7,10,6,8,11,5,7,3];
+  return heights.slice(0, count || 16).map(function(h) {
+    return '<div class="voice-bar" style="background:' + color + ';height:' + h + 'px"></div>';
+  }).join('');
+}
+
+const designs = [
+  // 1. Obsidian Gold — Neumorphic (original theme)
+  {
+    name: "Obsidian Gold",
+    desc: "Neumorphic dark — original vault theme",
+    bg: "#1a1d24", phoneBg: "#1a1d24", accent: "#d4af37", text: "#c9d1e0",
+    shadowD: "#0d0f14", shadowL: "#2a2f3a", cardBg: "#12141a",
+    sentBg: "#252a35", sentText: "#c9d1e0", recvBg: "#1a1d24", recvText: "#c9d1e0",
+    inputBg: "#1a1d24", inputText: "#c9d1e0", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#d4af37", sendColor: "#1a1d24", headerBg: "#1a1d24",
+    roleBg1: "#252a35", roleColor1: "#3ba776", roleBorder1: "#3ba776",
+    roleBg2: "#252a35", roleColor2: "#d4af37", roleBorder2: "#d4af37",
+    avatarBg1: "#252a35", avatarText1: "#3ba776",
+    avatarBg2: "#252a35", avatarText2: "#d4af37",
+    onlineColor: "#3ba776", voiceColor: "#3ba776", voicePlayBg: "#3ba776", voicePlayColor: "#1a1d24",
+    typingBg: "#1a1d24", typingDot: "#555c6e",
+    shieldColor: "#d4af37", timerColor: "#d4af37",
+    style: "neumorphic",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  },
+  // 2. Midnight Emerald — Glassmorphism
+  {
+    name: "Midnight Emerald",
+    desc: "Glassmorphism with frosted panels",
+    bg: "#0f1a17", phoneBg: "#0f1a17", accent: "#34d399", text: "#c6ddd4",
+    shadowD: "#060e0b", shadowL: "#1a2f27", cardBg: "#0a120f",
+    sentBg: "rgba(52,211,153,0.15)", sentText: "#c6ddd4", recvBg: "rgba(52,211,153,0.08)", recvText: "#a8d5c5",
+    inputBg: "rgba(52,211,153,0.08)", inputText: "#c6ddd4", micBg: "rgba(52,211,153,0.12)", micColor: "#34d399",
+    sendBg: "#34d399", sendColor: "#0f1a17", headerBg: "rgba(52,211,153,0.06)",
+    roleBg1: "rgba(52,211,153,0.12)", roleColor1: "#34d399", roleBorder1: "rgba(52,211,153,0.4)",
+    roleBg2: "rgba(110,231,183,0.12)", roleColor2: "#6ee7b7", roleBorder2: "rgba(110,231,183,0.4)",
+    avatarBg1: "rgba(52,211,153,0.15)", avatarText1: "#34d399",
+    avatarBg2: "rgba(110,231,183,0.15)", avatarText2: "#6ee7b7",
+    onlineColor: "#34d399", voiceColor: "#34d399", voicePlayBg: "#34d399", voicePlayColor: "#0f1a17",
+    typingBg: "rgba(52,211,153,0.08)", typingDot: "#34d399",
+    shieldColor: "#34d399", timerColor: "#34d399",
+    style: "glass",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  },
+  // 3. Crimson Night — Bold & Vibrant
+  {
+    name: "Crimson Night",
+    desc: "Bold bubbles with red accent pops",
+    bg: "#1a1215", phoneBg: "#1a1215", accent: "#f43f5e", text: "#e0c9cf",
+    shadowD: "#0e080a", shadowL: "#2f1a22", cardBg: "#120c0e",
+    sentBg: "#f43f5e", sentText: "#ffffff", recvBg: "#251a1e", recvText: "#e0c9cf",
+    inputBg: "#251a1e", inputText: "#e0c9cf", micBg: "#2a161c", micColor: "#f43f5e",
+    sendBg: "#f43f5e", sendColor: "#ffffff", headerBg: "#1a1215",
+    roleBg1: "#2a161c", roleColor1: "#f43f5e", roleBorder1: "#f43f5e",
+    roleBg2: "#2a161c", roleColor2: "#fb7185", roleBorder2: "#fb7185",
+    avatarBg1: "#f43f5e", avatarText1: "#ffffff",
+    avatarBg2: "#fb7185", avatarText2: "#1a1215",
+    onlineColor: "#fb7185", voiceColor: "#fb7185", voicePlayBg: "#f43f5e", voicePlayColor: "#ffffff",
+    typingBg: "#251a1e", typingDot: "#f43f5e",
+    shieldColor: "#f43f5e", timerColor: "#f43f5e",
+    style: "bold",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  },
+  // 4. Arctic Slate — Clean Minimal
+  {
+    name: "Arctic Slate",
+    desc: "Clean minimal — lots of breathing room",
+    bg: "#1c2028", phoneBg: "#1c2028", accent: "#60a5fa", text: "#c9d4e8",
+    shadowD: "#0e1015", shadowL: "#2c3340", cardBg: "#13161c",
+    sentBg: "#60a5fa", sentText: "#0e1015", recvBg: "#252a35", recvText: "#c9d4e8",
+    inputBg: "#252a35", inputText: "#c9d4e8", micBg: "#252a35", micColor: "#60a5fa",
+    sendBg: "#60a5fa", sendColor: "#0e1015", headerBg: "#1c2028",
+    roleBg1: "#252a35", roleColor1: "#60a5fa", roleBorder1: "#60a5fa",
+    roleBg2: "#252a35", roleColor2: "#93c5fd", roleBorder2: "#93c5fd",
+    avatarBg1: "#60a5fa", avatarText1: "#0e1015",
+    avatarBg2: "#93c5fd", avatarText2: "#1c2028",
+    onlineColor: "#60a5fa", voiceColor: "#60a5fa", voicePlayBg: "#60a5fa", voicePlayColor: "#0e1015",
+    typingBg: "#252a35", typingDot: "#60a5fa",
+    shieldColor: "#60a5fa", timerColor: "#60a5fa",
+    style: "minimal",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  },
+  // 5. Amber Forge — Warm & Industrial
+  {
+    name: "Amber Forge",
+    desc: "Warm amber tones — industrial feel",
+    bg: "#1a1710", phoneBg: "#1a1710", accent: "#f59e0b", text: "#e0d5c0",
+    shadowD: "#0e0c08", shadowL: "#2f2818", cardBg: "#120f0a",
+    sentBg: "#2a2318", sentText: "#f59e0b", recvBg: "#1a1710", recvText: "#e0d5c0",
+    inputBg: "#2a2318", inputText: "#e0d5c0", micBg: "#2a2318", micColor: "#f59e0b",
+    sendBg: "#f59e0b", sendColor: "#1a1710", headerBg: "#1a1710",
+    roleBg1: "#2a2318", roleColor1: "#f59e0b", roleBorder1: "#f59e0b",
+    roleBg2: "#2a2318", roleColor2: "#fbbf24", roleBorder2: "#fbbf24",
+    avatarBg1: "#2a2318", avatarText1: "#f59e0b",
+    avatarBg2: "#2a2318", avatarText2: "#fbbf24",
+    onlineColor: "#f59e0b", voiceColor: "#f59e0b", voicePlayBg: "#f59e0b", voicePlayColor: "#1a1710",
+    typingBg: "#2a2318", typingDot: "#f59e0b",
+    shieldColor: "#f59e0b", timerColor: "#f59e0b",
+    style: "neumorphic",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  },
+  // 6. Violet Haze — Soft Gradient
+  {
+    name: "Violet Haze",
+    desc: "Soft purple gradients — dreamy feel",
+    bg: "#18141f", phoneBg: "#18141f", accent: "#a78bfa", text: "#d0c8e4",
+    shadowD: "#0c0a12", shadowL: "#28203a", cardBg: "#100d16",
+    sentBg: "linear-gradient(135deg,#7c3aed,#a78bfa)", sentText: "#ffffff", recvBg: "rgba(167,139,250,0.1)", recvText: "#d0c8e4",
+    inputBg: "rgba(167,139,250,0.08)", inputText: "#d0c8e4", micBg: "rgba(167,139,250,0.12)", micColor: "#a78bfa",
+    sendBg: "linear-gradient(135deg,#7c3aed,#a78bfa)", sendColor: "#ffffff", headerBg: "rgba(167,139,250,0.06)",
+    roleBg1: "rgba(167,139,250,0.12)", roleColor1: "#a78bfa", roleBorder1: "rgba(167,139,250,0.5)",
+    roleBg2: "rgba(196,181,253,0.12)", roleColor2: "#c4b5fd", roleBorder2: "rgba(196,181,253,0.5)",
+    avatarBg1: "rgba(167,139,250,0.2)", avatarText1: "#a78bfa",
+    avatarBg2: "rgba(196,181,253,0.2)", avatarText2: "#c4b5fd",
+    onlineColor: "#a78bfa", voiceColor: "#a78bfa", voicePlayBg: "#a78bfa", voicePlayColor: "#18141f",
+    typingBg: "rgba(167,139,250,0.08)", typingDot: "#a78bfa",
+    shieldColor: "#a78bfa", timerColor: "#a78bfa",
+    style: "gradient",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  },
+  // 7. Ivory Gold — White Interior Bubbles
+  {
+    name: "Ivory Gold",
+    desc: "Dark frame, white chat bubbles inside",
+    bg: "#1a1d24", phoneBg: "#1a1d24", accent: "#d4af37", text: "#2a2d34",
+    shadowD: "#0d0f14", shadowL: "#2a2f3a", cardBg: "#12141a",
+    sentBg: "#f5f5f0", sentText: "#1a1d24", recvBg: "#e8e8e2", recvText: "#1a1d24",
+    inputBg: "#f5f5f0", inputText: "#1a1d24", micBg: "#252830", micColor: "#d4af37",
+    sendBg: "#d4af37", sendColor: "#1a1d24", headerBg: "#1a1d24",
+    roleBg1: "#252830", roleColor1: "#3ba776", roleBorder1: "#3ba776",
+    roleBg2: "#252830", roleColor2: "#d4af37", roleBorder2: "#d4af37",
+    avatarBg1: "#3ba776", avatarText1: "#ffffff",
+    avatarBg2: "#d4af37", avatarText2: "#1a1d24",
+    onlineColor: "#3ba776", voiceColor: "#3ba776", voicePlayBg: "#3ba776", voicePlayColor: "#ffffff",
+    typingBg: "#e8e8e2", typingDot: "#7a8394",
+    shieldColor: "#d4af37", timerColor: "#d4af37",
+    style: "white-bubbles",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  },
+  // 8. Cyber Teal — Futuristic Terminal
+  {
+    name: "Cyber Teal",
+    desc: "Futuristic terminal — hacker aesthetic",
+    bg: "#0a0e12", phoneBg: "#0a0e12", accent: "#00ffc8", text: "#b0f0e0",
+    shadowD: "#040608", shadowL: "#141c24", cardBg: "#060a0e",
+    sentBg: "rgba(0,255,200,0.1)", sentText: "#00ffc8", recvBg: "rgba(0,255,200,0.05)", recvText: "#80e0c0",
+    inputBg: "rgba(0,255,200,0.06)", inputText: "#00ffc8", micBg: "rgba(0,255,200,0.1)", micColor: "#00ffc8",
+    sendBg: "#00ffc8", sendColor: "#0a0e12", headerBg: "rgba(0,255,200,0.04)",
+    roleBg1: "rgba(0,255,200,0.1)", roleColor1: "#00ffc8", roleBorder1: "rgba(0,255,200,0.4)",
+    roleBg2: "rgba(0,255,200,0.06)", roleColor2: "#80e0c0", roleBorder2: "rgba(0,255,200,0.25)",
+    avatarBg1: "rgba(0,255,200,0.15)", avatarText1: "#00ffc8",
+    avatarBg2: "rgba(0,255,200,0.08)", avatarText2: "#80e0c0",
+    onlineColor: "#00ffc8", voiceColor: "#00ffc8", voicePlayBg: "#00ffc8", voicePlayColor: "#0a0e12",
+    typingBg: "rgba(0,255,200,0.06)", typingDot: "#00ffc8",
+    shieldColor: "#00ffc8", timerColor: "#00ffc8",
+    style: "terminal",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  },
+  // 9. Rose Quartz — Soft Pink Elegance
+  {
+    name: "Rose Quartz",
+    desc: "Soft pink elegance — warm & feminine",
+    bg: "#1c141a", phoneBg: "#1c141a", accent: "#f472b6", text: "#e8c8d8",
+    shadowD: "#100a0e", shadowL: "#2e2030", cardBg: "#140e14",
+    sentBg: "#f472b6", sentText: "#1c141a", recvBg: "#261a24", recvText: "#e8c8d8",
+    inputBg: "#261a24", inputText: "#e8c8d8", micBg: "#2a1c28", micColor: "#f472b6",
+    sendBg: "#f472b6", sendColor: "#1c141a", headerBg: "#1c141a",
+    roleBg1: "#2a1c28", roleColor1: "#f472b6", roleBorder1: "#f472b6",
+    roleBg2: "#2a1c28", roleColor2: "#f9a8d4", roleBorder2: "#f9a8d4",
+    avatarBg1: "#f472b6", avatarText1: "#1c141a",
+    avatarBg2: "#f9a8d4", avatarText2: "#1c141a",
+    onlineColor: "#f472b6", voiceColor: "#f472b6", voicePlayBg: "#f472b6", voicePlayColor: "#1c141a",
+    typingBg: "#261a24", typingDot: "#f472b6",
+    shieldColor: "#f472b6", timerColor: "#f472b6",
+    style: "elegant",
+    roleIcon1: "&#x1F418;", roleIcon2: "&#x1F43B;"
+  }
+];
+
+const grid = document.getElementById('grid');
+
+designs.forEach(function(d, i) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.background = d.cardBg;
+  card.style.boxShadow = '6px 6px 14px #08090c, -4px -4px 10px ' + d.shadowL;
+
+  const neumInset = 'inset 2px 2px 4px ' + d.shadowD + ', inset -2px -2px 4px ' + d.shadowL;
+  const neumOut = '3px 3px 6px ' + d.shadowD + ', -3px -3px 6px ' + d.shadowL;
+  const neumOutBig = '4px 4px 8px ' + d.shadowD + ', -4px -4px 8px ' + d.shadowL;
+  const neumOutXl = '6px 6px 14px ' + d.shadowD + ', -6px -6px 14px ' + d.shadowL;
+
+  const phoneShadow = d.style === 'glass'
+    ? '0 8px 32px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.05)'
+    : neumOutXl;
+
+  const phoneBorder = d.style === 'terminal'
+    ? 'border: 1px solid rgba(0,255,200,0.15);'
+    : d.style === 'glass'
+    ? 'border: 1px solid rgba(255,255,255,0.08);'
+    : '';
+
+  const sentIsGrad = d.sentBg.includes('gradient');
+  const sendIsGrad = d.sendBg.includes('gradient');
+
+  card.innerHTML =
+    '<div class="card-label" style="color:' + d.accent + '">' + d.name + '</div>' +
+    '<div class="card-sublabel" style="color:' + d.text + '">' + d.desc + '</div>' +
+    '<div class="phone" style="background:' + d.phoneBg + ';box-shadow:' + phoneShadow + ';' + phoneBorder + '">' +
+      '<div class="phone-inner">' +
+
+        // Role selection overlay
+        '<div class="role-overlay" style="background:' + d.phoneBg + 'ef">' +
+          '<div class="lock-icon" style="color:' + d.accent + '">' + lockSvg + '</div>' +
+          '<div class="role-title" style="color:' + d.text + '">Choose Your Identity</div>' +
+          '<div class="role-subtitle" style="color:' + d.text + '">Who are you chatting as?</div>' +
+          '<div class="role-options">' +
+            '<button class="role-btn" style="background:' + d.roleBg1 + ';color:' + d.roleColor1 + ';border:1.5px solid ' + d.roleBorder1 + ';box-shadow:' + neumOut + '">' +
+              '<span class="role-icon">' + d.roleIcon1 + '</span>Dumbi' +
+            '</button>' +
+            '<button class="role-btn" style="background:' + d.roleBg2 + ';color:' + d.roleColor2 + ';border:1.5px solid ' + d.roleBorder2 + ';box-shadow:' + neumOut + '">' +
+              '<span class="role-icon">' + d.roleIcon2 + '</span>Dumbo' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+
+        // Chat header
+        '<div class="chat-header" style="background:' + d.headerBg + ';border-bottom:1px solid rgba(255,255,255,0.05)">' +
+          '<div class="chat-avatar" style="background:' + d.avatarBg2 + ';color:' + d.avatarText2 + '">D</div>' +
+          '<div class="chat-info">' +
+            '<div class="chat-name" style="color:' + d.text + '">Dumbo <span class="online-dot" style="background:' + d.onlineColor + '"></span></div>' +
+            '<div class="chat-status" style="color:' + d.text + '">Online</div>' +
+          '</div>' +
+          '<div class="chat-timer" style="color:' + d.timerColor + '">' + clockSvg + ' 23:47:12</div>' +
+        '</div>' +
+
+        // Messages
+        '<div class="chat-messages" style="background:' + d.bg + '">' +
+
+          // Date divider
+          '<div class="date-divider" style="color:' + d.text + '">Today</div>' +
+
+          // Received message
+          '<div class="msg msg-recv" style="background:' + d.recvBg + ';color:' + d.recvText + ';box-shadow:' + (d.style === 'neumorphic' ? neumInset : 'none') + '">' +
+            '<div class="msg-name" style="color:' + d.accent + '">Dumbo</div>' +
+            'Hey! Did you finish the polity chapter?' +
+            '<div class="msg-time">3:42 PM</div>' +
+            '<div class="enc-tag" style="color:' + d.accent + '">AES-256</div>' +
+          '</div>' +
+
+          // Sent message
+          '<div class="msg msg-sent" style="background:' + d.sentBg + ';color:' + d.sentText + ';box-shadow:' + (d.style === 'neumorphic' ? neumOut : 'none') + '">' +
+            'Almost done! Making notes on DPSP now' +
+            '<div class="msg-time">3:44 PM</div>' +
+            '<div class="enc-tag" style="color:' + (sentIsGrad ? '#ffffff80' : d.accent) + '">AES-256</div>' +
+          '</div>' +
+
+          // Received voice
+          '<div class="msg msg-recv msg-voice" style="background:' + d.recvBg + ';color:' + d.recvText + ';box-shadow:' + (d.style === 'neumorphic' ? neumInset : 'none') + '">' +
+            '<button class="voice-play" style="background:' + d.voicePlayBg + ';color:' + d.voicePlayColor + '">' + playSvg + '</button>' +
+            '<div class="voice-waves">' + voiceBars(d.voiceColor, 20) + '</div>' +
+            '<div class="voice-dur" style="color:' + d.text + '">0:42</div>' +
+          '</div>' +
+
+          // Sent message
+          '<div class="msg msg-sent" style="background:' + d.sentBg + ';color:' + d.sentText + ';box-shadow:' + (d.style === 'neumorphic' ? neumOut : 'none') + '">' +
+            'That voice note was super helpful!' +
+            '<div class="msg-time">3:48 PM</div>' +
+          '</div>' +
+
+          // Typing indicator
+          '<div class="typing" style="background:' + d.typingBg + '">' +
+            '<div class="typing-dot" style="background:' + d.typingDot + '"></div>' +
+            '<div class="typing-dot" style="background:' + d.typingDot + '"></div>' +
+            '<div class="typing-dot" style="background:' + d.typingDot + '"></div>' +
+          '</div>' +
+
+          // Delete notice
+          '<div class="delete-notice" style="color:' + d.text + '">Messages auto-delete in 24h</div>' +
+
+        '</div>' +
+
+        // Input area
+        '<div class="chat-input" style="background:' + d.headerBg + ';border-top:1px solid rgba(255,255,255,0.05)">' +
+          '<input class="input-field" style="background:' + d.inputBg + ';color:' + d.inputText + ';box-shadow:' + (d.style === 'neumorphic' ? neumInset : 'none') + '" placeholder="Type a message..." readonly>' +
+          '<button class="input-mic" style="background:' + d.micBg + ';color:' + d.micColor + ';box-shadow:' + neumOut + '">' + micSvg + '</button>' +
+          '<button class="input-send" style="background:' + d.sendBg + ';color:' + d.sendColor + ';box-shadow:' + neumOut + '">' + sendSvg + '</button>' +
+        '</div>' +
+
+      '</div>' +
+    '</div>';
+
+  grid.appendChild(card);
+});
+</script>
+
+</body>
+</html>
