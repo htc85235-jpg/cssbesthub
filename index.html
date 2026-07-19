@@ -10,7 +10,6 @@
   var GITHUB_REPO = 'htc85235-jpg/cssbesthub-vault';
   var GITHUB_BRANCH = 'main';
   var CHAT_FILE = 'chat.json';
-  var TYPING_FILE = 'typing.json';
   var WORKER_URL = 'https://voice-box-worker.htc85235.workers.dev';
   var POLL_INTERVAL = 3000; // 3 seconds
   var AUTO_DELETE_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -23,7 +22,6 @@
   // ===== STATE =====
   var myRole = null; // 'dumbi' or 'dumbo'
   var chatFileSha = null;
-  var typingFileSha = null;
   var pollTimer = null;
   var mediaRecorder = null;
   var audioChunks = [];
@@ -44,7 +42,7 @@
   var lastTypingSend = 0;
   var recordedMimeType = 'audio/webm'; // track actual MIME type from recorder
   var lastTypingCheckResult = false; // track other user's typing state to avoid UI flicker
-  var typingSaveInProgress = false; // prevent concurrent typing saves
+
 
   // ===== DOM =====
   var trigger = null;
@@ -434,43 +432,23 @@
 
   // ===== TYPING INDICATOR (GitHub-based) =====
   async function saveTypingStatus() {
-    if (!myRole || typingSaveInProgress) return;
+    if (!myRole) return;
     var now = Date.now();
-    // Debounce: don't save more than once per 2 seconds
+    // Debounce: don't send more than once per 2 seconds
     if (now - lastTypingSend < 2000) return;
     lastTypingSend = now;
-    typingSaveInProgress = true;
 
+    // Use Cloudflare Worker (fast, lightweight)
     try {
-      // Read current typing file
-      var data = await githubApi('GET', '/contents/' + TYPING_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-      var typingData = {};
-      if (data.content) {
-        try {
-          typingData = JSON.parse(atob(data.content.replace(/\n/g, '')));
-        } catch(e) { typingData = {}; }
-      }
-      if (data.sha) typingFileSha = data.sha;
-
-      // Update my typing timestamp
-      typingData[myRole] = Date.now();
-
-      // Save
-      var body = {
-        message: 'typing ' + myRole,
-        content: btoa(JSON.stringify(typingData)),
-        branch: GITHUB_BRANCH
-      };
-      if (typingFileSha) body.sha = typingFileSha;
-
-      var result = await githubApi('PUT', '/contents/' + TYPING_FILE, body);
-      if (result.sha) typingFileSha = result.sha;
-      if (result.content) typingFileSha = result.content.sha;
+      await fetch(WORKER_URL + '/typing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: myRole })
+      });
     } catch(e) {
-      // Conflict or error — ignore, will retry on next input
-      console.log('[Chat] Typing save failed:', e.message);
+      // Worker not available — fail silently
+      console.log('[Chat] Typing send failed:', e.message);
     }
-    typingSaveInProgress = false;
   }
 
   async function checkOtherTyping() {
@@ -481,13 +459,10 @@
     if (!typingEl) return;
 
     try {
-      var data = await githubApi('GET', '/contents/' + TYPING_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-      if (data.content) {
-        if (data.sha) typingFileSha = data.sha;
-        var typingData = JSON.parse(atob(data.content.replace(/\n/g, '')));
-        var otherTs = typingData[otherRole];
-        if (otherTs && (Date.now() - otherTs) < 5000) {
-          // Other person is typing
+      var resp = await fetch(WORKER_URL + '/typing/' + otherRole);
+      if (resp.ok) {
+        var data = await resp.json();
+        if (data.typing) {
           var displayName = otherRole === 'dumbi' ? 'Dumbi' : 'Dumbo';
           if (typingName) typingName.textContent = displayName + ' is typing ';
           typingEl.classList.add('visible');
@@ -496,10 +471,9 @@
         }
       }
     } catch(e) {
-      // File doesn't exist yet or parse error — that's fine, no one is typing
+      // Worker not available — no typing indicator
     }
 
-    // Only hide if it was previously shown (avoid unnecessary DOM updates)
     if (lastTypingCheckResult) {
       typingEl.classList.remove('visible');
       lastTypingCheckResult = false;
@@ -1438,7 +1412,6 @@
     voiceAudioCache = {};
     myRole = null;
     chatFileSha = null;
-    typingFileSha = null;
     lastMessageCount = 0;
     pendingSeenUpdates = [];
     isTypingNow = false;
