@@ -165,6 +165,8 @@
     + '    .voice-waves-mini .vbar { width:2.5px; border-radius:1px; background:#1a7a3a; transition:height 0.1s; flex-shrink:0; }'
     + '    .chat-msg.sent .voice-waves-mini .vbar { background:#1a7a3a; }'
     + '    .voice-progress-overlay { position:absolute; left:0; top:0; bottom:0; width:0; background:rgba(59,130,246,0.12); transition:width 0.1s linear; pointer-events:none; }'
+    + '    .voice-seek-dot { position:absolute; top:50%; width:10px; height:10px; border-radius:50%; background:#3b82f6; left:0; transform:translate(-50%,-50%); pointer-events:none; box-shadow: 0 0 4px rgba(59,130,246,0.5); transition:left 0.1s linear; opacity:0; }'
+    + '    .voice-waves-mini.seeking .voice-seek-dot, .voice-waves-mini.playing .voice-seek-dot { opacity:1; }'
 
     + '    .voice-time-row { display:flex; align-items:center; justify-content:space-between; gap:4px; }'
     + '    .voice-dur { font-size:9px; opacity:0.5; white-space:nowrap; font-variant-numeric:tabular-nums; }'
@@ -979,7 +981,7 @@
         '<div class="voice-wave-progress">' +
           '<div class="voice-waves-mini">' +
             '<div class="voice-progress-overlay"></div>' +
-
+            '<div class="voice-seek-dot"></div>' +
             generateVoiceBars() +
           '</div>' +
           '<div class="voice-time-row">' +
@@ -1005,6 +1007,8 @@
           // Update visual position
           var overlay = waveContainer.querySelector('.voice-progress-overlay');
           if (overlay) overlay.style.width = (pct * 100) + '%';
+          var seekDot = waveContainer.querySelector('.voice-seek-dot');
+          if (seekDot) seekDot.style.left = (pct * 100) + '%';
           // If audio is loaded, seek
           if (currentAudio && currentPlayBtn === playBtn && currentAudio.duration) {
             currentAudio.currentTime = pct * currentAudio.duration;
@@ -1086,6 +1090,8 @@
     var pct = (elapsed / total) * 100;
     var overlay = msgDiv.querySelector('.voice-progress-overlay');
     if (overlay) overlay.style.width = pct + '%';
+    var seekDot = msgDiv.querySelector('.voice-seek-dot');
+    if (seekDot) seekDot.style.left = pct + '%';
 
     var wavesMini = msgDiv.querySelector('.voice-waves-mini');
     if (wavesMini) wavesMini.classList.add('playing');
