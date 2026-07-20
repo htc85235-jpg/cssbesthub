@@ -546,14 +546,15 @@
         var kvData = await kvResp.json();
         if (kvData.writes !== undefined && kvData.writes !== null) {
           var cloudWrites = kvData.writes;
-          // Cloudflare Analytics has ~30-90s delay
-          // dailyWrites should NEVER decrease within a session — only increase
+          var oldDailyWrites = dailyWrites;
+          // Rule 1: dailyWrites NEVER decreases, only increases
           if (cloudWrites > dailyWrites) {
             dailyWrites = cloudWrites;
-            // Cloudflare caught up, reset pending only if Cloudflare overtook our optimistic count
-            if (cloudWrites >= dailyWrites + pendingWriteIncrement) {
-              pendingWriteIncrement = 0;
-            }
+          }
+          // Rule 2: If Cloudflare's number covers our old total (base + pending),
+          // it caught up — clear pending and let dailyWrites carry the real count
+          if (cloudWrites >= oldDailyWrites + pendingWriteIncrement) {
+            pendingWriteIncrement = 0;
           }
           updateWriteCount(Math.max(0, 1000 - (dailyWrites + pendingWriteIncrement)));
         }
@@ -971,6 +972,10 @@
       // Store MIME type as data attribute for playback
       var voiceMime = msg.mimeType || recordedMimeType || 'audio/webm';
       div.dataset.mime = voiceMime;
+      // Parse duration string to seconds for progress calculation
+      var durParts = (msg.duration || '0:0').split(':');
+      var durSec = parseInt(durParts[0]) * 60 + parseInt(durParts[1] || '0');
+      div.dataset.voiceDurSec = durSec;
       var playBtnColor = '#1a7a3a';
       div.innerHTML =
         '<button class="voice-play-btn" style="background:' + playBtnColor + ';color:#fff;" data-voice-key="' + msg.voiceKey + '">' +
@@ -1036,26 +1041,23 @@
     var elapsed = audio.currentTime || 0;
     var total = audio.duration;
 
-    // If duration not ready yet, still show dot at position and color first bar
+    // Fallback: use stored duration (from msg.duration string) when audio.duration is NaN
     if (!total || !isFinite(total) || total <= 0) {
-      // Show elapsed time
+      var storedSec = parseInt(msgDiv.dataset.voiceDurSec);
+      if (storedSec && storedSec > 0) total = storedSec;
+    }
+
+    // Still no total? Show elapsed only
+    if (!total || !isFinite(total) || total <= 0) {
       var elapsedEl0 = msgDiv.querySelector('.voice-dur.elapsed');
       if (elapsedEl0 && elapsed > 0) {
         elapsedEl0.style.display = '';
         elapsedEl0.textContent = formatTime(Math.floor(elapsed));
       }
-      // Show dot near start and mark playing
-      var seekDot0 = msgDiv.querySelector('.voice-seek-dot');
-      if (seekDot0 && elapsed > 0) seekDot0.style.left = '2%';
-      var wavesMini0 = msgDiv.querySelector('.voice-waves-mini');
-      if (wavesMini0) wavesMini0.classList.add('playing');
-      // Color first bar as played
-      var bars0 = msgDiv.querySelectorAll('.vbar');
-      if (bars0.length > 0 && elapsed > 0) bars0[0].classList.add('played');
       return;
     }
 
-    var pct = elapsed / total;
+    var pct = Math.min(1, elapsed / total);
     var pctPct = pct * 100;
 
     // Move seek dot
@@ -1718,7 +1720,7 @@
   }
 
   // ===== ENTER CHAT =====
-  function enterChat() {
+  async function enterChat() {
     show(chatSection);
     overlay.style.alignItems = 'flex-end';
     overlay.style.paddingBottom = '12px';
@@ -1736,6 +1738,10 @@
     if (headerStatus) headerStatus.textContent = 'Messages auto-delete in 24h';
 
     chatInput.focus();
+
+    // Fetch real write count FIRST before starting anything
+    await checkStatus();
+
     startPolling();
     startPresenceHeartbeat();
     startStatusCheck();
@@ -1780,6 +1786,7 @@
     isTypingNow = false;
     lastTypingCheckResult = false;
     dailyWrites = 0;
+    pendingWriteIncrement = 0;
     otherPresence = { dumbi: { online: false, typing: false }, dumbo: { online: false, typing: false } };
 
     if (messagesContainer) messagesContainer.innerHTML = '';
@@ -1792,10 +1799,7 @@
     var dumboBubble = document.getElementById('presence-dumbo');
     if (dumbiBubble) dumbiBubble.classList.remove('online', 'typing');
     if (dumboBubble) dumboBubble.classList.remove('online', 'typing');
-    var wcNum = document.getElementById('write-count-num');
-    if (wcNum) wcNum.textContent = '0';
-    dailyWrites = 0;
-    pendingWriteIncrement = 0;
+    // Don't reset write count display to 0 — it will be fetched on next open
 
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
     stopProgressTimer();
