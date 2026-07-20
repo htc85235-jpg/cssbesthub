@@ -1033,9 +1033,19 @@
   var playPlaySvg = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
 
   function updateVoiceProgress(audio, msgDiv) {
-    if (!audio || !msgDiv || !audio.duration) return;
-    var elapsed = audio.currentTime;
+    if (!audio || !msgDiv) return;
+    var elapsed = audio.currentTime || 0;
     var total = audio.duration;
+    // If duration not ready yet, still move dot based on elapsed (will correct when duration loads)
+    if (!total || !isFinite(total)) {
+      // Show elapsed time even if duration unknown
+      var elapsedEl = msgDiv.querySelector('.voice-dur.elapsed');
+      if (elapsedEl) {
+        elapsedEl.style.display = '';
+        elapsedEl.textContent = formatTime(Math.floor(elapsed));
+      }
+      return;
+    }
     var pct = elapsed / total;
     var pctPct = pct * 100;
 
@@ -1056,21 +1066,27 @@
 
     var wavesMini = msgDiv.querySelector('.voice-waves-mini');
     if (wavesMini) wavesMini.classList.add('playing');
-    var elapsedEl = msgDiv.querySelector('.voice-dur.elapsed');
-    if (elapsedEl) {
-      elapsedEl.style.display = '';
-      elapsedEl.textContent = formatTime(Math.floor(elapsed));
+    var elapsedEl2 = msgDiv.querySelector('.voice-dur.elapsed');
+    if (elapsedEl2) {
+      elapsedEl2.style.display = '';
+      elapsedEl2.textContent = formatTime(Math.floor(elapsed));
     }
   }
 
+  var progressRaf = null;
   function startProgressTimer(audio, msgDiv) {
     stopProgressTimer();
-    progressTimer = setInterval(function() {
+    function tick() {
       updateVoiceProgress(audio, msgDiv);
-    }, 100);
+      if (!audio.paused && !audio.ended) {
+        progressRaf = requestAnimationFrame(tick);
+      }
+    }
+    tick();
   }
 
   function stopProgressTimer() {
+    if (progressRaf) { cancelAnimationFrame(progressRaf); progressRaf = null; }
     if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
   }
 
