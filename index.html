@@ -87,6 +87,10 @@
   var stickerPicker = null;
   var stickerPickerOpen = false;
   var activeStickerPack = null;
+  var quicksBtn = null;
+  var quicksBox = null;
+  var quicksBoxClose = null;
+  var quicksOpen = false;
 
   // ===== OVERLAY HTML =====
   var OVERLAY_HTML = ''
@@ -99,6 +103,30 @@
     + '    #chat-close { position:relative; top:auto; right:auto; width:30px; height:30px; border-radius:50%; background:#2a2f3a; border:2px solid #1a1d24; color:#a8b0c0; font-size:17px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
     + '    #chat-close:active { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; }'
     + '    #chat-close:hover { color:#ef4444; background:#3a2020; }'
+
+    // Quicks button
+    + '    .quicks-btn { position:relative; width:auto; min-width:56px; height:30px; border-radius:14px; background:linear-gradient(145deg,#2a2f3a,#1e222b); border:1.5px solid rgba(212,175,55,0.25); color:#d4af37; font-size:10px; font-weight:800; letter-spacing:0.6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:3px; box-shadow: 3px 3px 8px #0d0f14, -2px -2px 6px #2a2f3a, inset 1px 1px 2px rgba(212,175,55,0.08); transition:all 0.2s; flex-shrink:0; padding:0 10px; text-transform:uppercase; }'
+    + '    .quicks-btn:hover { border-color:rgba(212,175,55,0.5); box-shadow: 3px 3px 8px #0d0f14, -2px -2px 6px #2a2f3a, inset 1px 1px 2px rgba(212,175,55,0.12), 0 0 12px rgba(212,175,55,0.15); transform:translateY(-1px); }'
+    + '    .quicks-btn:active { box-shadow: inset 3px 3px 6px #0d0f14, inset -2px -2px 4px #2a2f3a; transform:translateY(0); }'
+    + '    .quicks-btn.active { background:linear-gradient(145deg,#3a2a1a,#2a1f14); border-color:rgba(212,175,55,0.6); color:#f0c040; box-shadow: inset 2px 2px 6px #0d0f14, inset -1px -1px 3px #2a2f3a, 0 0 10px rgba(212,175,55,0.2); }'
+    + '    .quicks-btn svg { width:12px; height:12px; }'
+
+    // Quicks box
+    + '    .quicks-box { display:none; position:absolute; top:100%; right:0; margin-top:4px; width:calc(100% - 0px); background:#1a1d24; border-radius:14px; z-index:100; box-shadow: 8px 8px 20px #0d0f14, -6px -6px 16px #2a2f3a, inset 1px 1px 3px rgba(212,175,55,0.06); border:1.5px solid rgba(42,47,58,0.5); overflow:hidden; animation:quicksPopIn 0.25s cubic-bezier(0.22,1,0.36,1); perspective:600px; }'
+    + '    .quicks-box.open { display:block; }'
+    + '    @keyframes quicksPopIn { from{opacity:0;transform:scale(0.9) translateY(-8px) rotateX(8deg)} to{opacity:1;transform:scale(1) translateY(0) rotateX(0)} }'
+    + '    .quicks-box-header { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid rgba(42,47,58,0.4); background:rgba(212,175,55,0.04); }'
+    + '    .quicks-box-title { font-size:11px; font-weight:800; color:#d4af37; letter-spacing:1px; text-transform:uppercase; }'
+    + '    .quicks-box-close { width:22px; height:22px; border-radius:50%; background:#2a2f3a; border:1.5px solid #1a1d24; color:#a8b0c0; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
+    + '    .quicks-box-close:hover { color:#ef4444; background:#3a2020; }'
+    + '    .quicks-box-close:active { box-shadow:inset 2px 2px 4px #0d0f14,inset -2px -2px 4px #2a2f3a; }'
+    + '    .quicks-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:6px; max-height:310px; overflow-y:auto; }'
+    + '    .quicks-grid::-webkit-scrollbar { width:3px; }'
+    + '    .quicks-grid::-webkit-scrollbar-thumb { background:#333; border-radius:2px; }'
+    + '    .quicks-item { background:linear-gradient(145deg,#252830,#1e2128); border:1px solid rgba(42,47,58,0.4); border-radius:8px; padding:6px 5px; font-size:9.5px; color:#c9d1e0; cursor:pointer; text-align:center; transition:all 0.15s; box-shadow:2px 2px 5px #0d0f14,-2px -2px 4px #2a2f3a; line-height:1.2; display:flex; align-items:center; justify-content:center; min-height:34px; word-break:break-word; }'
+    + '    .quicks-item:hover { border-color:rgba(212,175,55,0.4); color:#d4af37; transform:translateY(-1px); box-shadow:2px 2px 5px #0d0f14,-2px -2px 4px #2a2f3a,0 0 8px rgba(212,175,55,0.1); }'
+    + '    .quicks-item:active { box-shadow:inset 2px 2px 4px #0d0f14,inset -2px -2px 4px #2a2f3a; transform:translateY(0); }'
+    + '    .quicks-item.flash { background:linear-gradient(145deg,#3a2a1a,#2a1f14); border-color:rgba(212,175,55,0.6); color:#f0c040; }'
 
     // Prompt section (password)
     + '    .chat-prompt { padding:20px 16px; text-align:center; }'
@@ -129,7 +157,7 @@
     + '    .chat-main { display:flex; flex-direction:column; height:70vh; min-height:400px; }'
 
     // Chat header
-    + '    .chat-header { display:flex; align-items:center; padding:5px 10px; gap:6px; border-bottom:1px solid rgba(42,47,58,0.4); flex-shrink:0; }'
+    + '    .chat-header { display:flex; align-items:center; padding:5px 10px; gap:6px; border-bottom:1px solid rgba(42,47,58,0.4); flex-shrink:0; position:relative; }'
     + '    .chat-header-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; }'
     + '    .chat-header-info { flex:1; }'
     + '    .chat-header-name { font-size:11px; font-weight:700; color:#c9d1e0; }'
@@ -313,7 +341,38 @@
     + '          <div class="chat-header-status"><span id="chat-header-status">Messages auto-delete in 24h</span></div>'
     + '        </div>'
     // write-count HTML removed — moved to private dashboard
+    + '        <button class="quicks-btn" id="quicks-btn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Quicks</button>'
     + '        <button id="chat-close" aria-label="Close">&times;</button>'
+    + '      </div>'
+    + '      <div class="quicks-box" id="quicks-box">'
+    + '        <div class="quicks-box-header"><span class="quicks-box-title">Quick Messages</span><button class="quicks-box-close" id="quicks-box-close" type="button">&times;</button></div>'
+    + '        <div class="quicks-grid" id="quicks-grid">'
+    + '          <div class="quicks-item" data-quick="Assalamualaikum!">Assalamualaikum!</div>'
+    + '          <div class="quicks-item" data-quick="How are you Dumbo Mera?">How are you Dumbo Mera?</div>'
+    + '          <div class="quicks-item" data-quick="Main theek hu Dumbo Mera">Main theek hu Dumbo Mera</div>'
+    + '          <div class="quicks-item" data-quick="Kahan ho?">Kahan ho?</div>'
+    + '          <div class="quicks-item" data-quick="Kya kar rahy ho aap?">Kya kar rahy ho aap?</div>'
+    + '          <div class="quicks-item" data-quick="I lobe you Dhair Sara">I lobe you Dhair Sara</div>'
+    + '          <div class="quicks-item" data-quick="I Miss you Dhair Sara">I Miss you Dhair Sara</div>'
+    + '          <div class="quicks-item" data-quick="Ami is here. Can\'t use phone">Ami is here. Can\'t use phone</div>'
+    + '          <div class="quicks-item" data-quick="Heart main pain hai">Heart main pain hai</div>'
+    + '          <div class="quicks-item" data-quick="Tabiyat down hai dumbo Mera">Tabiyat down hai dumbo Mera</div>'
+    + '          <div class="quicks-item" data-quick="Talk you later">Talk you later</div>'
+    + '          <div class="quicks-item" data-quick="I\'m going to sleep">I\'m going to sleep</div>'
+    + '          <div class="quicks-item" data-quick="Ami Kaisi hain?">Ami Kaisi hain?</div>'
+    + '          <div class="quicks-item" data-quick="Just woke">Just woke</div>'
+    + '          <div class="quicks-item" data-quick="I had bad dream">I had bad dream</div>'
+    + '          <div class="quicks-item" data-quick="I\'m feeling anxious">I\'m feeling anxious</div>'
+    + '          <div class="quicks-item" data-quick="I need a hug">I need a hug</div>'
+    + '          <div class="quicks-item" data-quick="Good Night Dumbo Mera 💞🌃">Good Night Dumbo Mera 💞🌃</div>'
+    + '          <div class="quicks-item" data-quick="Good Morning Dumbo Mera 💞">Good Morning Dumbo Mera 💞</div>'
+    + '          <div class="quicks-item" data-quick="We can do it">We can do it</div>'
+    + '          <div class="quicks-item" data-quick="Playing with Noor">Playing with Noor</div>'
+    + '          <div class="quicks-item" data-quick="Going Out for hours">Going Out for hours</div>'
+    + '          <div class="quicks-item" data-quick="Going out for Walk">Going out for Walk</div>'
+    + '          <div class="quicks-item" data-quick="Don\'t wait for my msg. It\'ll take time">Don\'t wait for my msg. It\'ll take time</div>'
+    + '          <div class="quicks-item" data-quick="Ghusa aa Raha hai">Ghusa aa Raha hai</div>'
+    + '        </div>'
     + '      </div>'
 
     // Messages
@@ -1886,6 +1945,9 @@
     headerRole     = document.getElementById('chat-header-name');
     headerStatus   = document.getElementById('chat-header-status');
     deleteTimerEl  = document.getElementById('chat-delete-timer');
+    quicksBtn      = document.getElementById('quicks-btn');
+    quicksBox      = document.getElementById('quicks-box');
+    quicksBoxClose = document.getElementById('quicks-box-close');
     return true;
   }
 
@@ -1952,6 +2014,30 @@
     wrongMsg.style.display = 'none';
   }
 
+  // ===== QUICKS BOX =====
+  function closeQuicksBox() {
+    quicksOpen = false;
+    if (quicksBtn) quicksBtn.classList.remove('active');
+    if (quicksBox) quicksBox.classList.remove('open');
+  }
+
+  function sendQuickText(text) {
+    if (!text || !myRole) return;
+    var msg = {
+      id: 'txt_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
+      type: 'text',
+      sender: myRole,
+      ts: Date.now(),
+      text: text
+    };
+    locallySentIds[msg.id] = Date.now();
+    appendMessage(msg);
+    scrollToBottom();
+    saveMessagesToGitHub(msg, false).catch(function(e){
+      console.error('[Chat] Quick send failed:', e);
+    });
+  }
+
   // ===== ATTACH LISTENERS =====
   function attachListeners() {
     if (listenersAttached) return;
@@ -2011,8 +2097,53 @@
     if (messagesContainer) {
       messagesContainer.addEventListener('click', function(){
         if (stickerPickerOpen) closeStickerPicker();
+        if (quicksOpen) closeQuicksBox();
       });
     }
+
+    // Quicks button: toggle quicks box
+    if (quicksBtn) {
+      quicksBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        if (quicksOpen) {
+          closeQuicksBox();
+        } else {
+          if (stickerPickerOpen) closeStickerPicker();
+          quicksOpen = true;
+          quicksBtn.classList.add('active');
+          quicksBox.classList.add('open');
+        }
+      });
+    }
+
+    // Quicks box close button
+    if (quicksBoxClose) {
+      quicksBoxClose.addEventListener('click', function(e){
+        e.stopPropagation();
+        closeQuicksBox();
+      });
+    }
+
+    // Quicks box: prevent clicks inside from closing it, but send on item click
+    if (quicksBox) {
+      quicksBox.addEventListener('click', function(e){
+        e.stopPropagation();
+        var item = e.target.closest('.quicks-item');
+        if (item) {
+          sendQuickText(item.getAttribute('data-quick'));
+          // Flash animation
+          item.classList.add('flash');
+          setTimeout(function(){ item.classList.remove('flash'); }, 300);
+        }
+      });
+    }
+
+    // Close quicks when tapping outside
+    document.addEventListener('click', function(e){
+      if (quicksOpen && quicksBox && !quicksBox.contains(e.target) && e.target !== quicksBtn) {
+        closeQuicksBox();
+      }
+    });
 
     // Cancel recording
     var cancelBtn = document.getElementById('chat-rec-cancel');
@@ -2028,6 +2159,7 @@
         stopPolling();
         stopPresenceHeartbeat();
         stopStatusCheck();
+        closeQuicksBox();
       } else {
         if (overlay && overlay.style.display === 'flex' && myRole) {
           startPolling();
@@ -2043,6 +2175,12 @@
         navigator.sendBeacon(WORKER_URL + '/offline',
           new Blob([JSON.stringify({ role: myRole })], { type: 'application/json' }));
       }
+      closeQuicksBox();
+    });
+
+    // Close quicks on pagehide (browser minimized, page navigated away)
+    window.addEventListener('pagehide', function(){
+      closeQuicksBox();
     });
 
     listenersAttached = true;
@@ -2103,6 +2241,7 @@
     stopTypingStatus();
     stopPresenceHeartbeat();
     stopStatusCheck();
+    closeQuicksBox();
 
     // Invalidate any in-flight loadMessages calls so they don't render with null myRole
     loadMessagesCallId++;
@@ -2143,6 +2282,9 @@
     activeStickerPack = null;
     if (stickerPicker) stickerPicker.classList.remove('open');
     if (stickerBtn) stickerBtn.classList.remove('active');
+    quicksOpen = false;
+    if (quicksBtn) quicksBtn.classList.remove('active');
+    if (quicksBox) quicksBox.classList.remove('open');
     // write count vars no longer in chat — handled by private dashboard
     otherPresence = { dumbi: { online: false, typing: false }, dumbo: { online: false, typing: false } };
 
