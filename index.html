@@ -11,7 +11,7 @@
   var GITHUB_BRANCH = 'main';
   var CHAT_FILE = 'chat.json';
   var WORKER_URL = 'https://voice-box-worker.htc85235.workers.dev';
-  var POLL_INTERVAL = 3000; // 3 seconds
+  var POLL_INTERVAL = 1000; // 1 second for near-instant message delivery
   var AUTO_DELETE_MS = 24 * 60 * 60 * 1000; // 24 hours
   var MAX_VOICE_DURATION = 180; // 3 min max recording
 
@@ -111,13 +111,11 @@
     + '    .chat-main { display:flex; flex-direction:column; height:70vh; min-height:400px; }'
 
     // Chat header
-    + '    .chat-header { display:flex; align-items:center; padding:8px 12px; gap:8px; border-bottom:1px solid rgba(42,47,58,0.4); flex-shrink:0; }'
-    + '    .chat-header-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; }'
+    + '    .chat-header { display:flex; align-items:center; padding:5px 10px; gap:6px; border-bottom:1px solid rgba(42,47,58,0.4); flex-shrink:0; }'
+    + '    .chat-header-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; box-shadow: 2px 2px 4px #0d0f14, -2px -2px 4px #2a2f3a; }'
     + '    .chat-header-info { flex:1; }'
-    + '    .chat-header-name { font-size:12px; font-weight:700; color:#c9d1e0; }'
-    + '    .chat-header-status { font-size:9px; color:#555c6e; display:flex; align-items:center; gap:4px; }'
-    + '    .online-dot { width:6px; height:6px; border-radius:50%; background:#3ba776; display:inline-block; animation: pulse-dot 2s infinite; }'
-    + '    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }'
+    + '    .chat-header-name { font-size:11px; font-weight:700; color:#c9d1e0; }'
+    + '    .chat-header-status { font-size:8px; color:#555c6e; }'
     + '    .presence-bubbles { display:flex; gap:5px; align-items:center; margin-left:auto; }'
     + '    .presence-bubble { width:9px; height:9px; border-radius:50%; opacity:0.15; transition:opacity 0.4s, box-shadow 0.4s; border:1px solid transparent; }'
     + '    .presence-bubble.dumbi-bub { background:#3b82f6; border-color:rgba(59,130,246,0.3); }'
@@ -182,18 +180,18 @@
     + '    .no-storage-badge { display:none; }'
 
     // Input area
-    + '    .chat-input-area { display:flex; align-items:center; gap:6px; padding:8px 10px; border-top:1px solid rgba(42,47,58,0.4); flex-shrink:0; }'
-    + '    #chat-input { flex:1; background:#1a1d24; border:none; border-radius:18px; padding:9px 14px; color:#c9d1e0; font-size:12px; outline:none; box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; transition:all 0.2s; }'
+    + '    .chat-input-area { display:flex; align-items:center; gap:5px; padding:5px 8px; border-top:1px solid rgba(42,47,58,0.4); flex-shrink:0; }'
+    + '    #chat-input { flex:1; background:#1a1d24; border:none; border-radius:16px; padding:7px 12px; color:#c9d1e0; font-size:12px; outline:none; box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; transition:all 0.2s; }'
     + '    #chat-input:focus { color:#d4af37; }'
     + '    #chat-input::placeholder { color:#555c6e; }'
-    + '    .chat-mic-btn { width:34px; height:34px; border-radius:50%; background:#252830; border:none; color:#d4af37; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
+    + '    .chat-mic-btn { width:30px; height:30px; border-radius:50%; background:#252830; border:none; color:#d4af37; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
     + '    .chat-mic-btn:hover { color:#ef4444; }'
     + '    .chat-mic-btn.recording { color:#ef4444; animation: pulse-rec 1.5s ease-in-out infinite; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a, 0 0 10px rgba(239,68,68,0.2); }'
     + '    @keyframes pulse-rec { 0%,100%{box-shadow:3px 3px 6px #0d0f14,-3px -3px 6px #2a2f3a,0 0 10px rgba(239,68,68,0.2)} 50%{box-shadow:3px 3px 6px #0d0f14,-3px -3px 6px #2a2f3a,0 0 16px rgba(239,68,68,0.4)} }'
-    + '    .chat-mic-btn svg { width:16px; height:16px; }'
-    + '    .chat-send-btn { width:34px; height:34px; border-radius:50%; background:#d4af37; border:none; color:#1a1d24; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
+    + '    .chat-mic-btn svg { width:14px; height:14px; }'
+    + '    .chat-send-btn { width:30px; height:30px; border-radius:50%; background:#d4af37; border:none; color:#1a1d24; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
     + '    .chat-send-btn:active { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; }'
-    + '    .chat-send-btn svg { width:15px; height:15px; }'
+    + '    .chat-send-btn svg { width:13px; height:13px; }'
 
     // Recording bar
     + '    .chat-rec-bar { display:none; align-items:center; gap:6px; padding:6px 10px; border-top:1px solid rgba(239,68,68,0.2); background:rgba(239,68,68,0.05); flex-shrink:0; }'
@@ -272,7 +270,7 @@
     + '        <div class="chat-header-avatar" id="chat-avatar" style="background:#252a35;">\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83D\uDCBB</div>'
     + '        <div class="chat-header-info">'
     + '          <div class="chat-header-name" id="chat-header-name">CSS Aspirants</div>'
-    + '          <div class="chat-header-status"><span class="online-dot"></span><span id="chat-header-status">Messages auto-delete in 24h</span></div>'
+    + '          <div class="chat-header-status"><span id="chat-header-status">Messages auto-delete in 24h</span></div>'
     + '        </div>'
     + '        <div class="presence-bubbles">'
     + '          <div class="presence-bubble dumbi-bub" id="presence-dumbi" title="Dumbi"></div>'
@@ -636,22 +634,37 @@
   var saveInProgress = false;
   var saveQueue = null;
 
-  async function saveMessagesToGitHub(messages, isCleanup) {
+  async function saveMessagesToGitHub(messagesOrMsg, isCleanup) {
+    // Accept either a single message object or an array
+    var messages = Array.isArray(messagesOrMsg) ? messagesOrMsg : null;
+    var singleMsg = !Array.isArray(messagesOrMsg) ? messagesOrMsg : null;
+
     if (saveInProgress) {
       // Merge queued messages instead of overwriting
       if (saveQueue) {
-        saveQueue.messages = mergeMessages(saveQueue.messages, messages);
+        if (singleMsg) {
+          saveQueue.pendingSingle = saveQueue.pendingSingle || [];
+          saveQueue.pendingSingle.push(singleMsg);
+        } else {
+          saveQueue.messages = mergeMessages(saveQueue.messages, messages);
+        }
       } else {
-        saveQueue = { messages: messages, isCleanup: isCleanup };
+        saveQueue = { messages: messages || [], isCleanup: isCleanup, pendingSingle: singleMsg ? [singleMsg] : [] };
       }
       return;
     }
     saveInProgress = true;
+    // If single message, we need to read-merge-save it
+    var msgsToSave = messages;
+    if (!msgsToSave && singleMsg) {
+      // Will be handled inside _readMergeAndSave
+      msgsToSave = [singleMsg];
+    }
     var retries = 0;
     var maxRetries = 4;
     while (retries <= maxRetries) {
       try {
-        await _readMergeAndSave(messages);
+        await _readMergeAndSave(msgsToSave);
         break;
       } catch(e) {
         retries++;
@@ -665,7 +678,11 @@
     }
     saveInProgress = false;
     if (saveQueue) {
-      var queued = saveQueue;
+      var allPending = saveQueue.messages || [];
+      if (saveQueue.pendingSingle && saveQueue.pendingSingle.length) {
+        allPending = allPending.concat(saveQueue.pendingSingle);
+      }
+      var queued = { messages: allPending, isCleanup: saveQueue.isCleanup };
       saveQueue = null;
       await saveMessagesToGitHub(queued.messages, queued.isCleanup);
     }
@@ -725,22 +742,10 @@
     appendMessage(msg);
     scrollToBottom();
 
-    // Save to GitHub with merge
-    try {
-      var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-      if (data.sha) chatFileSha = data.sha;
-      if (data.content) {
-        var chatData = await parseChatContent(data.content);
-        var now = Date.now();
-        var msgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-        msgs.push(msg);
-        await saveMessagesToGitHub(msgs, false);
-      } else {
-        await saveMessagesToGitHub([msg], false);
-      }
-    } catch(e) {
+    // Save to GitHub in background (non-blocking — message already shown)
+    saveMessagesToGitHub(msg, false).catch(function(e){
       console.error('[Chat] Send text failed:', e);
-    }
+    });
   }
 
   // ===== DELETE MESSAGE =====
