@@ -274,8 +274,8 @@
     + '          <div class="presence-bubble dumbi-bub" id="presence-dumbi" title="Dumbi"></div>'
     + '          <div class="presence-bubble dumbo-bub" id="presence-dumbo" title="Dumbo"></div>'
     + '        </div>'
-    + '        <div class="write-count" id="write-count">'
-    + '          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>'
+    + '        <div class="write-count" id="write-count" title="Voice messages today">'
+    + '          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>'
     + '          <span class="wc-num" id="write-count-num">0</span>'
     + '        </div>'
     + '        <div class="chat-header-timer" id="chat-delete-timer">'
@@ -625,24 +625,28 @@
 
   async function saveMessagesToGitHub(messages, isCleanup) {
     if (saveInProgress) {
-      saveQueue = { messages: messages, isCleanup: isCleanup };
+      // Merge queued messages instead of overwriting
+      if (saveQueue) {
+        saveQueue.messages = mergeMessages(saveQueue.messages, messages);
+      } else {
+        saveQueue = { messages: messages, isCleanup: isCleanup };
+      }
       return;
     }
     saveInProgress = true;
-    try {
-      await _doSave(messages);
-    } catch(e) {
-      console.error('[Chat] Save failed, retrying with merge...', e);
-      await new Promise(function(r){ setTimeout(r, 800); });
+    var retries = 0;
+    var maxRetries = 4;
+    while (retries <= maxRetries) {
       try {
         await _readMergeAndSave(messages);
-      } catch(e2) {
-        console.error('[Chat] Merge retry also failed:', e2);
-        await new Promise(function(r){ setTimeout(r, 1500); });
-        try {
-          await _readMergeAndSave(messages);
-        } catch(e3) {
-          console.error('[Chat] Final retry failed:', e3);
+        break;
+      } catch(e) {
+        retries++;
+        if (retries <= maxRetries) {
+          console.error('[Chat] Save failed (attempt ' + retries + '), retrying...', e.message);
+          await new Promise(function(r){ setTimeout(r, 500 * retries); });
+        } else {
+          console.error('[Chat] Save failed after ' + maxRetries + ' retries:', e.message);
         }
       }
     }
@@ -655,6 +659,14 @@
   }
 
   async function _doSave(messages) {
+    // Always fetch fresh SHA first to avoid conflicts with other devices
+    try {
+      var freshFile = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+      if (freshFile.sha) chatFileSha = freshFile.sha;
+    } catch(e) {
+      // Use cached SHA if fetch fails
+    }
+
     var now = new Date().toISOString();
     var payload = { messages: messages, updatedAt: now };
     var encrypted = await encryptText(JSON.stringify(payload), ENCRYPT_PASSWORD);
@@ -1566,4 +1578,5 @@
 
 })();
 </script>
+
 </body></html>
