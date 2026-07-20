@@ -44,7 +44,7 @@
   var lastTypingCheckResult = false;
   var onlineHeartbeatTimer = null;
   var statusCheckTimer = null;
-  var dailyWrites = 0;
+  var dailyWrites = parseInt(sessionStorage.getItem('chatDailyWrites')) || 0;
   var pendingWriteIncrement = 0; // Optimistic local increment for instant display
   var lastOnlineSend = 0;
   var otherPresence = { dumbi: { online: false, typing: false }, dumbo: { online: false, typing: false } };
@@ -550,6 +550,7 @@
           // Rule 1: dailyWrites NEVER decreases, only increases
           if (cloudWrites > dailyWrites) {
             dailyWrites = cloudWrites;
+            sessionStorage.setItem('chatDailyWrites', dailyWrites);
           }
           // Rule 2: If Cloudflare's number covers our old total (base + pending),
           // it caught up — clear pending and let dailyWrites carry the real count
@@ -1797,6 +1798,11 @@
 
     chatInput.focus();
 
+    // Show persisted write count immediately (before API call)
+    if (dailyWrites > 0) {
+      updateWriteCount(Math.max(0, 1000 - dailyWrites));
+    }
+
     // Fetch real write count FIRST before starting anything
     await checkStatus();
 
@@ -1843,7 +1849,7 @@
     pendingSeenUpdates = [];
     isTypingNow = false;
     lastTypingCheckResult = false;
-    dailyWrites = 0;
+    // Don't reset dailyWrites — it persists via sessionStorage and only increases
     pendingWriteIncrement = 0;
     otherPresence = { dumbi: { online: false, typing: false }, dumbo: { online: false, typing: false } };
 
