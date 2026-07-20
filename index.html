@@ -161,10 +161,13 @@
     + '    .voice-play-btn svg { width:14px; height:14px; }'
     + '    .voice-play-btn.playing { background:#3b82f6 !important; color:#fff !important; }'
     + '    .voice-wave-progress { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }'
-    + '    .voice-waves-mini { display:flex; align-items:center; gap:1.5px; height:20px; overflow:hidden; position:relative; width:100%; }'
+    + '    .voice-waves-mini { display:flex; align-items:center; gap:1.5px; height:20px; overflow:hidden; position:relative; width:100%; cursor:pointer; }'
     + '    .voice-waves-mini .vbar { width:2.5px; border-radius:1px; background:#1a7a3a; transition:height 0.1s; flex-shrink:0; }'
     + '    .chat-msg.sent .voice-waves-mini .vbar { background:#1a7a3a; }'
     + '    .voice-progress-overlay { position:absolute; left:0; top:0; bottom:0; width:0; background:rgba(59,130,246,0.12); transition:width 0.1s linear; pointer-events:none; }'
+    + '    .voice-seek-line { position:absolute; top:0; bottom:0; width:2px; background:#3b82f6; left:0; pointer-events:none; box-shadow: 0 0 3px rgba(59,130,246,0.5); transition:left 0.1s linear; }'
+    + '    .voice-seek-dot { position:absolute; top:50%; width:8px; height:8px; border-radius:50%; background:#3b82f6; left:0; transform:translate(-50%,-50%); pointer-events:none; box-shadow: 0 0 4px rgba(59,130,246,0.6); transition:left 0.1s linear; opacity:0; }'
+    + '    .voice-waves-mini.seeking .voice-seek-dot, .voice-waves-mini.playing .voice-seek-dot { opacity:1; }'
     + '    .voice-time-row { display:flex; align-items:center; justify-content:space-between; gap:4px; }'
     + '    .voice-dur { font-size:9px; opacity:0.5; white-space:nowrap; font-variant-numeric:tabular-nums; }'
     + '    .voice-dur.elapsed { color:#3b82f6; opacity:0.8; font-weight:600; }'
@@ -805,59 +808,82 @@
   }
 
   // ===== RENDER MESSAGES =====
+  var renderedMsgIds = {}; // Track which messages are already in the DOM
+
   function renderMessages(messages) {
     if (!messagesContainer) return;
 
-    if (messages.length === lastMessageCount) {
-      var existingMsgs = messagesContainer.querySelectorAll('.chat-msg');
-      var needsFullRender = false;
-      if (existingMsgs.length !== messages.length) {
-        needsFullRender = true;
-      } else {
-        for (var i = 0; i < messages.length; i++) {
-          var el = existingMsgs[i];
-          if (el && el.dataset.msgId !== messages[i].id) {
-            needsFullRender = true;
-            break;
-          }
-        }
+    // Smart incremental rendering: only add new messages, never rebuild
+    var newMsgs = [];
+    for (var i = 0; i < messages.length; i++) {
+      if (!renderedMsgIds[messages[i].id]) {
+        newMsgs.push(messages[i]);
       }
-      var existingSeenLabels = messagesContainer.querySelectorAll('.seen-at-label');
-      var expectedSeenCount = 0;
-      var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
-      var otherSeenField = 'seenBy_' + otherRole;
-      messages.forEach(function(m) {
-        if (m.sender === myRole && m[otherSeenField]) expectedSeenCount++;
-      });
-      if (existingSeenLabels.length !== expectedSeenCount) needsFullRender = true;
-
-      if (!needsFullRender) return;
     }
 
-    lastMessageCount = messages.length;
-    messagesContainer.innerHTML = '';
-
-    if (messages.length === 0) {
+    // Show empty state if no messages rendered yet and none to add
+    if (Object.keys(renderedMsgIds).length === 0 && newMsgs.length === 0) {
       messagesContainer.innerHTML = '<div style="text-align:center;padding:40px 20px;"><div style="font-size:32px;margin-bottom:8px;">\uD83D\uDD12</div><div style="font-size:12px;color:#555c6e;">End-to-end encrypted</div><div style="font-size:10px;color:#3a3f4a;margin-top:4px;">Messages auto-delete after 24 hours</div></div>';
       return;
     }
 
-    var lastDate = '';
+    // Clear empty state if we have messages to add
+    if (Object.keys(renderedMsgIds).length === 0 && newMsgs.length > 0) {
+      messagesContainer.innerHTML = '';
+    }
+
+    // Check if we need to update ticks on existing sent messages
+    var existingSentMsgs = messagesContainer.querySelectorAll('.chat-msg.sent');
     var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
     var otherSeenField = 'seenBy_' + otherRole;
+    var needsTickUpdate = false;
+    existingSentMsgs.forEach(function(el) {
+      var msgId = el.dataset.msgId;
+      var msg = messages.find(function(m) { return m.id === msgId; });
+      if (msg && msg[otherSeenField] && !el.querySelector('.seen-at-label') && !el.querySelector('.msg-ticks.double-blue')) {
+        needsTickUpdate = true;
+      }
+    });
 
-    messages.forEach(function(msg) {
+    // If no new messages and no tick updates, skip entirely
+    if (newMsgs.length === 0 && !needsTickUpdate) {
+      // Still check for seen labels
+      _updateSeenLabels(messages);
+      return;
+    }
+
+    // If there are tick updates but no new messages, do a lightweight tick refresh
+    if (newMsgs.length === 0 && needsTickUpdate) {
+      _updateSeenLabels(messages);
+      _refreshTicks(messages);
+      return;
+    }
+
+    // Add date dividers and new messages incrementally
+    var lastDate = '';
+    var existingDateDividers = messagesContainer.querySelectorAll('.chat-date');
+    if (existingDateDividers.length > 0) {
+      lastDate = existingDateDividers[existingDateDividers.length - 1].textContent;
+    }
+
+    // Before adding new messages, add seen labels for previous messages
+    _updateSeenLabels(messages);
+
+    for (var j = 0; j < newMsgs.length; j++) {
+      var msg = newMsgs[j];
       var msgDate = new Date(msg.ts).toLocaleDateString();
-      if (msgDate !== lastDate) {
-        lastDate = msgDate;
+      var todayStr = new Date().toLocaleDateString();
+      var dateLabel = msgDate === todayStr ? 'Today' : msgDate;
+      if (dateLabel !== lastDate) {
+        lastDate = dateLabel;
         var divider = document.createElement('div');
         divider.className = 'chat-date';
-        divider.textContent = msgDate === new Date().toLocaleDateString() ? 'Today' : msgDate;
+        divider.textContent = dateLabel;
         messagesContainer.appendChild(divider);
       }
 
-      var isSent = msg.sender === myRole;
-      if (isSent && msg[otherSeenField]) {
+      // Seen label for this sent message
+      if (msg.sender === myRole && msg[otherSeenField]) {
         var seenEl = document.createElement('div');
         seenEl.className = 'seen-at-label';
         seenEl.textContent = 'Seen at ' + formatTimeShort(msg[otherSeenField]);
@@ -865,12 +891,58 @@
       }
 
       appendMessage(msg);
-    });
+      renderedMsgIds[msg.id] = true;
+    }
     scrollToBottom();
+  }
+
+  function _updateSeenLabels(messages) {
+    var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
+    var otherSeenField = 'seenBy_' + otherRole;
+    messages.forEach(function(msg) {
+      if (msg.sender === myRole && msg[otherSeenField]) {
+        var el = messagesContainer.querySelector('[data-msg-id="' + msg.id + '"]');
+        if (el && !el.querySelector('.seen-at-label')) {
+          // Check if there's already a seen label after this element
+          var nextEl = el.nextElementSibling;
+          if (!nextEl || !nextEl.classList.contains('seen-at-label')) {
+            var seenEl = document.createElement('div');
+            seenEl.className = 'seen-at-label';
+            seenEl.textContent = 'Seen at ' + formatTimeShort(msg[otherSeenField]);
+            el.parentNode.insertBefore(seenEl, el.nextSibling);
+          }
+        }
+      }
+    });
+  }
+
+  function _refreshTicks(messages) {
+    var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
+    var otherSeenField = 'seenBy_' + otherRole;
+    var singleTickSvg = '<svg viewBox="0 0 16 11" xmlns="http://www.w3.org/2000/svg"><path d="M11.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.011-2.095a.463.463 0 0 0-.336-.153.457.457 0 0 0-.336.153.547.547 0 0 0 0 .739l2.371 2.468a.453.453 0 0 0 .336.153.478.478 0 0 0 .355-.178l6.547-8.086a.502.502 0 0 0-.051-.654z"/></svg>';
+    var doubleTickSvg = '<svg viewBox="0 0 16 11" xmlns="http://www.w3.org/2000/svg"><path d="M11.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.011-2.095a.463.463 0 0 0-.336-.153.457.457 0 0 0-.336.153.547.547 0 0 0 0 .739l2.371 2.468a.453.453 0 0 0 .336.153.478.478 0 0 0 .355-.178l6.547-8.086a.502.502 0 0 0-.051-.654z"/><path d="M15.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-1.055-1.097-.336.416 1.371 1.43a.453.453 0 0 0 .336.153.478.478 0 0 0 .355-.178l6.547-8.086a.502.502 0 0 0-.051-.654z"/></svg>';
+    messages.forEach(function(msg) {
+      if (msg.sender !== myRole) return;
+      var el = messagesContainer.querySelector('[data-msg-id="' + msg.id + '"]');
+      if (!el) return;
+      var tickEl = el.querySelector('.msg-ticks');
+      if (!tickEl) return;
+      var isOtherOnline = otherPresence[otherRole] && otherPresence[otherRole].online;
+      if (msg[otherSeenField] && !tickEl.classList.contains('double-blue')) {
+        tickEl.className = 'msg-ticks double-blue';
+        tickEl.title = 'Seen';
+        tickEl.innerHTML = doubleTickSvg;
+      } else if (isOtherOnline && !msg[otherSeenField] && !tickEl.classList.contains('double-grey') && !tickEl.classList.contains('double-blue')) {
+        tickEl.className = 'msg-ticks double-grey';
+        tickEl.title = 'Delivered';
+        tickEl.innerHTML = doubleTickSvg;
+      }
+    });
   }
 
   function appendMessage(msg) {
     if (!messagesContainer) return;
+    renderedMsgIds[msg.id] = true; // Track as rendered
     var isSent = msg.sender === myRole;
     var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
     var otherSeenField = 'seenBy_' + otherRole;
@@ -908,6 +980,8 @@
         '<div class="voice-wave-progress">' +
           '<div class="voice-waves-mini">' +
             '<div class="voice-progress-overlay"></div>' +
+            '<div class="voice-seek-line"></div>' +
+            '<div class="voice-seek-dot"></div>' +
             generateVoiceBars() +
           '</div>' +
           '<div class="voice-time-row">' +
@@ -921,6 +995,60 @@
       playBtn.addEventListener('click', function(){
         playVoiceMessage(msg.voiceKey, playBtn, voiceMime, div);
       });
+
+      // WhatsApp-style seek on waveform click/drag
+      var waveContainer = div.querySelector('.voice-waves-mini');
+      if (waveContainer) {
+        var isDragging = false;
+        function seekToPosition(e) {
+          var rect = waveContainer.getBoundingClientRect();
+          var x = (e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0)) - rect.left;
+          var pct = Math.max(0, Math.min(1, x / rect.width));
+          // Update visual position
+          var overlay = waveContainer.querySelector('.voice-progress-overlay');
+          var seekLine = waveContainer.querySelector('.voice-seek-line');
+          var seekDot = waveContainer.querySelector('.voice-seek-dot');
+          if (overlay) overlay.style.width = (pct * 100) + '%';
+          if (seekLine) seekLine.style.left = (pct * 100) + '%';
+          if (seekDot) seekDot.style.left = (pct * 100) + '%';
+          // If audio is loaded, seek
+          if (currentAudio && currentPlayBtn === playBtn && currentAudio.duration) {
+            currentAudio.currentTime = pct * currentAudio.duration;
+            var elapsedEl = div.querySelector('.voice-dur.elapsed');
+            if (elapsedEl) {
+              elapsedEl.style.display = '';
+              elapsedEl.textContent = formatTime(Math.floor(currentAudio.currentTime));
+            }
+          }
+        }
+        waveContainer.addEventListener('mousedown', function(e) {
+          isDragging = true;
+          waveContainer.classList.add('seeking');
+          seekToPosition(e);
+        });
+        document.addEventListener('mousemove', function(e) {
+          if (isDragging) seekToPosition(e);
+        });
+        document.addEventListener('mouseup', function() {
+          if (isDragging) {
+            isDragging = false;
+            waveContainer.classList.remove('seeking');
+          }
+        });
+        // Touch support
+        waveContainer.addEventListener('touchstart', function(e) {
+          isDragging = true;
+          waveContainer.classList.add('seeking');
+          seekToPosition(e);
+        }, { passive: true });
+        waveContainer.addEventListener('touchmove', function(e) {
+          if (isDragging) seekToPosition(e);
+        }, { passive: true });
+        waveContainer.addEventListener('touchend', function() {
+          isDragging = false;
+          waveContainer.classList.remove('seeking');
+        });
+      }
     } else {
       var senderLabel = isSent ? '' : '<div class="msg-sender">' + (msg.sender === 'dumbi' ? 'Dumbi' : 'Dumbo') + '</div>';
       div.innerHTML =
@@ -964,6 +1092,12 @@
     var pct = (elapsed / total) * 100;
     var overlay = msgDiv.querySelector('.voice-progress-overlay');
     if (overlay) overlay.style.width = pct + '%';
+    var seekLine = msgDiv.querySelector('.voice-seek-line');
+    if (seekLine) seekLine.style.left = pct + '%';
+    var seekDot = msgDiv.querySelector('.voice-seek-dot');
+    if (seekDot) seekDot.style.left = pct + '%';
+    var wavesMini = msgDiv.querySelector('.voice-waves-mini');
+    if (wavesMini) wavesMini.classList.add('playing');
     var elapsedEl = msgDiv.querySelector('.voice-dur.elapsed');
     if (elapsedEl) {
       elapsedEl.style.display = '';
@@ -1658,6 +1792,7 @@
     myRole = null;
     chatFileSha = null;
     lastMessageCount = 0;
+    renderedMsgIds = {};
     pendingSeenUpdates = [];
     isTypingNow = false;
     lastTypingCheckResult = false;
