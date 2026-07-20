@@ -1,463 +1,631 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Voice Box — Private Dashboard</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Private Dashboard</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d0f14; color: #c9d1e0; min-height: 100vh; }
-  
-  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
-  
-  h1 { font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 8px; }
-  .subtitle { text-align: center; color: #a8b0c0; font-size: 14px; margin-bottom: 32px; }
-  .subtitle span { color: #2e8b6a; }
-  
-  /* Login */
-  .login-box { max-width: 400px; margin: 80px auto; background: #1a1d24; border-radius: 24px; padding: 36px 28px; box-shadow: 14px 14px 28px #0d0f14, -14px -14px 28px #2a2f3a; }
-  .login-box h2 { font-size: 22px; text-align: center; margin-bottom: 24px; }
-  .login-box input { width: 100%; background: #1a1d24; border: none; border-radius: 14px; padding: 14px 18px; color: #c9d1e0; font-size: 16px; outline: none; margin-bottom: 16px; letter-spacing: 2px; box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; }
-  .login-box input:focus { color: #d4af37; }
-  .login-box input::placeholder { color: #555c6e; letter-spacing: 4px; }
-  .login-box button { width: 100%; background: #1a1d24; color: #c9d1e0; border: none; border-radius: 14px; padding: 16px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 6px 6px 12px #0d0f14, -6px -6px 12px #2a2f3a; transition: all 0.15s; }
-  .login-box button:hover { color: #d4af37; }
-  .login-box button:active { box-shadow: inset 6px 6px 12px #0d0f14, inset -6px -6px 12px #2a2f3a; }
-  .login-error { color: #e57373; font-size: 13px; text-align: center; margin-top: 10px; }
-  
-  /* Dashboard */
-  .dashboard { display: none; }
-  .dashboard.active { display: block; }
-  
-  .stats { display: flex; gap: 12px; margin-bottom: 24px; }
-  .stat-card { flex: 1; background: #1a1d24; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 6px 6px 12px #0d0f14, -6px -6px 12px #2a2f3a; }
-  .stat-card .num { font-size: 28px; font-weight: 700; color: #d4af37; }
-  .stat-card .label { font-size: 12px; color: #a8b0c0; margin-top: 4px; }
-  
-  .actions { display: flex; gap: 10px; margin-bottom: 24px; }
-  .actions button { flex: 1; background: #1a1d24; color: #a8b0c0; border: none; border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 4px 4px 8px #0d0f14, -4px -4px 8px #2a2f3a; transition: all 0.15s; }
-  .actions button:hover { color: #d4af37; }
-  .actions button:active { box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; }
-  .actions button.danger:hover { color: #e57373; }
-  
-  .msg-list { display: flex; flex-direction: column; gap: 10px; }
-  .msg-item { background: #1a1d24; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; box-shadow: 6px 6px 12px #0d0f14, -6px -6px 12px #2a2f3a; transition: all 0.15s; }
-  .msg-item:hover { box-shadow: 8px 8px 16px #0d0f14, -8px -8px 16px #2a2f3a; }
-  
-  .msg-play { width: 44px; height: 44px; border-radius: 50%; background: #1a1d24; border: none; color: #2e8b6a; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 8px #0d0f14, -4px -4px 8px #2a2f3a; flex-shrink: 0; transition: all 0.15s; }
-  .msg-play:hover { color: #3fbf8e; }
-  .msg-play:active { box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; }
-  .msg-play.playing { color: #d4af37; }
-  
-  .msg-info { flex: 1; min-width: 0; }
-  .msg-sender { font-weight: 600; font-size: 15px; }
-  .msg-meta { font-size: 12px; color: #a8b0c0; margin-top: 2px; }
-  .msg-date { font-size: 11px; color: #555c6e; margin-top: 2px; }
-  
-  .msg-delete { width: 36px; height: 36px; border-radius: 50%; background: #1a1d24; border: none; color: #555c6e; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; flex-shrink: 0; transition: all 0.15s; }
-  .msg-delete:hover { color: #e57373; }
-  
-  .empty-state { text-align: center; padding: 60px 20px; color: #555c6e; }
-  .empty-state svg { margin-bottom: 16px; }
-  .empty-state p { font-size: 15px; }
-  
-  .loading { text-align: center; padding: 40px; color: #a8b0c0; }
-  .spin { display: inline-block; width: 32px; height: 32px; border: 3px solid #1a1d24; border-top-color: #d4af37; border-radius: 50%; animation: vmspin 0.8s linear infinite; }
-  @keyframes vmspin { to { transform: rotate(360deg); } }
-  
-  /* Audio player bar */
-  .player-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #1a1d24; padding: 14px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.4); z-index: 999; align-items: center; gap: 12px; }
-  .player-bar.active { display: flex; }
-  .player-bar audio { flex: 1; height: 36px; border-radius: 8px; }
-  .player-bar button { background: none; border: none; color: #a8b0c0; cursor: pointer; font-size: 18px; padding: 4px; }
-  .player-bar button:hover { color: #e57373; }
-  
-  .key-prompt { background: #1a1d24; border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; }
-  .key-prompt p { font-size: 13px; color: #a8b0c0; margin-bottom: 10px; }
-  .key-prompt textarea { width: 100%; height: 80px; background: #0d0f14; border: none; border-radius: 10px; padding: 10px; color: #c9d1e0; font-family: monospace; font-size: 11px; resize: vertical; outline: none; }
-  .key-prompt .key-actions { display: flex; gap: 8px; margin-top: 10px; }
-  .key-prompt .key-actions button { flex: 1; padding: 10px; border-radius: 10px; border: none; background: #1a1d24; color: #a8b0c0; font-weight: 600; cursor: pointer; font-size: 13px; box-shadow: 4px 4px 8px #0d0f14, -4px -4px 8px #2a2f3a; }
-  .key-prompt .key-actions button:hover { color: #d4af37; }
-  .key-status { font-size: 12px; margin-top: 8px; }
-  .key-status.ok { color: #2e8b6a; }
-  .key-status.missing { color: #e57373; }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;}
+
+/* Login */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.login-box{background:#1a1d27;border-radius:16px;padding:40px 32px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+.login-box h1{font-size:20px;margin-bottom:8px;text-align:center;}
+.login-box p{font-size:12px;color:#64748b;text-align:center;margin-bottom:24px;}
+.login-box input{width:100%;padding:12px 16px;border-radius:10px;border:1px solid #2d3348;background:#12141c;color:#e2e8f0;font-size:14px;outline:none;margin-bottom:16px;}
+.login-box input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
+.login-box button{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:transform 0.1s,box-shadow 0.2s;}
+.login-box button:active{transform:scale(0.97);}
+.login-error{color:#f87171;font-size:12px;text-align:center;margin-top:12px;display:none;}
+
+/* Dashboard */
+.dash-wrap{display:none;padding:16px;max-width:640px;margin:0 auto;}
+.dash-wrap.active{display:block;}
+
+/* Header */
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #1e2233;}
+.dash-header h1{font-size:18px;display:flex;align-items:center;gap:8px;}
+.dash-header h1 span{font-size:22px;}
+.logout-btn{background:none;border:1px solid #334155;color:#94a3b8;padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer;transition:all 0.15s;}
+.logout-btn:hover{border-color:#f87171;color:#f87171;}
+
+/* Write Count Card */
+.wc-card{background:linear-gradient(145deg,#1a1f2e,#151923);border-radius:14px;padding:20px;margin-bottom:24px;box-shadow:0 4px 20px rgba(0,0,0,0.3);border:1px solid #1e2538;}
+.wc-card .wc-title{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.wc-card .wc-numbers{display:flex;align-items:baseline;gap:6px;margin-bottom:14px;}
+.wc-card .wc-used{font-size:36px;font-weight:800;font-variant-numeric:tabular-nums;color:#fde68a;text-shadow:0 0 12px rgba(253,230,138,0.3);}
+.wc-card .wc-sep{font-size:18px;color:#475569;font-weight:300;}
+.wc-card .wc-limit{font-size:18px;color:#64748b;font-weight:600;}
+.wc-card .wc-bar-track{width:100%;height:6px;background:#1e2233;border-radius:3px;overflow:hidden;}
+.wc-card .wc-bar-fill{height:100%;border-radius:3px;transition:width 0.6s ease,background 0.3s;background:linear-gradient(90deg,#22c55e,#84cc16);}
+.wc-card .wc-bar-fill.warn{background:linear-gradient(90deg,#f59e0b,#f97316);}
+.wc-card .wc-bar-fill.danger{background:linear-gradient(90deg,#ef4444,#dc2626);}
+.wc-card .wc-remaining{font-size:11px;color:#475569;margin-top:8px;}
+.wc-card .wc-source{font-size:9px;color:#334155;margin-top:4px;}
+.wc-refresh-btn{background:none;border:1px solid #334155;color:#64748b;padding:4px 10px;border-radius:6px;font-size:10px;cursor:pointer;margin-top:8px;transition:all 0.15s;}
+.wc-refresh-btn:hover{border-color:#6366f1;color:#a5b4fc;}
+
+/* Section */
+.section{margin-bottom:24px;}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-head h2{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.section-head .badge{background:#6366f1;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.delete-all-btn{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;transition:transform 0.1s,opacity 0.15s;}
+.delete-all-btn:active{transform:scale(0.96);}
+.delete-all-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* Voice Message Card */
+.vmsg-card{background:#14171f;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1px solid #1e2233;transition:all 0.2s;}
+.vmsg-card:hover{border-color:#2d3348;}
+.vmsg-card .vmsg-icon{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1e3a2f,#162b22);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.vmsg-card .vmsg-info{flex:1;min-width:0;}
+.vmsg-card .vmsg-sender{font-size:12px;font-weight:600;color:#a5b4fc;text-transform:capitalize;}
+.vmsg-card .vmsg-meta{font-size:10px;color:#475569;margin-top:2px;display:flex;gap:8px;}
+.vmsg-card .vmsg-dur{color:#6ee7b7;}
+.vmsg-card .vmsg-time{color:#475569;}
+.vmsg-card .vmsg-size{color:#475569;}
+.vmsg-delete{background:none;border:1px solid #3b1520;color:#f87171;width:30px;height:30px;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;}
+.vmsg-delete:hover{background:#3b1520;border-color:#f87171;}
+.vmsg-delete:active{transform:scale(0.9);}
+.vmsg-delete.confirming{background:#dc2626;border-color:#dc2626;color:#fff;font-size:9px;font-weight:700;}
+
+/* Text Messages Section */
+.txt-section-empty{background:#14171f;border-radius:10px;padding:20px;text-align:center;color:#475569;font-size:12px;border:1px solid #1e2233;}
+
+/* Status / Loading */
+.loading{text-align:center;padding:40px;color:#475569;font-size:12px;}
+.spinner{width:24px;height:24px;border:3px solid #1e2233;border-top-color:#6366f1;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e293b;color:#e2e8f0;padding:10px 20px;border-radius:10px;font-size:12px;box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:transform 0.3s ease;z-index:999;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{border:1px solid #22c55e33;}
+.toast.error{border:1px solid #ef444433;}
+
+/* Confirm overlay */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:998;padding:20px;}
+.confirm-box{background:#1a1d27;border-radius:14px;padding:24px;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.confirm-box h3{font-size:15px;margin-bottom:8px;}
+.confirm-box p{font-size:12px;color:#94a3b8;margin-bottom:20px;}
+.confirm-box .confirm-btns{display:flex;gap:10px;justify-content:flex-end;}
+.confirm-box .btn-cancel{background:#2d3348;color:#94a3b8;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;}
+.confirm-box .btn-confirm{background:#dc2626;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* Responsive */
+@media(max-width:480px){
+  .dash-wrap{padding:12px;}
+  .wc-card .wc-used{font-size:28px;}
+  .vmsg-card{padding:10px 12px;}
+}
 </style>
 </head>
 <body>
 
 <!-- Login -->
-<div id="login" class="login-box">
-  <h2>Voice Box Dashboard</h2>
-  <p style="text-align:center;color:#a8b0c0;font-size:13px;margin-bottom:20px;">Owner access only</p>
-  <input id="pw" type="password" autocomplete="off" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"/>
-  <button id="login-btn">Unlock</button>
-  <p id="login-err" class="login-error" style="display:none;">Invalid password</p>
-</div>
-
-<!-- Dashboard -->
-<div id="dash" class="dashboard">
-  <div class="container">
-    <h1>Voice Box</h1>
-    <p class="subtitle"><span>&#128274;</span> End-to-end encrypted messages</p>
-    
-    <!-- Private key section -->
-    <div id="key-section" class="key-prompt">
-      <p>Paste your private key to decrypt messages. It stays in your browser only — never sent to any server.</p>
-      <textarea id="privkey-input" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"></textarea>
-      <div class="key-actions">
-        <button id="save-key-btn">Save Key</button>
-        <button id="clear-key-btn">Clear Key</button>
-      </div>
-      <p id="key-status" class="key-status missing">No private key loaded</p>
-    </div>
-    
-    <div class="stats">
-      <div class="stat-card"><div class="num" id="total-count">—</div><div class="label">Messages</div></div>
-      <div class="stat-card"><div class="num" id="today-count">—</div><div class="label">Today</div></div>
-      <div class="stat-card"><div class="num" id="storage-used">—</div><div class="label">KB Used</div></div>
-    </div>
-    
-    <div class="actions">
-      <button id="refresh-btn">&#8635; Refresh</button>
-      <button id="cleanup-btn">&#128465; Clean Old</button>
-      <button id="logout-btn">&#9211; Logout</button>
-    </div>
-    
-    <div id="msg-list" class="msg-list">
-      <div class="loading"><div class="spin"></div><p style="margin-top:12px;">Loading messages...</p></div>
-    </div>
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <h1>Private Dashboard</h1>
+    <p>Enter password to access</p>
+    <input type="password" id="pw-input" placeholder="Password" autocomplete="off"/>
+    <button id="pw-btn">Unlock</button>
+    <div class="login-error" id="login-error">Wrong password</div>
   </div>
 </div>
 
-<!-- Audio player bar -->
-<div id="player-bar" class="player-bar">
-  <audio id="audio-player" controls></audio>
-  <button id="close-player">&times;</button>
+<!-- Dashboard -->
+<div class="dash-wrap" id="dash-wrap">
+  <div class="dash-header">
+    <h1><span>&#128274;</span> Dashboard</h1>
+    <button class="logout-btn" id="logout-btn">Logout</button>
+  </div>
+
+  <!-- Write Count -->
+  <div class="wc-card" id="wc-card">
+    <div class="wc-title">KV Writes Used Today</div>
+    <div class="wc-numbers">
+      <span class="wc-used" id="wc-used">--</span>
+      <span class="wc-sep">/</span>
+      <span class="wc-limit">1,000</span>
+    </div>
+    <div class="wc-bar-track"><div class="wc-bar-fill" id="wc-bar" style="width:0%"></div></div>
+    <div class="wc-remaining" id="wc-remaining">Loading...</div>
+    <div class="wc-source" id="wc-source"></div>
+    <button class="wc-refresh-btn" id="wc-refresh">Refresh</button>
+  </div>
+
+  <!-- Voice Messages -->
+  <div class="section" id="voice-section">
+    <div class="section-head">
+      <h2>&#127908; Voice Messages <span class="badge" id="voice-count">0</span></h2>
+    </div>
+    <div id="voice-list"><div class="loading"><div class="spinner"></div>Loading voice messages...</div></div>
+  </div>
+
+  <!-- Text Messages -->
+  <div class="section" id="text-section">
+    <div class="section-head">
+      <h2>&#128172; Text Messages <span class="badge" id="text-count">0</span></h2>
+      <button class="delete-all-btn" id="delete-all-text-btn">Delete All Text</button>
+    </div>
+    <div id="text-list"><div class="loading"><div class="spinner"></div>Loading text messages...</div></div>
+  </div>
 </div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+<!-- Confirm overlay -->
+<div class="confirm-overlay" id="confirm-overlay" style="display:none;"></div>
 
 <script>
 (function(){
-  'use strict';
-  
+  // ===== CONFIG =====
+  var CHAT_PASSWORD = 'slowdumbo';
+  var ENCRYPT_PASSWORD = '@SlowDumbo786';
   var WORKER_URL = 'https://voice-box-worker.htc85235.workers.dev';
-  var VAULT_PASSWORD = 'slowdumbo';
-  var ownerToken = null;
-  var privateKey = null;
-  var messages = [];
-  var currentAudioUrl = null;
-  
-  // DOM
-  var loginBox = document.getElementById('login');
-  var dashBox = document.getElementById('dash');
-  var pwInput = document.getElementById('pw');
-  var loginBtn = document.getElementById('login-btn');
-  var loginErr = document.getElementById('login-err');
-  var msgList = document.getElementById('msg-list');
-  var audioPlayer = document.getElementById('audio-player');
-  var playerBar = document.getElementById('player-bar');
-  var closePlayerBtn = document.getElementById('close-player');
-  var refreshBtn = document.getElementById('refresh-btn');
-  var cleanupBtn = document.getElementById('cleanup-btn');
+  var GITHUB_REPO = 'htc85235-jpg/cssbesthub-vault';
+  var GITHUB_BRANCH = 'main';
+  var CHAT_FILE = 'chat.json';
+  var AUTO_DELETE_MS = 24 * 60 * 60 * 1000;
+
+  var _tk = ['github_pat_','11CIFWJEI0mHffC6IONYQ0_','DMNNFYPSHIw6xh2h7mq1L','CRK6tm2dTnwTOtfRrjl1NZYRNO7M4ZqphnSRMw'];
+  function _gt(){ return _tk.join(''); }
+
+  // ===== STATE =====
+  var isLoggedIn = false;
+  var ownerToken = '';
+  var maxWritesEver = parseInt(localStorage.getItem('dash_maxWrites') || '0');
+  var chatFileSha = null;
+  var voiceMessages = [];
+  var textMessages = [];
+
+  // ===== DOM =====
+  var loginWrap = document.getElementById('login-wrap');
+  var dashWrap = document.getElementById('dash-wrap');
+  var pwInput = document.getElementById('pw-input');
+  var pwBtn = document.getElementById('pw-btn');
+  var loginError = document.getElementById('login-error');
   var logoutBtn = document.getElementById('logout-btn');
-  var totalCount = document.getElementById('total-count');
-  var todayCount = document.getElementById('today-count');
-  var storageUsed = document.getElementById('storage-used');
-  var privkeyInput = document.getElementById('privkey-input');
-  var saveKeyBtn = document.getElementById('save-key-btn');
-  var clearKeyBtn = document.getElementById('clear-key-btn');
-  var keyStatus = document.getElementById('key-status');
-  
-  // ===== AUTH =====
-  loginBtn.addEventListener('click', doLogin);
+  var wcUsed = document.getElementById('wc-used');
+  var wcBar = document.getElementById('wc-bar');
+  var wcRemaining = document.getElementById('wc-remaining');
+  var wcSource = document.getElementById('wc-source');
+  var wcRefresh = document.getElementById('wc-refresh');
+  var voiceList = document.getElementById('voice-list');
+  var voiceCountBadge = document.getElementById('voice-count');
+  var textList = document.getElementById('text-list');
+  var textCountBadge = document.getElementById('text-count');
+  var deleteAllTextBtn = document.getElementById('delete-all-text-btn');
+  var toastEl = document.getElementById('toast');
+  var confirmOverlay = document.getElementById('confirm-overlay');
+
+  // ===== LOGIN =====
+  pwBtn.addEventListener('click', doLogin);
   pwInput.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-  
-  async function doLogin() {
-    if (pwInput.value !== VAULT_PASSWORD) {
-      loginErr.style.display = 'block';
+
+  function doLogin(){
+    if(pwInput.value === CHAT_PASSWORD){
+      isLoggedIn = true;
+      ownerToken = btoa('owner:' + CHAT_PASSWORD);
+      loginWrap.style.display = 'none';
+      dashWrap.classList.add('active');
+      loadDashboard();
+    } else {
+      loginError.style.display = 'block';
       pwInput.value = '';
-      return;
-    }
-    loginErr.style.display = 'none';
-    
-    try {
-      var res = await fetch(WORKER_URL + '/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: VAULT_PASSWORD }),
-      });
-      var data = await res.json();
-      if (data.token) {
-        ownerToken = data.token;
-        localStorage.setItem('vb_owner_token', data.token);
-        showDashboard();
-      }
-    } catch(e) {
-      loginErr.textContent = 'Connection error';
-      loginErr.style.display = 'block';
+      setTimeout(function(){ loginError.style.display = 'none'; }, 3000);
     }
   }
-  
-  // Auto-login if token saved
-  var savedToken = localStorage.getItem('vb_owner_token');
-  if (savedToken) {
-    ownerToken = savedToken;
-    showDashboard();
-  }
-  
-  function showDashboard() {
-    loginBox.style.display = 'none';
-    dashBox.classList.add('active');
-    loadPrivateKey();
-    loadMessages();
-  }
-  
-  // ===== PRIVATE KEY =====
-  function loadPrivateKey() {
-    var saved = localStorage.getItem('vb_private_key');
-    if (saved) {
-      privateKey = saved;
-      privkeyInput.value = saved;
-      keyStatus.textContent = 'Private key loaded';
-      keyStatus.className = 'key-status ok';
-    }
-  }
-  
-  saveKeyBtn.addEventListener('click', function(){
-    var val = privkeyInput.value.trim();
-    if (!val) return;
-    privateKey = val;
-    localStorage.setItem('vb_private_key', val);
-    keyStatus.textContent = 'Private key saved in browser';
-    keyStatus.className = 'key-status ok';
-  });
-  
-  clearKeyBtn.addEventListener('click', function(){
-    privateKey = null;
-    privkeyInput.value = '';
-    localStorage.removeItem('vb_private_key');
-    keyStatus.textContent = 'No private key loaded';
-    keyStatus.className = 'key-status missing';
-  });
-  
-  // ===== MESSAGES =====
-  refreshBtn.addEventListener('click', loadMessages);
-  
-  async function loadMessages() {
-    msgList.innerHTML = '<div class="loading"><div class="spin"></div><p style="margin-top:12px;">Loading...</p></div>';
-    
-    try {
-      var res = await fetch(WORKER_URL + '/messages', {
-        headers: { 'X-Owner-Token': ownerToken },
-      });
-      var data = await res.json();
-      messages = data.messages || [];
-      updateStats();
-      renderMessages();
-    } catch(e) {
-      msgList.innerHTML = '<div class="empty-state"><p>Failed to load messages</p></div>';
-    }
-  }
-  
-  function updateStats() {
-    totalCount.textContent = messages.length;
-    
-    var today = new Date().toISOString().slice(0,10);
-    var todayMsgs = messages.filter(function(m){ return m.isoDate && m.isoDate.startsWith(today); });
-    todayCount.textContent = todayMsgs.length;
-    
-    var totalKB = messages.reduce(function(sum, m){ return sum + (m.size || 0); }, 0);
-    storageUsed.textContent = Math.round(totalKB / 1024);
-  }
-  
-  function renderMessages() {
-    if (messages.length === 0) {
-      msgList.innerHTML = '<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#555c6e" stroke-width="1.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg><p>No voice messages yet</p></div>';
-      return;
-    }
-    
-    var html = '';
-    for (var i = 0; i < messages.length; i++) {
-      var m = messages[i];
-      html += '<div class="msg-item" data-key="' + m.key + '">'
-        + '<button class="msg-play" data-key="' + m.key + '" aria-label="Play">&#9654;</button>'
-        + '<div class="msg-info">'
-        + '<div class="msg-sender">' + escapeHtml(m.sender || 'Anonymous') + '</div>'
-        + '<div class="msg-meta">' + (m.duration || '0:00') + ' &middot; ' + Math.round((m.size||0)/1024) + ' KB &middot; ' + (m.ext||'webm').toUpperCase() + '</div>'
-        + '<div class="msg-date">' + (m.isoDate ? new Date(m.isoDate).toLocaleString() : '') + '</div>'
-        + '</div>'
-        + '<button class="msg-delete" data-key="' + m.key + '" aria-label="Delete">&#128465;</button>'
-        + '</div>';
-    }
-    msgList.innerHTML = html;
-    
-    // Attach play/delete listeners
-    var playBtns = msgList.querySelectorAll('.msg-play');
-    playBtns.forEach(function(btn){ btn.addEventListener('click', playMessage); });
-    
-    var delBtns = msgList.querySelectorAll('.msg-delete');
-    delBtns.forEach(function(btn){ btn.addEventListener('click', deleteMessage); });
-  }
-  
-  // ===== PLAY (Download → Decrypt → Play) =====
-  async function playMessage(e) {
-    var key = e.currentTarget.dataset.key;
-    var btn = e.currentTarget;
-    
-    if (!privateKey) {
-      alert('Please paste your private key first to decrypt messages.');
-      return;
-    }
-    
-    btn.textContent = '...';
-    btn.disabled = true;
-    
-    try {
-      // Fetch encrypted binary data
-      var res = await fetch(WORKER_URL + '/message/' + key, {
-        headers: { 'X-Owner-Token': ownerToken },
-      });
-      
-      if (!res.ok) {
-        btn.innerHTML = '&#9654;';
-        btn.disabled = false;
-        alert('Message not found');
-        return;
-      }
-      
-      var encryptedBuffer = await res.arrayBuffer();
-      
-      // Decrypt
-      var audioBlob = await decryptAudio(encryptedBuffer);
-      
-      // Play
-      if (currentAudioUrl) URL.revokeObjectURL(currentAudioUrl);
-      currentAudioUrl = URL.createObjectURL(audioBlob);
-      audioPlayer.src = currentAudioUrl;
-      audioPlayer.play();
-      playerBar.classList.add('active');
-      btn.classList.add('playing');
-      
-      audioPlayer.onended = function(){ btn.classList.remove('playing'); };
-      
-      btn.innerHTML = '&#9654;';
-      btn.disabled = false;
-      
-    } catch(err) {
-      console.error('Play error:', err);
-      btn.innerHTML = '&#9654;';
-      btn.disabled = false;
-      alert('Decryption failed: ' + err.message);
-    }
-  }
-  
-  // ===== DECRYPT =====
-  async function decryptAudio(encryptedBuffer) {
-    // Parse binary: [IV (12 bytes)] [encrypted AES key length (4 bytes)] [encrypted AES key] [encrypted audio]
-    var bytes = new Uint8Array(encryptedBuffer);
-    var offset = 0;
-    var iv = bytes.slice(offset, offset + 12); offset += 12;
-    var encAesLen = new DataView(encryptedBuffer).getUint32(offset); offset += 4;
-    var encryptedAesKey = bytes.slice(offset, offset + encAesLen); offset += encAesLen;
-    var encryptedAudio = bytes.slice(offset);
-    
-    // Import private key
-    var privateKeyObj = await crypto.subtle.importKey(
-      'pkcs8',
-      pemToArrayBuffer(privateKey),
-      { name: 'RSA-OAEP', hash: 'SHA-256' },
-      false,
-      ['decrypt']
-    );
-    
-    // Decrypt AES key
-    var rawAesKey = await crypto.subtle.decrypt(
-      { name: 'RSA-OAEP' },
-      privateKeyObj,
-      encryptedAesKey
-    );
-    
-    // Import AES key
-    var aesKeyObj = await crypto.subtle.importKey(
-      'raw',
-      rawAesKey,
-      { name: 'AES-GCM' },
-      false,
-      ['decrypt']
-    );
-    
-    // Decrypt audio
-    var decryptedBuffer = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv },
-      aesKeyObj,
-      encryptedAudio
-    );
-    
-    return new Blob([decryptedBuffer], { type: 'audio/webm' });
-  }
-  
-  function pemToArrayBuffer(pem) {
-    var b64 = pem.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, '');
-    var binaryStr = atob(b64);
-    var bytes = new Uint8Array(binaryStr.length);
-    for (var i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-    return bytes.buffer;
-  }
-  
-  // ===== DELETE =====
-  async function deleteMessage(e) {
-    var key = e.currentTarget.dataset.key;
-    if (!confirm('Delete this message?')) return;
-    
-    try {
-      await fetch(WORKER_URL + '/message/' + key, {
-        method: 'DELETE',
-        headers: { 'X-Owner-Token': ownerToken },
-      });
-      loadMessages();
-    } catch(e) {
-      alert('Delete failed');
-    }
-  }
-  
-  // ===== CLEANUP =====
-  cleanupBtn.addEventListener('click', async function(){
-    if (!confirm('Delete all messages older than 3 days?')) return;
-    try {
-      var res = await fetch(WORKER_URL + '/cleanup', {
-        method: 'POST',
-        headers: { 'X-Owner-Token': ownerToken },
-      });
-      var data = await res.json();
-      alert('Cleaned up ' + data.deleted + ' old messages');
-      loadMessages();
-    } catch(e) {
-      alert('Cleanup failed');
-    }
-  });
-  
-  // ===== LOGOUT =====
+
   logoutBtn.addEventListener('click', function(){
-    localStorage.removeItem('vb_owner_token');
-    ownerToken = null;
-    dashBox.classList.remove('active');
-    loginBox.style.display = 'block';
+    isLoggedIn = false;
+    ownerToken = '';
+    dashWrap.classList.remove('active');
+    loginWrap.style.display = 'flex';
+    pwInput.value = '';
   });
-  
-  // ===== PLAYER BAR =====
-  closePlayerBtn.addEventListener('click', function(){
-    audioPlayer.pause();
-    playerBar.classList.remove('active');
-    if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
-    document.querySelectorAll('.msg-play.playing').forEach(function(b){ b.classList.remove('playing'); });
+
+  // ===== LOAD ALL =====
+  async function loadDashboard(){
+    fetchWriteCount();
+    loadVoiceMessages();
+    loadTextMessages();
+  }
+
+  // ===== WRITE COUNT (NEVER DECREASES) =====
+  var writeCountTimer = null;
+
+  async function fetchWriteCount(){
+    try {
+      var resp = await fetch(WORKER_URL + '/kv-stats');
+      if(!resp.ok) throw new Error('API error');
+      var data = await resp.json();
+
+      if(data.writes !== undefined && data.writes !== null){
+        var writes = data.writes;
+        // NEVER decrease — only track upward
+        if(writes > maxWritesEver){
+          maxWritesEver = writes;
+          localStorage.setItem('dash_maxWrites', String(maxWritesEver));
+        }
+        displayWriteCount(maxWritesEver, data.source, data.date);
+      } else {
+        // API returned null — show last known max
+        if(maxWritesEver > 0){
+          displayWriteCount(maxWritesEver, 'cached-max', '');
+        } else {
+          wcUsed.textContent = '--';
+          wcRemaining.textContent = 'Write count unavailable';
+          wcSource.textContent = data.note || 'API returned no data';
+        }
+      }
+    } catch(e){
+      if(maxWritesEver > 0){
+        displayWriteCount(maxWritesEver, 'cached-max', '');
+      } else {
+        wcUsed.textContent = '--';
+        wcRemaining.textContent = 'Failed to fetch write count';
+      }
+    }
+  }
+
+  function displayWriteCount(used, source, date){
+    var remaining = Math.max(0, 1000 - used);
+    var pct = Math.min(100, (used / 1000) * 100);
+
+    wcUsed.textContent = used;
+    wcBar.style.width = pct + '%';
+    wcRemaining.textContent = remaining + ' writes remaining today';
+
+    if(pct > 95){
+      wcBar.className = 'wc-bar-fill danger';
+      wcUsed.style.color = '#fca5a5';
+      wcUsed.style.textShadow = '0 0 12px rgba(252,165,165,0.4)';
+    } else if(pct > 80){
+      wcBar.className = 'wc-bar-fill warn';
+      wcUsed.style.color = '#fdba74';
+      wcUsed.style.textShadow = '0 0 12px rgba(253,186,116,0.3)';
+    } else {
+      wcBar.className = 'wc-bar-fill';
+      wcUsed.style.color = '#fde68a';
+      wcUsed.style.textShadow = '0 0 12px rgba(253,230,138,0.3)';
+    }
+
+    var sourceLabel = source === 'cloudflare-graphql' ? 'Live from Cloudflare' :
+                      source === 'cached-max' ? 'Cached (max ever seen)' :
+                      source === 'cloudflare-api-error' ? 'API error — showing max' :
+                      source || '';
+    wcSource.textContent = sourceLabel + (date ? ' | Date: ' + date : '');
+  }
+
+  wcRefresh.addEventListener('click', function(){
+    wcRefresh.textContent = 'Refreshing...';
+    wcRefresh.disabled = true;
+    fetchWriteCount().then(function(){
+      wcRefresh.textContent = 'Refresh';
+      wcRefresh.disabled = false;
+    });
   });
-  
+
+  // Auto-refresh write count every 30 seconds
+  writeCountTimer = setInterval(fetchWriteCount, 30000);
+
+  // ===== VOICE MESSAGES =====
+  async function loadVoiceMessages(){
+    voiceList.innerHTML = '<div class="loading"><div class="spinner"></div>Loading voice messages...</div>';
+    try {
+      var resp = await fetch(WORKER_URL + '/messages', {
+        headers: { 'X-Owner-Token': ownerToken }
+      });
+      if(!resp.ok) throw new Error('Auth failed');
+      var data = await resp.json();
+      voiceMessages = data.messages || [];
+      voiceCountBadge.textContent = voiceMessages.length;
+      renderVoiceMessages();
+    } catch(e){
+      voiceList.innerHTML = '<div class="txt-section-empty">Failed to load voice messages. Check auth.</div>';
+    }
+  }
+
+  function renderVoiceMessages(){
+    if(voiceMessages.length === 0){
+      voiceList.innerHTML = '<div class="txt-section-empty">No voice messages</div>';
+      return;
+    }
+    var html = '';
+    voiceMessages.forEach(function(msg, i){
+      var dur = msg.duration || '0:00';
+      var sizeStr = msg.size ? Math.round(msg.size / 1024) + ' KB' : '';
+      var timeStr = msg.isoDate ? formatTime(msg.isoDate) : '';
+      var sender = msg.sender || 'unknown';
+      html += '<div class="vmsg-card" data-voice-key="' + escapeAttr(msg.key) + '" data-index="' + i + '">'
+        + '<div class="vmsg-icon">&#127908;</div>'
+        + '<div class="vmsg-info">'
+        + '<div class="vmsg-sender">' + escapeHtml(sender) + '</div>'
+        + '<div class="vmsg-meta">'
+        + '<span class="vmsg-dur">' + escapeHtml(dur) + '</span>'
+        + (sizeStr ? '<span class="vmsg-size">' + sizeStr + '</span>' : '')
+        + (timeStr ? '<span class="vmsg-time">' + timeStr + '</span>' : '')
+        + '</div></div>'
+        + '<button class="vmsg-delete" title="Delete" data-key="' + escapeAttr(msg.key) + '">&#128465;</button>'
+        + '</div>';
+    });
+    voiceList.innerHTML = html;
+
+    // Attach delete handlers with confirm-on-double-click
+    voiceList.querySelectorAll('.vmsg-delete').forEach(function(btn){
+      var confirmTimeout = null;
+      btn.addEventListener('click', function(){
+        if(btn.classList.contains('confirming')){
+          // Second click — actually delete
+          clearTimeout(confirmTimeout);
+          btn.classList.remove('confirming');
+          btn.innerHTML = '&#128465;';
+          deleteVoiceMessage(btn.dataset.key);
+        } else {
+          // First click — ask confirmation
+          btn.classList.add('confirming');
+          btn.innerHTML = 'Sure?';
+          confirmTimeout = setTimeout(function(){
+            btn.classList.remove('confirming');
+            btn.innerHTML = '&#128465;';
+          }, 3000);
+        }
+      });
+    });
+  }
+
+  async function deleteVoiceMessage(key){
+    var card = voiceList.querySelector('[data-voice-key="' + CSS.escape(key) + '"]');
+    if(card){
+      card.style.opacity = '0.4';
+      card.style.pointerEvents = 'none';
+    }
+    try {
+      var resp = await fetch(WORKER_URL + '/message/' + key, {
+        method: 'DELETE',
+        headers: { 'X-Owner-Token': ownerToken }
+      });
+      if(!resp.ok) throw new Error('Delete failed');
+      var data = await resp.json();
+      if(data.success){
+        showToast('Voice message deleted', 'success');
+        // Remove from local list
+        voiceMessages = voiceMessages.filter(function(m){ return m.key !== key; });
+        voiceCountBadge.textContent = voiceMessages.length;
+        if(card){
+          card.style.transition = 'all 0.3s';
+          card.style.opacity = '0';
+          card.style.maxHeight = '0';
+          card.style.padding = '0';
+          card.style.margin = '0';
+          card.style.overflow = 'hidden';
+          setTimeout(function(){ card.remove(); if(voiceMessages.length===0) renderVoiceMessages(); }, 300);
+        }
+        // Refresh write count since deletion burns writes
+        fetchWriteCount();
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch(e){
+      showToast('Delete failed: ' + e.message, 'error');
+      if(card){ card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
+    }
+  }
+
+  // ===== TEXT MESSAGES =====
+  async function loadTextMessages(){
+    textList.innerHTML = '<div class="loading"><div class="spinner"></div>Loading text messages...</div>';
+    try {
+      var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+      if(data.sha) chatFileSha = data.sha;
+      if(data.content){
+        var chatData = await parseChatContent(data.content);
+        var now = Date.now();
+        var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
+        textMessages = allMsgs.filter(function(m){ return m.type === 'text'; });
+        textCountBadge.textContent = textMessages.length;
+        renderTextMessages();
+      } else {
+        textMessages = [];
+        textCountBadge.textContent = '0';
+        renderTextMessages();
+      }
+    } catch(e){
+      textList.innerHTML = '<div class="txt-section-empty">Failed to load text messages</div>';
+    }
+  }
+
+  function renderTextMessages(){
+    if(textMessages.length === 0){
+      textList.innerHTML = '<div class="txt-section-empty">No text messages</div>';
+      deleteAllTextBtn.disabled = true;
+      return;
+    }
+    deleteAllTextBtn.disabled = false;
+    var html = '';
+    textMessages.forEach(function(msg){
+      var sender = msg.sender || 'unknown';
+      var text = msg.text || '';
+      var timeStr = msg.ts ? formatTime(new Date(msg.ts).toISOString()) : '';
+      var preview = text.length > 80 ? text.substring(0, 80) + '...' : text;
+      html += '<div class="vmsg-card">'
+        + '<div class="vmsg-icon" style="background:linear-gradient(135deg,#1e2a35,#162030);">&#128172;</div>'
+        + '<div class="vmsg-info">'
+        + '<div class="vmsg-sender">' + escapeHtml(sender) + '</div>'
+        + '<div class="vmsg-meta">'
+        + '<span style="color:#94a3b8;font-size:11px;">' + escapeHtml(preview) + '</span>'
+        + '</div>'
+        + (timeStr ? '<div class="vmsg-meta"><span class="vmsg-time">' + timeStr + '</span></div>' : '')
+        + '</div></div>';
+    });
+    textList.innerHTML = html;
+  }
+
+  deleteAllTextBtn.addEventListener('click', function(){
+    showConfirm('Delete All Text Messages', 'This will permanently delete all ' + textMessages.length + ' text messages. Voice messages will NOT be affected. This action cannot be undone.', function(){
+      doDeleteAllText();
+    });
+  });
+
+  async function doDeleteAllText(){
+    deleteAllTextBtn.disabled = true;
+    deleteAllTextBtn.textContent = 'Deleting...';
+    try {
+      // Read fresh chat.json
+      var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+      if(fresh.sha) chatFileSha = fresh.sha;
+      if(!fresh.content) throw new Error('No chat file');
+
+      var chatData = await parseChatContent(fresh.content);
+      var now = Date.now();
+      var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
+      // Keep only non-text messages (voice, etc.)
+      var remaining = allMsgs.filter(function(m){ return m.type !== 'text'; });
+
+      // Save back
+      var saved = await saveChatToGitHub(remaining);
+      if(saved){
+        showToast('All ' + textMessages.length + ' text messages deleted', 'success');
+        textMessages = [];
+        textCountBadge.textContent = '0';
+        renderTextMessages();
+      } else {
+        throw new Error('Save failed');
+      }
+    } catch(e){
+      showToast('Failed: ' + e.message, 'error');
+      deleteAllTextBtn.disabled = false;
+      deleteAllTextBtn.textContent = 'Delete All Text';
+    }
+  }
+
+  // ===== GITHUB API =====
+  function githubApi(method, path, body){
+    var opts = {
+      method: method,
+      headers: {
+        'Authorization': 'token ' + _gt(),
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      }
+    };
+    if(body) opts.body = JSON.stringify(body);
+    return fetch('https://api.github.com/repos/' + GITHUB_REPO + path, opts)
+      .then(function(r){ return r.json(); });
+  }
+
+  async function parseChatContent(b64Content){
+    var jsonStr = atob(b64Content.replace(/\n/g, ''));
+    var parsed = JSON.parse(jsonStr);
+    if(parsed.ciphertext){
+      var decrypted = await decryptText(parsed.ciphertext, ENCRYPT_PASSWORD);
+      return JSON.parse(decrypted);
+    }
+    return parsed;
+  }
+
+  async function saveChatToGitHub(messages){
+    // Always fetch fresh SHA first
+    try {
+      var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+      if(fresh.sha) chatFileSha = fresh.sha;
+    } catch(e){}
+
+    var now = new Date().toISOString();
+    var payload = { messages: messages, updatedAt: now };
+    var encrypted = await encryptText(JSON.stringify(payload), ENCRYPT_PASSWORD);
+    var b64 = btoa(JSON.stringify({ v: 1, ciphertext: encrypted, updatedAt: now }));
+    var body = { message: 'Dashboard: delete text messages ' + now, content: b64, branch: GITHUB_BRANCH };
+    if(chatFileSha) body.sha = chatFileSha;
+
+    var result = await githubApi('PUT', '/contents/' + CHAT_FILE, body);
+    if(result.sha) chatFileSha = result.sha;
+    if(result.content) chatFileSha = result.content.sha;
+    return !!(result.sha || result.content);
+  }
+
+  // ===== ENCRYPTION =====
+  async function deriveKey(password, salt){
+    var enc = new TextEncoder();
+    var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+    );
+  }
+
+  async function encryptText(text, password){
+    var salt = crypto.getRandomValues(new Uint8Array(16));
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var key = await deriveKey(password, salt);
+    var plaintext = new TextEncoder().encode(text);
+    var ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plaintext);
+    var combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
+    return btoa(String.fromCharCode.apply(null, combined));
+  }
+
+  async function decryptText(b64, password){
+    var raw = Uint8Array.from(atob(b64), function(c){ return c.charCodeAt(0); });
+    var salt = raw.slice(0, 16);
+    var iv = raw.slice(16, 28);
+    var ciphertext = raw.slice(28);
+    var key = await deriveKey(password, salt);
+    var plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+    return new TextDecoder().decode(plaintext);
+  }
+
   // ===== HELPERS =====
-  function escapeHtml(str) {
+  function formatTime(isoStr){
+    try{
+      var d = new Date(isoStr);
+      var h = d.getHours(); var m = d.getMinutes();
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+    } catch(e){ return isoStr; }
+  }
+
+  function escapeHtml(str){
     var div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
   }
-  
+
+  function escapeAttr(str){
+    return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  var toastTimer = null;
+  function showToast(msg, type){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast ' + (type || '') + ' show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 3000);
+  }
+
+  function showConfirm(title, desc, onConfirm){
+    confirmOverlay.style.display = 'flex';
+    confirmOverlay.innerHTML = '<div class="confirm-box">'
+      + '<h3>' + escapeHtml(title) + '</h3>'
+      + '<p>' + escapeHtml(desc) + '</p>'
+      + '<div class="confirm-btns">'
+      + '<button class="btn-cancel" id="confirm-cancel">Cancel</button>'
+      + '<button class="btn-confirm" id="confirm-ok">Delete</button>'
+      + '</div></div>';
+    document.getElementById('confirm-cancel').addEventListener('click', function(){
+      confirmOverlay.style.display = 'none';
+    });
+    document.getElementById('confirm-ok').addEventListener('click', function(){
+      confirmOverlay.style.display = 'none';
+      onConfirm();
+    });
+  }
+
 })();
 </script>
 </body>

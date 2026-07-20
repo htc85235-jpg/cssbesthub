@@ -44,8 +44,7 @@
   var lastTypingCheckResult = false;
   var onlineHeartbeatTimer = null;
   var statusCheckTimer = null;
-  var dailyWrites = parseInt(sessionStorage.getItem('chatDailyWrites')) || 0;
-  var pendingWriteIncrement = 0; // Optimistic local increment for instant display
+  // dailyWrites / pendingWriteIncrement removed — moved to private dashboard
   var lastOnlineSend = 0;
   var otherPresence = { dumbi: { online: false, typing: false }, dumbo: { online: false, typing: false } };
 
@@ -127,11 +126,7 @@
     + '    .presence-bubble.dumbo-bub.typing { box-shadow: 0 0 8px rgba(34,197,94,0.6); }'
     + '    @keyframes onlinePulse { 0%,100%{opacity:0.6} 50%{opacity:1} }'
     + '    @keyframes typingPulse { 0%,100%{opacity:0.35;transform:scale(1)} 50%{opacity:1;transform:scale(1.35)} }'
-    + '    .write-count { font-size:8px; font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:3px; margin-right:0; padding:2px 6px; border-radius:6px; background:linear-gradient(145deg, #2a2f3a, #1e222b); box-shadow: 2px 2px 6px #0d0f14, -2px -2px 6px #333845; }'
-    + '    .write-count .wc-num { color:#fde68a; font-weight:800; text-shadow: 0 0 8px rgba(253,230,138,0.5), 0 1px 2px rgba(0,0,0,0.6); }'
-    + '    .write-count .wc-sep { color:rgba(255,255,255,0.3); font-weight:300; }'
-    + '    .write-count .wc-limit { color:rgba(255,255,255,0.45); font-weight:600; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }'
-    + '    .write-count .wc-label { color:rgba(255,255,255,0.25); font-size:6px; margin-left:1px; }'
+    // write-count CSS removed — moved to private dashboard
     + '    .chat-header-timer { display:none; }'
 
     // Messages — WhatsApp style
@@ -278,9 +273,7 @@
     + '          <div class="chat-header-name" id="chat-header-name">CSS Aspirants</div>'
     + '          <div class="chat-header-status"><span id="chat-header-status">Messages auto-delete in 24h</span></div>'
     + '        </div>'
-    + '        <div class="write-count" id="write-count" title="Real Cloudflare KV writes today (live)">'
-    + '          <span class="wc-num" id="write-count-num">0</span><span class="wc-sep">/</span><span class="wc-limit">1K</span><span class="wc-label">writes</span>'
-    + '        </div>'
+    // write-count HTML removed — moved to private dashboard
     + '        <button id="chat-close" aria-label="Close">&times;</button>'
     + '      </div>'
 
@@ -532,33 +525,12 @@
 
   async function checkStatus() {
     try {
-      // Fetch presence from /status AND real KV writes from /kv-stats in parallel
-      var [statusResp, kvResp] = await Promise.all([
-        fetch(WORKER_URL + '/status'),
-        fetch(WORKER_URL + '/kv-stats')
-      ]);
+      // Only fetch presence — write count moved to private dashboard
+      var statusResp = await fetch(WORKER_URL + '/status');
       if (statusResp.ok) {
         var data = await statusResp.json();
         otherPresence = { dumbi: data.dumbi, dumbo: data.dumbo };
         updatePresenceBubbles(data.dumbi, data.dumbo);
-      }
-      if (kvResp.ok) {
-        var kvData = await kvResp.json();
-        if (kvData.writes !== undefined && kvData.writes !== null) {
-          var cloudWrites = kvData.writes;
-          var oldDailyWrites = dailyWrites;
-          // Rule 1: dailyWrites NEVER decreases, only increases
-          if (cloudWrites > dailyWrites) {
-            dailyWrites = cloudWrites;
-            sessionStorage.setItem('chatDailyWrites', dailyWrites);
-          }
-          // Rule 2: If Cloudflare's number covers our old total (base + pending),
-          // it caught up — clear pending and let dailyWrites carry the real count
-          if (cloudWrites >= oldDailyWrites + pendingWriteIncrement) {
-            pendingWriteIncrement = 0;
-          }
-          updateWriteCount(Math.max(0, 1000 - (dailyWrites + pendingWriteIncrement)));
-        }
       }
     } catch(e) {
       // Fail silently
@@ -587,22 +559,7 @@
     }
   }
 
-  function updateWriteCount(remaining) {
-    var displayVal = dailyWrites + pendingWriteIncrement;
-    var el = document.getElementById('write-count-num');
-    if (el) el.textContent = displayVal;
-    // 3D color: golden yellow normally, orange at 800+, red at 950+
-    if (el && displayVal > 950) {
-      el.style.color = '#fca5a5';
-      el.style.textShadow = '0 0 10px rgba(252,165,165,0.7), 0 1px 2px rgba(0,0,0,0.6)';
-    } else if (el && displayVal > 800) {
-      el.style.color = '#fdba74';
-      el.style.textShadow = '0 0 8px rgba(253,186,116,0.5), 0 1px 2px rgba(0,0,0,0.6)';
-    } else if (el) {
-      el.style.color = '#fde68a';
-      el.style.textShadow = '0 0 8px rgba(253,230,138,0.5), 0 1px 2px rgba(0,0,0,0.6)';
-    }
-  }
+  // updateWriteCount removed — moved to private dashboard
 
   // ===== LOAD MESSAGES FROM GITHUB =====
   async function loadMessages() {
@@ -1487,19 +1444,7 @@
     scrollToBottom();
     showSentBanner();
 
-    // Optimistically increment write count (+3 for voice: data + index + rate-limit)
-    pendingWriteIncrement += 3;
-    var displayVal = dailyWrites + pendingWriteIncrement;
-    var el = document.getElementById('write-count-num');
-    if (el) el.textContent = displayVal;
-    // Update color if needed
-    if (el && displayVal > 950) {
-      el.style.color = '#fca5a5';
-      el.style.textShadow = '0 0 10px rgba(252,165,165,0.7), 0 1px 2px rgba(0,0,0,0.6)';
-    } else if (el && displayVal > 800) {
-      el.style.color = '#fdba74';
-      el.style.textShadow = '0 0 8px rgba(253,186,116,0.5), 0 1px 2px rgba(0,0,0,0.6)';
-    }
+    // write count display removed — now in private dashboard
 
     // Now upload and save in background
     try {
@@ -1798,12 +1743,7 @@
 
     chatInput.focus();
 
-    // Show persisted write count immediately (before API call)
-    if (dailyWrites > 0) {
-      updateWriteCount(Math.max(0, 1000 - dailyWrites));
-    }
-
-    // Fetch real write count FIRST before starting anything
+    // Fetch status (presence only — write count moved to dashboard)
     await checkStatus();
 
     startPolling();
@@ -1849,8 +1789,7 @@
     pendingSeenUpdates = [];
     isTypingNow = false;
     lastTypingCheckResult = false;
-    // Don't reset dailyWrites — it persists via sessionStorage and only increases
-    pendingWriteIncrement = 0;
+    // write count vars no longer in chat — handled by private dashboard
     otherPresence = { dumbi: { online: false, typing: false }, dumbo: { online: false, typing: false } };
 
     if (messagesContainer) messagesContainer.innerHTML = '';
