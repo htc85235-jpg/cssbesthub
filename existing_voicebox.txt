@@ -1,0 +1,698 @@
+1\",\"13\",{}]]\n"])</script>
+<!-- ============== HIDDEN VOICE BOX (password-gated, encrypted) ============== -->
+<script>
+(function(){
+  'use strict';
+
+  // ===== CONFIG =====
+  // VAULT_PASSWORD unlocks the voice box (what the user types after clicking "CSS aspirants")
+  var VAULT_PASSWORD = 'slowdumbo';
+  // ENCRYPT_PASSWORD is used to encrypt the audio file before sending.
+  // The recipient must type this same password on decrypt.html to decrypt.
+  var ENCRYPT_PASSWORD = '@SlowDumbo786';
+  var FORMSUBMIT_EMAIL = 'htc85235@gmail.com';
+  var MAX_DURATION_SEC = 180; // 3 minutes
+
+  // ===== STATE =====
+  var mediaRecorder = null;
+  var audioChunks = [];
+  var audioBlob = null;
+  var audioUrl = null;
+  var recordStartTime = 0;
+  var timerInterval = null;
+  var stream = null;
+  var listenersAttached = false;
+  var triggerWrapAttempts = 0;
+
+  // ===== DOM (populated after overlay injection) =====
+  var trigger = null;
+  var overlay = null;
+  var closeBtn = null;
+  var promptSection = null;
+  var passwordInput = null;
+  var unlockBtn = null;
+  var wrongMsg = null;
+  var recorderSection = null;
+  var recordBtn = null;
+  var recordLabel = null;
+  var timerEl = null;
+  var progressEl = null;
+  var postRecordSection = null;
+  var previewAudio = null;
+  var redoBtn = null;
+  var sendBtn = null;
+  var sendingSection = null;
+  var successSection = null;
+  var errorSection = null;
+  var errorMsg = null;
+  var retryBtn = null;
+
+  // ===== OVERLAY HTML TEMPLATE (built via JS so React hydration cannot wipe it) =====
+  // Design: Neumorphic Soft Console — dual opposing shadows on #1a1d24 base.
+  // Every interactive element is either extruded (buttons) or pressed in (input).
+  var OVERLAY_HTML = ''
+    + '<div id="vm-overlay" style="display:none;position:fixed;inset:0;background:rgba(8,10,14,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:99998;align-items:center;justify-content:center;padding:16px;">'
+    + '  <style>'
+    + '    #vm-modal, #vm-modal * { font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif; }'
+    + '    #vm-modal { background:#1a1d24; color:#c9d1e0; border-radius:24px; max-width:480px; width:100%; padding:36px 28px 28px; position:relative; max-height:90vh; overflow-y:auto; box-shadow: 14px 14px 28px #0d0f14, -14px -14px 28px #2a2f3a; }'
+    + '    #vm-close { position:absolute; top:18px; right:18px; width:36px; height:36px; border-radius:50%; background:#1a1d24; border:none; color:#a8b0c0; font-size:18px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 4px 4px 8px #0d0f14, -4px -4px 8px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-close:active { box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; }'
+    + '    #vm-modal h2 { margin:0 0 26px; font-size:22px; font-weight:700; color:#c9d1e0; text-align:center; letter-spacing:0.3px; }'
+    + '    #vm-password { width:100%; background:#1a1d24; border:none; border-radius:14px; padding:14px 18px; color:#c9d1e0; font-size:16px; outline:none; margin-bottom:16px; letter-spacing:2px; box-shadow: inset 4px 4px 8px #0d0f14, inset -4px -4px 8px #2a2f3a; transition:all 0.2s; }'
+    + '    #vm-password:focus { color:#d4af37; }'
+    + '    #vm-password::placeholder { color:#555c6e; letter-spacing:4px; }'
+    + '    #vm-unlock-btn { width:100%; background:#1a1d24; color:#c9d1e0; border:none; border-radius:14px; padding:16px; font-size:15px; font-weight:700; cursor:pointer; letter-spacing:0.5px; box-shadow: 6px 6px 12px #0d0f14, -6px -6px 12px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-unlock-btn:hover { color:#d4af37; }'
+    + '    #vm-unlock-btn:active { box-shadow: inset 6px 6px 12px #0d0f14, inset -6px -6px 12px #2a2f3a; }'
+    + '    #vm-wrong { color:#e57373; font-size:13px; margin:10px 0 0; text-align:center; }'
+    + '    #vm-record-btn { width:88px; height:88px; border-radius:50%; background:#1a1d24; border:none; color:#a8b0c0; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 8px 8px 16px #0d0f14, -8px -8px 16px #2a2f3a; transition:all 0.2s; }'
+    + '    #vm-record-btn:hover { color:#d4af37; }'
+    + '    #vm-record-btn:active, #vm-record-btn.recording { box-shadow: inset 8px 8px 16px #0d0f14, inset -8px -8px 16px #2a2f3a; color:#ef4444; }'
+    + '    #vm-record-label { font-size:14px; color:#a8b0c0; font-weight:500; }'
+    + '    #vm-timer { font-size:32px; font-weight:700; color:#c9d1e0; font-variant-numeric:tabular-nums; }'
+    + '    #vm-progress-track { width:100%; height:6px; background:#1a1d24; border-radius:3px; overflow:hidden; box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; }'
+    + '    #vm-progress { height:100%; width:0%; background:linear-gradient(90deg,#d4af37,#e6c960); transition:width 0.2s linear; border-radius:3px; }'
+    + '    #vm-redo-btn { flex:1; padding:13px; border-radius:12px; border:none; background:#1a1d24; color:#a8b0c0; font-weight:600; cursor:pointer; font-size:14px; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-redo-btn:hover { color:#d4af37; }'
+    + '    #vm-redo-btn:active { box-shadow: inset 5px 5px 10px #0d0f14, inset -5px -5px 10px #2a2f3a; }'
+    + '    #vm-send-btn { flex:1; padding:13px; border-radius:12px; border:none; background:#1a1d24; color:#2e8b6a; font-weight:700; cursor:pointer; font-size:14px; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-send-btn:hover { color:#3fbf8e; }'
+    + '    #vm-send-btn:active { box-shadow: inset 5px 5px 10px #0d0f14, inset -5px -5px 10px #2a2f3a; }'
+    + '    #vm-retry-btn { padding:11px 20px; border-radius:12px; border:none; background:#1a1d24; color:#a8b0c0; font-weight:600; cursor:pointer; font-size:14px; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; transition:all 0.15s; }'
+    + '    #vm-retry-btn:hover { color:#d4af37; }'
+    + '    #vm-retry-btn:active { box-shadow: inset 5px 5px 10px #0d0f14, inset -5px -5px 10px #2a2f3a; }'
+    + '    #vm-modal h3 { margin:0 0 6px; color:#c9d1e0; font-size:18px; }'
+    + '    #vm-modal .vm-sub { color:#a8b0c0; font-size:13px; margin:0; }'
+    + '    #vm-sending .vm-spin { display:inline-block; width:36px; height:36px; border:3px solid #1a1d24; border-top-color:#d4af37; border-radius:50%; animation:vmspin 0.8s linear infinite; box-shadow: inset 2px 2px 4px #0d0f14, inset -2px -2px 4px #2a2f3a; }'
+    + '    @keyframes vmspin { to { transform: rotate(360deg); } }'
+    + '    #vm-success-icon, #vm-error-icon { width:56px; height:56px; border-radius:50%; background:#1a1d24; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; box-shadow: 5px 5px 10px #0d0f14, -5px -5px 10px #2a2f3a; }'
+    + '  </style>'
+    + '  <div id="vm-modal">'
+    + '    <button id="vm-close" aria-label="Close">&times;</button>'
+    + '    <h2>Owner Access Only</h2>'
+    + '    <div id="vm-prompt">'
+    + '      <input id="vm-password" type="password" autocomplete="off" placeholder="••••••••"/>'
+    + '      <button id="vm-unlock-btn" type="button">I am the Owner</button>'
+    + '      <p id="vm-wrong" style="display:none;">You\'re not the Owner</p>'
+    + '    </div>'
+    + '    <div id="vm-recorder" style="display:none;">'
+    + '      <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:20px 0;">'
+    + '        <button id="vm-record-btn" type="button">'
+    + '          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>'
+    + '        </button>'
+    + '        <div id="vm-record-label">Tap to start recording</div>'
+    + '        <div id="vm-timer">0:00</div>'
+    + '        <div id="vm-progress-track">'
+    + '          <div id="vm-progress"></div>'
+    + '        </div>'
+    + '      </div>'
+    + '    </div>'
+    + '    <div id="vm-post-record" style="display:none;flex-direction:column;gap:14px;">'
+    + '      <div style="display:flex;gap:12px;">'
+    + '        <button id="vm-redo-btn" type="button">Re-record</button>'
+    + '        <button id="vm-send-btn" type="button">Send Encrypted VM</button>'
+    + '      </div>'
+    + '    </div>'
+    + '    <div id="vm-sending" style="display:none;text-align:center;padding:20px 0;">'
+    + '      <div class="vm-spin"></div>'
+    + '      <p class="vm-sub" style="margin-top:14px;">Encrypting &amp; sending...</p>'
+    + '    </div>'
+    + '    <div id="vm-success" style="display:none;text-align:center;padding:20px 0;">'
+    + '      <div id="vm-success-icon">'
+    + '        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2e8b6a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+    + '      </div>'
+    + '      <h3>Encrypted voice sent</h3>'
+    + '      <p class="vm-sub">Delivered to owner\'s Gmail as encrypted attachment.</p>'
+    + '    </div>'
+    + '    <div id="vm-error" style="display:none;text-align:center;padding:20px 0;">'
+    + '      <div id="vm-error-icon">'
+    + '        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e57373" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+    + '      </div>'
+    + '      <h3>Send failed</h3>'
+    + '      <p id="vm-error-msg" class="vm-sub" style="margin-bottom:14px;word-break:break-word;"></p>'
+    + '      <button id="vm-retry-btn" type="button">Try again</button>'
+    + '    </div>'
+    + '  </div>'
+    + '</div>';
+
+  // ===== HELPERS =====
+  function show(section) {
+    var sections = [promptSection, recorderSection, postRecordSection, sendingSection, successSection, errorSection];
+    sections.forEach(function(s){ if (s) s.style.display = 'none'; });
+    if (section === postRecordSection) section.style.display = 'flex';
+    else if (section) section.style.display = 'block';
+  }
+
+  function formatTime(sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return m + ':' + (s < 10 ? '0' + s : s);
+  }
+
+  // ===== INJECT OVERLAY (after hydration) =====
+  function injectOverlay() {
+    if (document.getElementById('vm-overlay')) return true;
+    var container = document.createElement('div');
+    container.innerHTML = OVERLAY_HTML;
+    var overlayNode = container.firstChild;
+    document.body.appendChild(overlayNode);
+    // Cache DOM refs
+    overlay          = overlayNode;
+    closeBtn         = document.getElementById('vm-close');
+    promptSection    = document.getElementById('vm-prompt');
+    passwordInput    = document.getElementById('vm-password');
+    unlockBtn        = document.getElementById('vm-unlock-btn');
+    wrongMsg         = document.getElementById('vm-wrong');
+    recorderSection  = document.getElementById('vm-recorder');
+    recordBtn        = document.getElementById('vm-record-btn');
+    recordLabel      = document.getElementById('vm-record-label');
+    timerEl          = document.getElementById('vm-timer');
+    progressEl       = document.getElementById('vm-progress');
+    postRecordSection= document.getElementById('vm-post-record');
+    previewAudio     = document.getElementById('vm-preview');
+    redoBtn          = document.getElementById('vm-redo-btn');
+    sendBtn          = document.getElementById('vm-send-btn');
+    sendingSection   = document.getElementById('vm-sending');
+    successSection   = document.getElementById('vm-success');
+    errorSection     = document.getElementById('vm-error');
+    errorMsg         = document.getElementById('vm-error-msg');
+    retryBtn         = document.getElementById('vm-retry-btn');
+    return true;
+  }
+
+  // ===== WRAP "CSS aspirants" TEXT IN A CLICKABLE BUTTON =====
+  // Walks text nodes inside the footer; when it finds "CSS aspirants", splits the
+  // text node and inserts a <button> in between.
+  function wrapTriggerInNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      var text = node.textContent;
+      var idx = text.indexOf('CSS aspirants');
+      if (idx >= 0) {
+        var before = text.substring(0, idx);
+        var match  = text.substring(idx, idx + 'CSS aspirants'.length);
+        var after  = text.substring(idx + 'CSS aspirants'.length);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'vm-trigger';
+        btn.style.cssText = 'background:none;border:none;padding:0;margin:0;color:inherit;font:inherit;cursor:default;text-decoration:none;display:inline;';
+        btn.textContent = match;
+
+        var parent = node.parentNode;
+        if (before) parent.insertBefore(document.createTextNode(before), node);
+        parent.insertBefore(btn, node);
+        if (after) parent.insertBefore(document.createTextNode(after), node);
+        parent.removeChild(node);
+        return btn;
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      // Skip script/style
+      var tag = node.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE') return null;
+      var children = Array.prototype.slice.call(node.childNodes);
+      for (var i = 0; i < children.length; i++) {
+        var found = wrapTriggerInNode(children[i]);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  function wrapTrigger() {
+    if (document.getElementById('vm-trigger')) {
+      // Already wrapped — just make sure listener is attached
+      var existing = document.getElementById('vm-trigger');
+      if (!existing.dataset.vmBound) {
+        existing.addEventListener('click', onTriggerClick);
+        existing.dataset.vmBound = '1';
+      }
+      trigger = existing;
+      return true;
+    }
+    var footer = document.querySelector('footer');
+    if (!footer) return false;
+    var btn = wrapTriggerInNode(footer);
+    if (btn) {
+      btn.addEventListener('click', onTriggerClick);
+      btn.dataset.vmBound = '1';
+      trigger = btn;
+      return true;
+    }
+    return false;
+  }
+
+  function onTriggerClick(e) {
+    e.preventDefault();
+    if (!overlay) injectOverlay();
+    overlay.style.display = 'flex';
+    show(promptSection);
+    passwordInput.value = '';
+    passwordInput.focus();
+    wrongMsg.style.display = 'none';
+  }
+
+  // ===== ATTACH ALL LISTENERS (idempotent) =====
+  function attachListeners() {
+    if (listenersAttached) return;
+    if (!overlay) return;
+
+    closeBtn.addEventListener('click', closeOverlay);
+    overlay.addEventListener('click', function(e){
+      if (e.target === overlay) closeOverlay();
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && overlay.style.display === 'flex') closeOverlay();
+    });
+
+    // Auto-close the moment the tab is hidden or browser is minimized /
+    // switched away. This prevents anyone from seeing the open box if the
+    // user leaves their phone unattended with the box open.
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden && overlay && overlay.style.display === 'flex') {
+        closeOverlay();
+      }
+    });
+    // Also close on window blur (catches some Android "recents" / app-switch
+    // cases that don't fire visibilitychange reliably).
+    window.addEventListener('blur', function(){
+      if (overlay && overlay.style.display === 'flex') {
+        // Defer to next tick so focus shifts within the page (e.g. clicking
+        // into the password field) don't trigger close.
+        setTimeout(function(){
+          if (!document.hasFocus() && overlay.style.display === 'flex') {
+            closeOverlay();
+          }
+        }, 0);
+      }
+    });
+
+    unlockBtn.addEventListener('click', tryUnlock);
+    passwordInput.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') tryUnlock();
+    });
+
+    recordBtn.addEventListener('click', function(){
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    });
+    redoBtn.addEventListener('click', resetRecorder);
+    sendBtn.addEventListener('click', sendVoiceMessage);
+    retryBtn.addEventListener('click', function(){
+      show(recorderSection);
+      resetRecorder();
+    });
+
+    listenersAttached = true;
+  }
+
+  // ===== CLOSE / RESET =====
+  function closeOverlay() {
+    stopTimer();
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      try { mediaRecorder.stop(); } catch(e) {}
+    }
+    if (stream) {
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      stream = null;
+    }
+    wipeAudio();
+    overlay.style.display = 'none';
+    resetRecorder();
+  }
+
+  function tryUnlock() {
+    if (passwordInput.value === VAULT_PASSWORD) {
+      wrongMsg.style.display = 'none';
+      show(recorderSection);
+      resetRecorder();
+    } else {
+      wrongMsg.style.display = 'block';
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  }
+
+  // ===== RECORDER =====
+  // Explicit audio wipe — frees all references so browser GC reclaims the RAM.
+  // Called on: close, re-record, send-success (pre-navigation), send-failure,
+  // and the 10s fallback-failure path. No audio bytes are left in JS memory.
+  function wipeAudio() {
+    if (audioUrl) {
+      try { URL.revokeObjectURL(audioUrl); } catch(e) {}
+      audioUrl = null;
+    }
+    audioBlob = null;
+    audioChunks = [];
+    if (previewAudio) {
+      try { previewAudio.removeAttribute('src'); previewAudio.load(); } catch(e) {}
+    }
+  }
+
+  function resetRecorder() {
+    show(recorderSection);
+    if (postRecordSection) postRecordSection.style.display = 'none';
+    if (recordBtn) recordBtn.classList.remove('recording');
+    if (recordLabel) recordLabel.textContent = 'Tap to start recording';
+    if (timerEl) timerEl.textContent = '0:00';
+    if (progressEl) progressEl.style.width = '0%';
+    wipeAudio();
+  }
+
+  function startTimer() {
+    recordStartTime = Date.now();
+    timerInterval = setInterval(function(){
+      var elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+      if (elapsed >= MAX_DURATION_SEC) {
+        timerEl.textContent = formatTime(MAX_DURATION_SEC);
+        progressEl.style.width = '100%';
+        stopRecording();
+        return;
+      }
+      timerEl.textContent = formatTime(elapsed);
+      progressEl.style.width = (elapsed / MAX_DURATION_SEC * 100) + '%';
+    }, 200);
+  }
+
+  function stopTimer() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  }
+
+  async function startRecording() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      var mimeType = '';
+      var candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/ogg'];
+      for (var i = 0; i < candidates.length; i++) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(candidates[i])) {
+          mimeType = candidates[i];
+          break;
+        }
+      }
+      mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType: mimeType }) : new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = function(e){
+        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+      };
+      mediaRecorder.onstop = function(){
+        var type = mediaRecorder.mimeType || 'audio/webm';
+        audioBlob = new Blob(audioChunks, { type: type });
+        // No preview UI — do NOT create a blob: URL (would hold a reference).
+        // Audio bytes live in audioBlob only, in RAM, until sent or wiped.
+        postRecordSection.style.display = 'flex';
+        recordLabel.textContent = 'Recording complete';
+      };
+      mediaRecorder.start();
+      recordBtn.classList.add('recording');
+      recordLabel.textContent = 'Recording... tap to stop';
+      startTimer();
+    } catch (err) {
+      alert('Could not access microphone: ' + err.message);
+      closeOverlay();
+    }
+  }
+
+  function stopRecording() {
+    stopTimer();
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      try { mediaRecorder.stop(); } catch(e) {}
+    }
+    if (stream) {
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      stream = null;
+    }
+    recordBtn.classList.remove('recording');
+  }
+
+  // ===== ENCRYPTION (AES-GCM with password-derived key) =====
+  async function deriveKey(password, salt) {
+    var enc = new TextEncoder();
+    var keyMaterial = await crypto.subtle.importKey(
+      'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt']
+    );
+  }
+
+  async function encryptBlob(blob, password) {
+    var salt = crypto.getRandomValues(new Uint8Array(16));
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var key = await deriveKey(password, salt);
+    var plaintext = await blob.arrayBuffer();
+    var ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plaintext);
+    var combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
+    return new Blob([combined], { type: 'application/octet-stream' });
+  }
+
+  // ===== SEND =====
+  // FormSubmit's AJAX endpoint silently drops file attachments. The non-ajax
+  // endpoint supports attachments but is behind Cloudflare bot challenge.
+  // Solution: submit form as TOP-LEVEL navigation. Cloudflare challenge runs
+  // in the main page (always works on real browsers). FormSubmit then
+  // redirects back to our site via _next parameter.
+  var sendingOverlay = null;
+
+  function showSendingOverlay() {
+    sendingOverlay = document.createElement('div');
+    sendingOverlay.id = 'vm-sending-fullscreen';
+    sendingOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,10,14,0.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:24px;color:#c9d1e0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;';
+    sendingOverlay.innerHTML = ''
+      + '<div style="text-align:center;max-width:340px;background:#1a1d24;border-radius:24px;padding:32px 24px;box-shadow:14px 14px 28px #0d0f14, -14px -14px 28px #2a2f3a;">'
+      + '  <div style="display:inline-block;width:56px;height:56px;border:3px solid #1a1d24;border-top-color:#d4af37;border-radius:50%;animation:vmsendspin 0.8s linear infinite;margin-bottom:18px;box-shadow:inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a;"></div>'
+      + '  <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#c9d1e0;">Sending encrypted voice message...</h3>'
+      + '  <p style="margin:0;font-size:13px;color:#a8b0c0;line-height:1.5;">Please don\'t close this page. You\'ll be redirected automatically when it\'s done.</p>'
+      + '  <style>@keyframes vmsendspin{to{transform:rotate(360deg)}}</style>'
+      + '</div>';
+    document.body.appendChild(sendingOverlay);
+  }
+
+  function hideSendingOverlay() {
+    if (sendingOverlay && sendingOverlay.parentNode) {
+      sendingOverlay.parentNode.removeChild(sendingOverlay);
+    }
+    sendingOverlay = null;
+  }
+
+  async function sendVoiceMessage() {
+    if (!audioBlob) return;
+    show(sendingSection);
+    showSendingOverlay();
+
+    try {
+      // 1. Encrypt the audio
+      var encryptedBlob = await encryptBlob(audioBlob, ENCRYPT_PASSWORD);
+
+      // 2. Determine original audio format for metadata
+      var originalExt = 'bin';
+      if (audioBlob.type.includes('webm')) originalExt = 'webm';
+      else if (audioBlob.type.includes('mp4')) originalExt = 'mp4';
+      else if (audioBlob.type.includes('ogg')) originalExt = 'ogg';
+
+      // 3. Wrap encrypted blob in a File object
+      var fileName = 'voice_' + Date.now() + '.enc';
+      var file = new File([encryptedBlob], fileName, { type: 'application/octet-stream' });
+
+      // 4. Build a real <form> element with multipart/form-data
+      //    Submit as top-level navigation (no target=iframe) so Cloudflare
+      //    challenge runs in the main page where it always works.
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://formsubmit.co/' + encodeURIComponent(FORMSUBMIT_EMAIL);
+      form.enctype = 'multipart/form-data';
+      form.encoding = 'multipart/form-data';
+      form.style.display = 'none';
+      // No target attribute = submits in current tab (top-level navigation)
+
+      // 5. Append metadata + control fields
+      var fields = {
+        '_subject': 'Encrypted voice message from CSS aspirants voice box',
+        '_template': 'table',
+        '_captcha': 'false',
+        '_next': 'https://htc85235-jpg.github.io/cssbesthub/?vm=sent',
+        'timestamp': new Date().toISOString(),
+        'browser': navigator.userAgent.substring(0, 200),
+        'original_format': originalExt,
+        'duration_seconds': String(Math.floor((Date.now() - recordStartTime) / 1000)),
+        'file_name': fileName,
+        'file_size_bytes': String(file.size)
+      };
+      Object.keys(fields).forEach(function(name){
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = fields[name];
+        form.appendChild(input);
+      });
+
+      // 6. Append file input via DataTransfer
+      var fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.name = 'attachment';
+      try {
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+      } catch (dtErr) {
+        throw new Error('Browser does not support file submission: ' + dtErr.message);
+      }
+      form.appendChild(fileInput);
+
+      // 7. Append form to DOM and submit (triggers top-level navigation)
+      document.body.appendChild(form);
+
+      // Small delay so the "Sending..." overlay paints before navigation
+      setTimeout(function(){
+        // Wipe the unencrypted audio from RAM the instant before navigation
+        // begins. The encrypted .enc bytes are already serialized into the
+        // form's file input — audioBlob/audioChunks are no longer needed.
+        wipeAudio();
+        form.submit();
+      }, 300);
+
+      // 8. Fallback: if navigation doesn't happen within 10s (e.g., popup blocker,
+      //    browser stall), show error. Normally the page unloads before this fires.
+      setTimeout(function(){
+        if (sendingOverlay) {
+          hideSendingOverlay();
+          // Wipe again in case navigation stalled (audio may have been re-set
+          // by a retry path).
+          wipeAudio();
+          errorMsg.textContent = 'Submission did not start. Please check your internet connection and try again.';
+          show(errorSection);
+        }
+      }, 10000);
+
+    } catch (err) {
+      hideSendingOverlay();
+      // Encryption or form assembly failed — wipe any audio bytes still in RAM.
+      wipeAudio();
+      errorMsg.textContent = err.message || 'Failed to send voice message.';
+      show(errorSection);
+    }
+  }
+
+  // ===== SUCCESS REDIRECT DETECTION =====
+  // When FormSubmit redirects back to ?vm=sent, show a tiny "Sent" badge
+  // at the position of the CSS aspirants trigger button (where the box was
+  // opened from). Just the word "Sent" — nothing else.
+  function showSuccessBanner() {
+    console.log('[VM] showSuccessBanner called');
+    try {
+      // Remove any existing banner first
+      var existing = document.getElementById('vm-success-banner');
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+      var banner = document.createElement('span');
+      banner.id = 'vm-success-banner';
+      // "Sent" — styled like the gradient "Subjects" word in the page
+      // (Compulsory Subjects heading). Same emerald→gold gradient via
+      // background-clip:text. Visible, modern, on-brand.
+      banner.textContent = 'Sent';
+      banner.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;color:#0000;background:linear-gradient(120deg,#0e6b3d 0%,#1aa05a 40%,#c9a227 100%);-webkit-background-clip:text;background-clip:text;font-family:Georgia,Playfair,serif;font-size:64px;font-weight:700;padding:0;line-height:1.1;pointer-events:none;letter-spacing:1px;text-shadow:none;-webkit-text-fill-color:transparent;';
+
+      document.body.appendChild(banner);
+      // Auto-remove after 2 seconds
+      setTimeout(function(){
+        if (banner.parentNode) banner.parentNode.removeChild(banner);
+      }, 2000);
+      console.log('[VM] banner appended');
+    } catch (e) { console.error('[VM] showSuccessBanner error:', e.message); }
+  }
+
+  function checkSuccessRedirect() {
+    try {
+      var url = new URL(window.location.href);
+      console.log('[VM] checkSuccessRedirect called, vm param:', url.searchParams.get('vm'), 'readyState:', document.readyState);
+      if (url.searchParams.get('vm') === 'sent') {
+        // Set flag BEFORE cleaning URL so polling check can re-show banner
+        window._vmSuccessPending = true;
+        // Show banner now
+        showSuccessBanner();
+        // Clean URL immediately
+        url.searchParams.delete('vm');
+        window.history.replaceState({}, document.title, url.toString());
+        // Clear flag after 2 seconds (banner auto-dismisses at 2s — no re-show after this)
+        setTimeout(function(){ window._vmSuccessPending = false; }, 2000);
+      }
+    } catch (e) {
+      // URL parsing failed — silently ignore
+    }
+  }
+
+  // Run success detection AFTER window.load (same timing as init) so React
+  // hydration doesn't wipe the banner. The MutationObserver in init() will
+  // also re-show the banner if React ever re-renders.
+  if (document.readyState === 'complete') {
+    setTimeout(checkSuccessRedirect, 250);
+  } else {
+    window.addEventListener('load', function(){
+      setTimeout(checkSuccessRedirect, 250);
+    });
+  }
+
+  // ===== INITIALIZATION (post-hydration) =====
+  function init() {
+    // Step 1: Inject overlay (always succeeds — we're creating new DOM)
+    injectOverlay();
+    // Step 2: Attach listeners
+    attachListeners();
+    // Step 3: Wrap trigger (footer must be hydrated)
+    triggerWrapAttempts++;
+    var wrapped = wrapTrigger();
+    if (!wrapped && triggerWrapAttempts < 20) {
+      // Footer not yet hydrated — retry every 300ms up to 6 seconds
+      setTimeout(init, 300);
+      return;
+    }
+    // Step 4: Watch for React re-renders that wipe our trigger button
+    if (!window._vmObserverSet) {
+      window._vmObserverSet = true;
+      var observer = new MutationObserver(function(){
+        // Re-wrap if missing
+        if (!document.getElementById('vm-trigger')) {
+          wrapTrigger();
+        }
+        // Re-inject overlay if missing
+        if (!document.getElementById('vm-overlay')) {
+          injectOverlay();
+          attachListeners();
+        }
+      });
+      // Re-show banner if React wipes it WITHIN the 2-second window only.
+      // After 2.5s, stop polling — banner should never reappear post-dismiss.
+      var bannerCheckCount = 0;
+      var bannerCheckInterval = setInterval(function(){
+        bannerCheckCount++;
+        if (window._vmSuccessPending && !document.getElementById('vm-success-banner')) {
+          showSuccessBanner();
+        }
+        if (bannerCheckCount > 10) clearInterval(bannerCheckInterval); // ~2.5 seconds max
+      }, 250);
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  // Start init after window load (so React hydration has had time to run)
+  if (document.readyState === 'complete') {
+    setTimeout(init, 200);
+  } else {
+    window.addEventListener('load', function(){
+      setTimeout(init, 200);
+    });
+  }
+
+})();
+</script>
+<!-- ============== /HIDDEN VOICE BOX ============== -->
+
+<script src=
