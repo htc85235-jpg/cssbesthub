@@ -546,15 +546,14 @@
         var kvData = await kvResp.json();
         if (kvData.writes !== undefined && kvData.writes !== null) {
           var cloudWrites = kvData.writes;
-          var displayWithPending = dailyWrites + pendingWriteIncrement;
           // Cloudflare Analytics has ~30-90s delay
-          // If Cloudflare caught up, use its number and reset pending
-          if (cloudWrites >= displayWithPending) {
+          // dailyWrites should NEVER decrease within a session — only increase
+          if (cloudWrites > dailyWrites) {
             dailyWrites = cloudWrites;
-            pendingWriteIncrement = 0;
-          } else {
-            // Cloudflare hasn't caught up yet — keep our optimistic count
-            dailyWrites = dailyWrites; // unchanged, pending stays
+            // Cloudflare caught up, reset pending only if Cloudflare overtook our optimistic count
+            if (cloudWrites >= dailyWrites + pendingWriteIncrement) {
+              pendingWriteIncrement = 0;
+            }
           }
           updateWriteCount(Math.max(0, 1000 - (dailyWrites + pendingWriteIncrement)));
         }
@@ -1036,16 +1035,26 @@
     if (!audio || !msgDiv) return;
     var elapsed = audio.currentTime || 0;
     var total = audio.duration;
-    // If duration not ready yet, still move dot based on elapsed (will correct when duration loads)
-    if (!total || !isFinite(total)) {
-      // Show elapsed time even if duration unknown
-      var elapsedEl = msgDiv.querySelector('.voice-dur.elapsed');
-      if (elapsedEl) {
-        elapsedEl.style.display = '';
-        elapsedEl.textContent = formatTime(Math.floor(elapsed));
+
+    // If duration not ready yet, still show dot at position and color first bar
+    if (!total || !isFinite(total) || total <= 0) {
+      // Show elapsed time
+      var elapsedEl0 = msgDiv.querySelector('.voice-dur.elapsed');
+      if (elapsedEl0 && elapsed > 0) {
+        elapsedEl0.style.display = '';
+        elapsedEl0.textContent = formatTime(Math.floor(elapsed));
       }
+      // Show dot near start and mark playing
+      var seekDot0 = msgDiv.querySelector('.voice-seek-dot');
+      if (seekDot0 && elapsed > 0) seekDot0.style.left = '2%';
+      var wavesMini0 = msgDiv.querySelector('.voice-waves-mini');
+      if (wavesMini0) wavesMini0.classList.add('playing');
+      // Color first bar as played
+      var bars0 = msgDiv.querySelectorAll('.vbar');
+      if (bars0.length > 0 && elapsed > 0) bars0[0].classList.add('played');
       return;
     }
+
     var pct = elapsed / total;
     var pctPct = pct * 100;
 
@@ -1066,10 +1075,10 @@
 
     var wavesMini = msgDiv.querySelector('.voice-waves-mini');
     if (wavesMini) wavesMini.classList.add('playing');
-    var elapsedEl2 = msgDiv.querySelector('.voice-dur.elapsed');
-    if (elapsedEl2) {
-      elapsedEl2.style.display = '';
-      elapsedEl2.textContent = formatTime(Math.floor(elapsed));
+    var elapsedEl = msgDiv.querySelector('.voice-dur.elapsed');
+    if (elapsedEl) {
+      elapsedEl.style.display = '';
+      elapsedEl.textContent = formatTime(Math.floor(elapsed));
     }
   }
 
