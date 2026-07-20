@@ -161,7 +161,7 @@
     + '    .voice-play-btn svg { width:14px; height:14px; }'
     + '    .voice-play-btn.playing { background:#3b82f6 !important; color:#fff !important; }'
     + '    .voice-wave-progress { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }'
-    + '    .voice-waves-mini { display:flex; align-items:center; gap:1.5px; height:24px; overflow:hidden; position:relative; width:100%; }'
+    + '    .voice-waves-mini { display:flex; align-items:center; gap:1.5px; height:24px; overflow:hidden; position:relative; width:100%; cursor:pointer; }'
     + '    .voice-waves-mini .vbar { flex:1; min-width:2px; border-radius:1px; background:#9ca3af; pointer-events:none; transition:background 0.15s; }'
     + '    .voice-waves-mini .vbar.played { background:#22c55e; }'
     + '    .voice-seek-dot { position:absolute; top:50%; width:10px; height:10px; border-radius:50%; background:#22c55e; left:0; transform:translate(-50%,-50%); pointer-events:none; box-shadow: 0 0 4px rgba(34,197,94,0.6); opacity:0; z-index:2; }'
@@ -997,6 +997,64 @@
       playBtn.addEventListener('click', function(){
         playVoiceMessage(msg.voiceKey, playBtn, voiceMime, div);
       });
+
+      // Tap/drag to seek on waveform
+      var waveContainer = div.querySelector('.voice-waves-mini');
+      if (waveContainer) {
+        var isDragging = false;
+
+        function seekToPct(pct) {
+          pct = Math.max(0, Math.min(1, pct));
+          // Move dot & color bars visually
+          var seekDot = waveContainer.querySelector('.voice-seek-dot');
+          if (seekDot) seekDot.style.left = (pct * 100) + '%';
+          var bars = waveContainer.querySelectorAll('.vbar');
+          var playedCount = Math.floor(pct * bars.length);
+          for (var i = 0; i < bars.length; i++) {
+            if (i < playedCount) bars[i].classList.add('played');
+            else bars[i].classList.remove('played');
+          }
+          // Seek audio if loaded
+          var total = (currentAudio && isFinite(currentAudio.duration) && currentAudio.duration > 0) ? currentAudio.duration : parseInt(div.dataset.voiceDurSec);
+          if (currentAudio && currentPlayBtn === playBtn && total && total > 0) {
+            currentAudio.currentTime = pct * total;
+          }
+          // Update elapsed display
+          var elapsedEl = div.querySelector('.voice-dur.elapsed');
+          if (elapsedEl && total && total > 0) {
+            elapsedEl.style.display = '';
+            elapsedEl.textContent = formatTime(Math.floor(pct * total));
+          }
+        }
+
+        function getPctFromEvent(e) {
+          var rect = waveContainer.getBoundingClientRect();
+          var x = (e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0)) - rect.left;
+          return x / rect.width;
+        }
+
+        waveContainer.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          isDragging = true;
+          seekToPct(getPctFromEvent(e));
+        });
+        document.addEventListener('mousemove', function(e) {
+          if (isDragging) seekToPct(getPctFromEvent(e));
+        });
+        document.addEventListener('mouseup', function() {
+          isDragging = false;
+        });
+        waveContainer.addEventListener('touchstart', function(e) {
+          isDragging = true;
+          seekToPct(getPctFromEvent(e));
+        }, { passive: true });
+        waveContainer.addEventListener('touchmove', function(e) {
+          if (isDragging) seekToPct(getPctFromEvent(e));
+        }, { passive: true });
+        waveContainer.addEventListener('touchend', function() {
+          isDragging = false;
+        });
+      }
 
 
     } else {
