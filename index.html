@@ -161,9 +161,9 @@
     + '    .voice-play-btn svg { width:14px; height:14px; }'
     + '    .voice-play-btn.playing { background:#3b82f6 !important; color:#fff !important; }'
     + '    .voice-wave-progress { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }'
-    + '    .voice-waves-mini { display:flex; align-items:center; gap:1.5px; height:20px; overflow:hidden; position:relative; width:100%; }'
-    + '    .voice-waves-mini .vbar { width:2.5px; border-radius:1px; background:#9ca3af; transition:height 0.1s; flex-shrink:0; pointer-events:none; }'
-    + '    .voice-progress-overlay { position:absolute; left:0; top:0; bottom:0; width:0; background:rgba(34,197,94,0.85); transition:width 0.1s linear; pointer-events:none; mix-blend-mode:multiply; }'
+    + '    .voice-waves-mini { display:flex; align-items:center; gap:1.5px; height:24px; overflow:hidden; position:relative; width:100%; }'
+    + '    .voice-waves-mini .vbar { flex:1; min-width:2px; border-radius:1px; background:#9ca3af; pointer-events:none; transition:background 0.15s; }'
+    + '    .voice-waves-mini .vbar.played { background:#22c55e; }'
     + '    .voice-seek-dot { position:absolute; top:50%; width:10px; height:10px; border-radius:50%; background:#22c55e; left:0; transform:translate(-50%,-50%); pointer-events:none; box-shadow: 0 0 4px rgba(34,197,94,0.6); opacity:0; z-index:2; }'
     + '    .voice-waves-mini.playing .voice-seek-dot { opacity:1; }'
 
@@ -979,7 +979,6 @@
         '</button>' +
         '<div class="voice-wave-progress">' +
           '<div class="voice-waves-mini">' +
-            '<div class="voice-progress-overlay"></div>' +
             '<div class="voice-seek-dot"></div>' +
             generateVoiceBars() +
           '</div>' +
@@ -1011,9 +1010,10 @@
 
   function generateVoiceBars() {
     var bars = '';
-    var heights = [3,6,10,14,8,12,5,9,13,7,11,4,8,12,6,10,14,7,5,3];
-    for (var i = 0; i < heights.length; i++) {
-      bars += '<div class="vbar" style="height:' + heights[i] + 'px;animation-delay:' + (i * 0.05) + 's"></div>';
+    var count = 40;
+    for (var i = 0; i < count; i++) {
+      var h = 4 + Math.round(Math.random() * 16);
+      bars += '<div class="vbar" style="height:' + h + 'px"></div>';
     }
     return bars;
   }
@@ -1036,11 +1036,23 @@
     if (!audio || !msgDiv || !audio.duration) return;
     var elapsed = audio.currentTime;
     var total = audio.duration;
-    var pct = (elapsed / total) * 100;
-    var overlay = msgDiv.querySelector('.voice-progress-overlay');
-    if (overlay) overlay.style.width = pct + '%';
+    var pct = elapsed / total;
+    var pctPct = pct * 100;
+
+    // Move seek dot
     var seekDot = msgDiv.querySelector('.voice-seek-dot');
-    if (seekDot) seekDot.style.left = pct + '%';
+    if (seekDot) seekDot.style.left = pctPct + '%';
+
+    // Color individual bars up to current position
+    var bars = msgDiv.querySelectorAll('.vbar');
+    var playedCount = Math.floor(pct * bars.length);
+    for (var i = 0; i < bars.length; i++) {
+      if (i < playedCount) {
+        bars[i].classList.add('played');
+      } else {
+        bars[i].classList.remove('played');
+      }
+    }
 
     var wavesMini = msgDiv.querySelector('.voice-waves-mini');
     if (wavesMini) wavesMini.classList.add('playing');
@@ -1064,8 +1076,8 @@
 
   function resetVoiceUI(msgDiv) {
     if (!msgDiv) return;
-    var overlay = msgDiv.querySelector('.voice-progress-overlay');
-    if (overlay) overlay.style.width = '0%';
+    var bars = msgDiv.querySelectorAll('.vbar');
+    for (var i = 0; i < bars.length; i++) bars[i].classList.remove('played');
     var elapsedEl = msgDiv.querySelector('.voice-dur.elapsed');
     if (elapsedEl) { elapsedEl.style.display = 'none'; elapsedEl.textContent = '0:00'; }
   }
@@ -1157,10 +1169,10 @@
               btn.classList.remove('playing');
               btn.innerHTML = playPlaySvg;
               stopProgressTimer();
-              // Show full progress
+              // Show full progress - all bars green
               if (msgDiv) {
-                var overlay = msgDiv.querySelector('.voice-progress-overlay');
-                if (overlay) overlay.style.width = '100%';
+                var bars = msgDiv.querySelectorAll('.vbar');
+                for (var j = 0; j < bars.length; j++) bars[j].classList.add('played');
               }
               currentAudio = null;
               currentPlayBtn = null;
@@ -1195,8 +1207,8 @@
             btn.innerHTML = playPlaySvg;
             stopProgressTimer();
             if (msgDiv) {
-              var overlay = msgDiv.querySelector('.voice-progress-overlay');
-              if (overlay) overlay.style.width = '100%';
+              var bars = msgDiv.querySelectorAll('.vbar');
+              for (var j = 0; j < bars.length; j++) bars[j].classList.add('played');
             }
             currentAudio = null;
             currentPlayBtn = null;
