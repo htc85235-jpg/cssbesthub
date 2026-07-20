@@ -35,6 +35,8 @@
   var longPressTimer = null;
   var longPressTarget = null;
   var voiceAudioCache = {}; // temporary, cleared on close — no persistent storage
+  var locallySentIds = {}; // { msgId: timestamp } — messages sent locally, protected from removal until server confirms
+  var serverConfirmedIds = {}; // IDs seen on the server at least once — only these can be "deleted" by the server
   var pendingSeenUpdates = []; // batch seen updates to reduce writes
   var seenSaveTimer = null; // debounce seen saves
   var typingSaveTimer = null; // debounce typing saves
@@ -725,11 +727,14 @@
       text: text
     };
 
-    // Show locally immediately
+    // Track as locally sent — PROTECTED from removal until server confirms it
+    locallySentIds[msg.id] = Date.now();
+
+    // Show immediately in DOM — will NEVER be removed until server confirms then deletes
     appendMessage(msg);
     scrollToBottom();
 
-    // Save to GitHub in background (non-blocking — message already shown)
+    // Save to GitHub in background (completely non-blocking)
     saveMessagesToGitHub(msg, false).catch(function(e){
       console.error('[Chat] Send text failed:', e);
     });
@@ -747,6 +752,10 @@
       el.style.margin = '0';
       setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 300);
     }
+    // Remove from tracking
+    delete renderedMsgIds[msgId];
+    delete locallySentIds[msgId];
+    delete serverConfirmedIds[msgId];
 
     if (msgId.startsWith('vm_')) {
       try {
@@ -785,25 +794,45 @@
     // SAFETY: Never render if myRole is not set — messages would all appear as "received"
     if (!myRole) return;
 
-    // Build a set of current message IDs from the server
-    var currentMsgIds = {};
+    // Build set of current server message IDs
+    var serverIds = {};
     for (var i = 0; i < messages.length; i++) {
-      currentMsgIds[messages[i].id] = true;
+      serverIds[messages[i].id] = true;
+      // Track that this ID has been confirmed by the server at least once
+      serverConfirmedIds[messages[i].id] = true;
     }
 
-    // Remove DOM elements for messages that no longer exist in chat.json (deleted)
+    // Clean up locallySentIds for messages the server has now confirmed
+    // Once confirmed, they no longer need local protection
+    for (var id in locallySentIds) {
+      if (serverIds[id]) {
+        delete locallySentIds[id];
+      }
+    }
+
+    // BULLETPROOF: Only remove DOM elements for messages that:
+    // 1. Were previously confirmed by the server (in serverConfirmedIds) — meaning we saw them on the server before
+    // 2. Are NOW missing from the server (not in serverIds) — meaning they were deleted
+    // 3. Are NOT locally sent messages still awaiting server confirmation
+    // This ensures optimistic messages are NEVER removed, no matter what
     var removedAny = false;
     var existingMsgEls = messagesContainer.querySelectorAll('.chat-msg[data-msg-id]');
     existingMsgEls.forEach(function(el) {
       var msgId = el.dataset.msgId;
-      if (!currentMsgIds[msgId]) {
-        // Also clean up associated seen-at label if it exists right after
+      var isInServer = !!serverIds[msgId];
+      var wasConfirmedBefore = !!serverConfirmedIds[msgId];
+      var isLocallySent = !!locallySentIds[msgId];
+
+      // Only remove if: server no longer has it + we saw it on server before + it's not a local send
+      if (!isInServer && wasConfirmedBefore && !isLocallySent) {
+        // This message was confirmed by server before but is now gone → it was deleted
         var nextEl = el.nextElementSibling;
         if (nextEl && nextEl.classList.contains('seen-at-label')) {
           nextEl.remove();
         }
         el.remove();
         delete renderedMsgIds[msgId];
+        delete serverConfirmedIds[msgId];
         removedAny = true;
       }
     });
@@ -821,14 +850,15 @@
       }
     }
 
-    // Show empty state if no messages rendered yet and none to add
-    if (Object.keys(renderedMsgIds).length === 0 && newMsgs.length === 0) {
+    // Show empty state ONLY if no messages rendered at all AND no locally sent messages pending
+    var hasAnyLocalMessages = Object.keys(locallySentIds).length > 0;
+    if (Object.keys(renderedMsgIds).length === 0 && newMsgs.length === 0 && !hasAnyLocalMessages) {
       messagesContainer.innerHTML = '<div style="text-align:center;padding:40px 20px;"><div style="font-size:32px;margin-bottom:8px;">\uD83D\uDD12</div><div style="font-size:12px;color:#555c6e;">End-to-end encrypted</div><div style="font-size:10px;color:#3a3f4a;margin-top:4px;">Messages auto-delete after 24 hours</div></div>';
       return;
     }
 
-    // Clear empty state if we have messages to add
-    if (Object.keys(renderedMsgIds).length === 0 && newMsgs.length > 0) {
+    // Clear empty state if we have messages to add — but NEVER wipe locally sent messages
+    if (Object.keys(renderedMsgIds).length === 0 && newMsgs.length > 0 && !hasAnyLocalMessages) {
       messagesContainer.innerHTML = '';
     }
 
@@ -959,6 +989,11 @@
   function appendMessage(msg) {
     if (!messagesContainer || !myRole) return;
     renderedMsgIds[msg.id] = true; // Track as rendered
+    // Clear empty state placeholder if present (lock icon div)
+    var emptyState = messagesContainer.querySelector('div[style*="text-align:center"]');
+    if (emptyState && !emptyState.dataset.msgId && !emptyState.classList.contains('chat-msg') && !emptyState.classList.contains('chat-date')) {
+      emptyState.remove();
+    }
     var isSent = msg.sender === myRole;
     var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
     var otherSeenField = 'seenBy_' + otherRole;
@@ -1512,12 +1547,11 @@
       mimeType: actualMimeType
     };
 
-    // Show locally IMMEDIATELY (before any network calls)
+    // Show locally IMMEDIATELY (optimistic, before any network calls)
+    locallySentIds[msg.id] = Date.now(); // PROTECTED from removal until server confirms
     appendMessage(msg);
     scrollToBottom();
     showSentBanner();
-
-    // write count display removed — now in private dashboard
 
     // Now upload and save in background
     try {
@@ -1537,6 +1571,14 @@
       var actualKey = uploadData.id || tempKey;
       msg.voiceKey = actualKey;
       msg.id = actualKey;
+
+      // Update locallySentIds with the new ID
+      delete locallySentIds[tempKey];
+      locallySentIds[actualKey] = Date.now();
+
+      // Update renderedMsgIds tracking with the new ID
+      delete renderedMsgIds[tempKey];
+      renderedMsgIds[actualKey] = true;
 
       // Update the DOM element's data attribute
       var el = document.querySelector('[data-msg-id="' + tempKey + '"]');
@@ -1559,12 +1601,16 @@
         } else {
           await saveMessagesToGitHub([msg], false);
         }
+        // locallySentIds will be cleaned up by renderMessages when server confirms
       } catch(e) {
         console.error('[Chat] Voice meta save failed:', e);
       }
 
     } catch (err) {
       console.error('[Chat] VM send error:', err.message);
+      // On upload failure, remove the optimistic message
+      delete locallySentIds[msg.id];
+      delete renderedMsgIds[msg.id];
       var errEl = document.querySelector('[data-msg-id="' + msg.id + '"]');
       if (errEl) {
         var errDiv = document.createElement('div');
@@ -1828,6 +1874,8 @@
     // FORCE FULL RE-RENDER: Clear all stale DOM and tracking state
     // This prevents messages rendered with a previous (or null) myRole from staying
     renderedMsgIds = {};
+    locallySentIds = {};
+    serverConfirmedIds = {};
     if (messagesContainer) messagesContainer.innerHTML = '';
 
     chatInput.focus();
@@ -1878,6 +1926,8 @@
     chatFileSha = null;
     lastMessageCount = 0;
     renderedMsgIds = {};
+    locallySentIds = {};
+    serverConfirmedIds = {};
     pendingSeenUpdates = [];
     isTypingNow = false;
     lastTypingCheckResult = false;
