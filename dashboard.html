@@ -629,7 +629,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     var result = await githubApi('PUT', '/contents/' + CHAT_FILE, body);
     if(result.sha) chatFileSha = result.sha;
     if(result.content) chatFileSha = result.content.sha;
+
+    // After any deletion, purge git history so deleted messages can't be recovered from old commits
+    purgeGitHistory();
+
     return !!(result.sha || result.content);
+  }
+
+  // ===== PURGE GIT HISTORY =====
+  // After deleting messages, old commits still contain them in git history.
+  // This squashes all history into a single commit so deleted data is unrecoverable.
+  var purgeInProgress = false;
+  async function purgeGitHistory(){
+    if(purgeInProgress) return; // prevent concurrent purges
+    purgeInProgress = true;
+    try {
+      // Step 1: Get current HEAD commit
+      var ref = await githubApi('GET', '/git/refs/heads/' + GITHUB_BRANCH);
+      var headSha = ref.object && ref.object.sha;
+      if(!headSha) { purgeInProgress = false; return; }
+
+      // Step 2: Get the tree of current HEAD
+      var commit = await githubApi('GET', '/git/commits/' + headSha);
+      var treeSha = commit.tree && commit.tree.sha;
+      if(!treeSha) { purgeInProgress = false; return; }
+
+      // Step 3: Create a new orphan commit with same tree but no parent
+      var newCommit = await githubApi('POST', '/git/commits', {
+        message: 'History purged — deleted messages unrecoverable',
+        tree: treeSha,
+        parents: []  // No parent = orphan commit, history severed
+      });
+
+      if(!newCommit.sha) { purgeInProgress = false; return; }
+
+      // Step 4: Force-update the branch to point to new orphan commit
+      await githubApi('PATCH', '/git/refs/heads/' + GITHUB_BRANCH, {
+        sha: newCommit.sha,
+        force: true
+      });
+    } catch(e){
+      // Silently fail — not critical if purge doesn't work every time
+      console.log('History purge failed (non-critical):', e);
+    }
+    purgeInProgress = false;
   }
 
   // ===== ENCRYPTION =====
