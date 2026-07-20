@@ -22,6 +22,9 @@
   // ===== STATE =====
   var myRole = null; // 'dumbi' or 'dumbo'
   var chatFileSha = null;
+  var QUICKS_FILE = 'quicks.json';
+  var quicksFileSha = null;
+  var currentQuicksOrder = null; // in-memory quicks data (no localStorage)
   var pollTimer = null;
   var mediaRecorder = null;
   var audioChunks = [];
@@ -130,6 +133,11 @@
     + '    .quicks-add-btn { width:22px; height:22px; border-radius:50%; background:linear-gradient(145deg,#2a2f3a,#1e222b); border:1.5px solid rgba(212,175,55,0.3); color:#d4af37; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a; transition:all 0.15s; flex-shrink:0; padding:0; }'
     + '    .quicks-add-btn:hover { border-color:rgba(212,175,55,0.6); box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a,0 0 8px rgba(212,175,55,0.15); }'
     + '    .quicks-add-btn:active { box-shadow:inset 2px 2px 4px #0d0f14,inset -2px -2px 4px #2a2f3a; }'
+    + '    .quicks-save-btn { height:20px; border-radius:6px; background:linear-gradient(145deg,#2a2f3a,#1e222b); border:1px solid rgba(34,197,94,0.3); color:#22c55e; font-size:8px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a; transition:all 0.15s; flex-shrink:0; padding:0 6px; gap:2px; text-transform:uppercase; letter-spacing:0.3px; }'
+    + '    .quicks-save-btn:hover { border-color:rgba(34,197,94,0.6); box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a,0 0 8px rgba(34,197,94,0.15); }'
+    + '    .quicks-save-btn:active { box-shadow:inset 2px 2px 4px #0d0f14,inset -2px -2px 4px #2a2f3a; }'
+    + '    .quicks-save-btn.saving { color:#facc15; border-color:rgba(250,204,21,0.4); pointer-events:none; }'
+    + '    .quicks-save-btn.saved { color:#22c55e; border-color:rgba(34,197,94,0.6); }'
     + '    .quicks-input-row { display:none; align-items:center; gap:4px; padding:4px 6px; border-top:1px solid rgba(42,47,58,0.3); }'
     + '    .quicks-input-row.open { display:flex; }'
     + '    .quicks-input-row input { flex:1; background:#1a1d24; border:1px solid rgba(42,47,58,0.5); border-radius:6px; padding:4px 8px; color:#c9d1e0; font-size:10px; outline:none; box-shadow:inset 1px 1px 3px #0d0f14,inset -1px -1px 2px #2a2f3a; }'
@@ -361,7 +369,7 @@
     + '        <button class="quicks-btn" id="quicks-btn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Quicks</button>'
     + '        <button id="chat-close" aria-label="Close">&times;</button>'
     + '        <div class="quicks-box" id="quicks-box">'
-    + '          <div class="quicks-box-header"><span class="quicks-box-title">Quick Messages</span><div style="display:flex;align-items:center;gap:4px;"><button class="quicks-add-btn" id="quicks-add-btn" type="button">+</button><button class="quicks-box-close" id="quicks-box-close" type="button">&times;</button></div></div>'
+    + '          <div class="quicks-box-header"><span class="quicks-box-title">Quick Messages</span><div style="display:flex;align-items:center;gap:4px;"><button class="quicks-save-btn" id="quicks-save-btn" type="button">\uD83D\uDCBE Save</button><button class="quicks-add-btn" id="quicks-add-btn" type="button">+</button><button class="quicks-box-close" id="quicks-box-close" type="button">&times;</button></div></div>'
     + '          <div class="quicks-input-row" id="quicks-input-row"><input id="quicks-input" type="text" placeholder="Type new quick text..." maxlength="80"/><button class="quicks-input-confirm" id="quicks-input-confirm" type="button">\u2713</button></div>'
     + '          <div class="quicks-grid" id="quicks-grid"></div>'
     + '        </div>'
@@ -2035,17 +2043,9 @@
     'Ghusa aa Raha hai'
   ];
 
-  function loadQuicksOrder() {
-    try {
-      var saved = localStorage.getItem('quicks_order');
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return null;
-  }
-
-  function saveQuicksOrder() {
+  function getQuicksFromGrid() {
     var grid = document.getElementById('quicks-grid');
-    if (!grid) return;
+    if (!grid) return [];
     var items = grid.querySelectorAll('.quicks-item');
     var order = [];
     items.forEach(function(item) {
@@ -2053,15 +2053,73 @@
       var isCustom = item.classList.contains('custom');
       order.push({ text: txt, custom: isCustom });
     });
-    try { localStorage.setItem('quicks_order', JSON.stringify(order)); } catch(e) {}
+    return order;
+  }
+
+  async function loadQuicksFromGitHub() {
+    try {
+      var data = await githubApi('GET', '/contents/' + QUICKS_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+      if (data.sha) quicksFileSha = data.sha;
+      if (data.content) {
+        var jsonStr = atob(data.content.replace(/\n/g, ''));
+        var parsed = JSON.parse(jsonStr);
+        // Encrypted format
+        if (parsed.ciphertext) {
+          var decrypted = await decryptText(parsed.ciphertext, ENCRYPT_PASSWORD);
+          var quicksPayload = JSON.parse(decrypted);
+          currentQuicksOrder = Array.isArray(quicksPayload.quicks) ? quicksPayload.quicks : (Array.isArray(quicksPayload) ? quicksPayload : null);
+        } else {
+          // Plain format
+          currentQuicksOrder = Array.isArray(parsed.quicks) ? parsed.quicks : (Array.isArray(parsed) ? parsed : null);
+        }
+        return;
+      }
+    } catch(e) {
+      // File doesn't exist yet — will use defaults
+      console.log('[Quicks] No saved quicks found, using defaults');
+      currentQuicksOrder = null;
+    }
+    // If quicks box is already open, re-render with loaded data
+    if (quicksOpen) renderQuicksGrid();
+  }
+
+  async function saveQuicksToGitHub() {
+    var order = getQuicksFromGrid();
+    if (!order.length) return;
+    var saveBtn = document.getElementById('quicks-save-btn');
+    if (saveBtn) { saveBtn.classList.add('saving'); saveBtn.textContent = 'Saving...'; }
+
+    try {
+      // Fetch fresh SHA first
+      try {
+        var freshFile = await githubApi('GET', '/contents/' + QUICKS_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+        if (freshFile.sha) quicksFileSha = freshFile.sha;
+      } catch(e) {}
+
+      var now = new Date().toISOString();
+      var payload = { quicks: order, updatedAt: now };
+      var encrypted = await encryptText(JSON.stringify(payload), ENCRYPT_PASSWORD);
+      var b64 = btoa(JSON.stringify({ v: 1, ciphertext: encrypted, updatedAt: now }));
+      var body = { message: 'Quicks update ' + now, content: b64, branch: GITHUB_BRANCH };
+      if (quicksFileSha) body.sha = quicksFileSha;
+
+      var result = await githubApi('PUT', '/contents/' + QUICKS_FILE, body);
+      if (result.sha) quicksFileSha = result.sha;
+      if (result.content) quicksFileSha = result.content.sha;
+
+      currentQuicksOrder = order;
+      if (saveBtn) { saveBtn.classList.remove('saving'); saveBtn.classList.add('saved'); saveBtn.textContent = '\u2705 Saved'; setTimeout(function(){ if (saveBtn) { saveBtn.classList.remove('saved'); saveBtn.textContent = '\uD83D\uDCBE Save'; } }, 1500); }
+    } catch(e) {
+      console.error('[Quicks] Save failed:', e);
+      if (saveBtn) { saveBtn.classList.remove('saving'); saveBtn.textContent = '\u274C Failed'; setTimeout(function(){ if (saveBtn) { saveBtn.textContent = '\uD83D\uDCBE Save'; } }, 2000); }
+    }
   }
 
   function renderQuicksGrid() {
     var grid = document.getElementById('quicks-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    var order = loadQuicksOrder();
-    var items = order || DEFAULT_QUICKS.map(function(t){ return { text: t, custom: false }; });
+    var items = currentQuicksOrder || DEFAULT_QUICKS.map(function(t){ return { text: t, custom: false }; });
     items.forEach(function(entry) {
       var div = document.createElement('div');
       div.className = 'quicks-item' + (entry.custom ? ' custom' : '');
@@ -2123,7 +2181,7 @@
     div.appendChild(del);
     grid.appendChild(div);
     input.value = '';
-    saveQuicksOrder();
+    // Data stays in DOM until user clicks "Save"
   }
 
   var quicksDragSrc = null;
@@ -2166,7 +2224,7 @@
     } else {
       grid.insertBefore(quicksDragSrc, target);
     }
-    saveQuicksOrder();
+    // Data stays in DOM until user clicks "Save"
   }
 
   function handleQuicksDragEnd(e) {
@@ -2271,7 +2329,7 @@
         var delBtn = e.target.closest('.quicks-del');
         if (delBtn) {
           var item = delBtn.closest('.quicks-item');
-          if (item) { item.parentNode.removeChild(item); saveQuicksOrder(); }
+          if (item) { item.parentNode.removeChild(item); // Data stays in DOM until user clicks "Save" }
           return;
         }
         // Send on item click
@@ -2291,6 +2349,15 @@
         quicksGrid.addEventListener('dragleave', handleQuicksDragLeave);
         quicksGrid.addEventListener('drop', handleQuicksDrop);
         quicksGrid.addEventListener('dragend', handleQuicksDragEnd);
+      }
+
+      // Save Changes button
+      var quicksSaveBtn = document.getElementById('quicks-save-btn');
+      if (quicksSaveBtn) {
+        quicksSaveBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          saveQuicksToGitHub();
+        });
       }
 
       // Add button
@@ -2420,6 +2487,9 @@
     // Fetch status (presence only — write count moved to dashboard)
     await checkStatus();
 
+    // Load quicks from GitHub (non-blocking — falls back to defaults if no saved data)
+    loadQuicksFromGitHub().catch(function(e){ console.log('[Quicks] Load failed, using defaults'); });
+
     startPolling();
     startPresenceHeartbeat();
     startStatusCheck();
@@ -2462,6 +2532,8 @@
     voiceAudioCache = {};
     myRole = null;
     chatFileSha = null;
+    quicksFileSha = null;
+    currentQuicksOrder = null;
     lastMessageCount = 0;
     renderedMsgIds = {};
     locallySentIds = {};
