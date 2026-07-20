@@ -447,9 +447,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   // ===== DELETE ALL VOICE MESSAGES =====
   deleteAllVoiceBtn.addEventListener('click', function(){
     if(voiceMessages.length === 0) return;
+    var estWrites = voiceMessages.length * 3 + 1; // 3 deletes per msg + 1 index write
     showConfirm(
       'Delete All Voice Messages',
-      'This will permanently delete all ' + voiceMessages.length + ' voice messages from Cloudflare KV. Each deletion uses ~4 KV writes (total ~' + (voiceMessages.length * 4) + ' writes). Text messages will NOT be affected. This cannot be undone.',
+      'Bulk delete ' + voiceMessages.length + ' voice messages. Uses ~' + estWrites + ' KV writes (saves ~' + voiceMessages.length + ' writes vs individual delete). Text messages will NOT be affected. This cannot be undone.',
       function(){ doDeleteAllVoice(); }
     );
   });
@@ -462,45 +463,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     deleteAllVoiceBtn.textContent = 'Deleting...';
     voiceBulkProgress.classList.add('active');
     voiceBulkStatus.classList.add('active');
+    voiceBulkBar.style.width = '10%';
+    voiceBulkStatus.textContent = 'Sending bulk delete request...';
 
-    var deleted = 0;
-    var failed = 0;
+    try {
+      var resp = await fetch(WORKER_URL + '/messages-all', {
+        method: 'DELETE',
+        headers: { 'X-Owner-Token': ownerToken }
+      });
+      if(!resp.ok) throw new Error('Bulk delete failed: ' + resp.status);
+      var data = await resp.json();
 
-    for(var i = 0; i < voiceMessages.length; i++){
-      var key = voiceMessages[i].key;
-      var pct = Math.round(((i + 1) / total) * 100);
-      voiceBulkBar.style.width = pct + '%';
-      voiceBulkStatus.textContent = 'Deleting ' + (i + 1) + ' of ' + total + '...';
+      voiceBulkBar.style.width = '100%';
+      var savedInfo = data.writesSaved ? ' (saved ~' + data.writesSaved + ' writes)' : '';
+      voiceBulkStatus.textContent = 'Done. Deleted: ' + data.deleted + savedInfo + (data.failed > 0 ? ', Failed: ' + data.failed : '');
 
-      try {
-        var resp = await fetch(WORKER_URL + '/message/' + key, {
-          method: 'DELETE',
-          headers: { 'X-Owner-Token': ownerToken }
-        });
-        if(resp.ok){
-          var data = await resp.json();
-          if(data.success) deleted++;
-          else failed++;
-        } else {
-          failed++;
-        }
-      } catch(e){
-        failed++;
-      }
+      voiceMessages = [];
+      voiceCountBadge.textContent = '0';
+      renderVoiceMessages();
+
+      deleteAllVoiceBtn.textContent = 'Delete All Voice';
+      deleteAllVoiceBtn.disabled = true;
+
+      showToast('All ' + data.deleted + ' voice messages deleted' + savedInfo, 'success');
+      fetchWriteCount();
+    } catch(e){
+      voiceBulkBar.style.width = '0%';
+      voiceBulkStatus.textContent = 'Failed: ' + e.message;
+      deleteAllVoiceBtn.textContent = 'Delete All Voice';
+      deleteAllVoiceBtn.disabled = false;
+      showToast('Bulk delete failed: ' + e.message, 'error');
     }
-
-    voiceBulkBar.style.width = '100%';
-    voiceBulkStatus.textContent = 'Done. Deleted: ' + deleted + (failed > 0 ? ', Failed: ' + failed : '');
-
-    voiceMessages = [];
-    voiceCountBadge.textContent = '0';
-    renderVoiceMessages();
-
-    deleteAllVoiceBtn.textContent = 'Delete All Voice';
-    deleteAllVoiceBtn.disabled = true;
-
-    showToast('All ' + deleted + ' voice messages deleted' + (failed > 0 ? ' (' + failed + ' failed)' : ''), deleted > 0 ? 'success' : 'error');
-    fetchWriteCount();
 
     // Hide progress after 5s
     setTimeout(function(){
