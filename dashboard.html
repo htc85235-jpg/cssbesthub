@@ -48,12 +48,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 /* Section */
 .section{margin-bottom:24px;}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
 .section-head h2{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;}
 .section-head .badge{background:#6366f1;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.section-head .section-btns{display:flex;gap:6px;}
 .delete-all-btn{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;transition:transform 0.1s,opacity 0.15s;}
 .delete-all-btn:active{transform:scale(0.96);}
 .delete-all-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.delete-all-btn.purple{background:linear-gradient(135deg,#7c3aed,#6d28d9);}
 
 /* Voice Message Card */
 .vmsg-card{background:#14171f;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1px solid #1e2233;transition:all 0.2s;}
@@ -88,16 +90,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:998;padding:20px;}
 .confirm-box{background:#1a1d27;border-radius:14px;padding:24px;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
 .confirm-box h3{font-size:15px;margin-bottom:8px;}
-.confirm-box p{font-size:12px;color:#94a3b8;margin-bottom:20px;}
+.confirm-box p{font-size:12px;color:#94a3b8;margin-bottom:20px;line-height:1.5;}
 .confirm-box .confirm-btns{display:flex;gap:10px;justify-content:flex-end;}
 .confirm-box .btn-cancel{background:#2d3348;color:#94a3b8;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;}
 .confirm-box .btn-confirm{background:#dc2626;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* Progress bar for bulk ops */
+.bulk-progress{width:100%;height:4px;background:#1e2233;border-radius:2px;margin-top:12px;overflow:hidden;display:none;}
+.bulk-progress.active{display:block;}
+.bulk-progress .bulk-bar{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:2px;transition:width 0.3s;width:0%;}
+.bulk-status{font-size:10px;color:#64748b;margin-top:6px;display:none;}
+.bulk-status.active{display:block;}
 
 /* Responsive */
 @media(max-width:480px){
   .dash-wrap{padding:12px;}
   .wc-card .wc-used{font-size:28px;}
   .vmsg-card{padding:10px 12px;}
+  .section-head .section-btns{flex-wrap:wrap;}
 }
 </style>
 </head>
@@ -139,15 +149,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="section" id="voice-section">
     <div class="section-head">
       <h2>&#127908; Voice Messages <span class="badge" id="voice-count">0</span></h2>
+      <div class="section-btns">
+        <button class="delete-all-btn purple" id="delete-all-voice-btn">Delete All Voice</button>
+      </div>
     </div>
     <div id="voice-list"><div class="loading"><div class="spinner"></div>Loading voice messages...</div></div>
+    <div class="bulk-progress" id="voice-bulk-progress"><div class="bulk-bar" id="voice-bulk-bar"></div></div>
+    <div class="bulk-status" id="voice-bulk-status"></div>
   </div>
 
   <!-- Text Messages -->
   <div class="section" id="text-section">
     <div class="section-head">
       <h2>&#128172; Text Messages <span class="badge" id="text-count">0</span></h2>
-      <button class="delete-all-btn" id="delete-all-text-btn">Delete All Text</button>
+      <div class="section-btns">
+        <button class="delete-all-btn" id="delete-all-text-btn">Delete All Text</button>
+      </div>
     </div>
     <div id="text-list"><div class="loading"><div class="spinner"></div>Loading text messages...</div></div>
   </div>
@@ -161,8 +178,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function(){
   // ===== CONFIG =====
-  var CHAT_PASSWORD = 'slowdumbo';
-  var ENCRYPT_PASSWORD = '@SlowDumbo786';
+  // Password obfuscated — split into char codes, reconstructed at runtime only
+  var _pc = [64,83,108,111,119,68,117,109,98,111,55,56,54];
+  function _rp(){ return String.fromCharCode.apply(null, _pc); }
+
+  // Worker auth password (same as chat login)
+  var _wc = [115,108,111,119,100,117,109,98,111];
+  function _rwc(){ return String.fromCharCode.apply(null, _wc); }
+
+  var ENCRYPT_PASSWORD = _rp();
+  var CHAT_PASSWORD = _rwc();
   var WORKER_URL = 'https://voice-box-worker.htc85235.workers.dev';
   var GITHUB_REPO = 'htc85235-jpg/cssbesthub-vault';
   var GITHUB_BRANCH = 'main';
@@ -194,6 +219,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   var wcRefresh = document.getElementById('wc-refresh');
   var voiceList = document.getElementById('voice-list');
   var voiceCountBadge = document.getElementById('voice-count');
+  var deleteAllVoiceBtn = document.getElementById('delete-all-voice-btn');
+  var voiceBulkProgress = document.getElementById('voice-bulk-progress');
+  var voiceBulkBar = document.getElementById('voice-bulk-bar');
+  var voiceBulkStatus = document.getElementById('voice-bulk-status');
   var textList = document.getElementById('text-list');
   var textCountBadge = document.getElementById('text-count');
   var deleteAllTextBtn = document.getElementById('delete-all-text-btn');
@@ -205,12 +234,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   pwInput.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
 
   function doLogin(){
-    if(pwInput.value === CHAT_PASSWORD){
+    if(pwInput.value === _rp()){
       isLoggedIn = true;
       ownerToken = btoa('owner:' + CHAT_PASSWORD);
       loginWrap.style.display = 'none';
       dashWrap.classList.add('active');
       loadDashboard();
+      // Clear password from input immediately
+      pwInput.value = '';
     } else {
       loginError.style.display = 'block';
       pwInput.value = '';
@@ -251,7 +282,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         }
         displayWriteCount(maxWritesEver, data.source, data.date);
       } else {
-        // API returned null — show last known max
         if(maxWritesEver > 0){
           displayWriteCount(maxWritesEver, 'cached-max', '');
         } else {
@@ -322,6 +352,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       var data = await resp.json();
       voiceMessages = data.messages || [];
       voiceCountBadge.textContent = voiceMessages.length;
+      deleteAllVoiceBtn.disabled = voiceMessages.length === 0;
       renderVoiceMessages();
     } catch(e){
       voiceList.innerHTML = '<div class="txt-section-empty">Failed to load voice messages. Check auth.</div>';
@@ -331,8 +362,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   function renderVoiceMessages(){
     if(voiceMessages.length === 0){
       voiceList.innerHTML = '<div class="txt-section-empty">No voice messages</div>';
+      deleteAllVoiceBtn.disabled = true;
       return;
     }
+    deleteAllVoiceBtn.disabled = false;
     var html = '';
     voiceMessages.forEach(function(msg, i){
       var dur = msg.duration || '0:00';
@@ -358,13 +391,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       var confirmTimeout = null;
       btn.addEventListener('click', function(){
         if(btn.classList.contains('confirming')){
-          // Second click — actually delete
           clearTimeout(confirmTimeout);
           btn.classList.remove('confirming');
           btn.innerHTML = '&#128465;';
           deleteVoiceMessage(btn.dataset.key);
         } else {
-          // First click — ask confirmation
           btn.classList.add('confirming');
           btn.innerHTML = 'Sure?';
           confirmTimeout = setTimeout(function(){
@@ -391,9 +422,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       var data = await resp.json();
       if(data.success){
         showToast('Voice message deleted', 'success');
-        // Remove from local list
         voiceMessages = voiceMessages.filter(function(m){ return m.key !== key; });
         voiceCountBadge.textContent = voiceMessages.length;
+        deleteAllVoiceBtn.disabled = voiceMessages.length === 0;
         if(card){
           card.style.transition = 'all 0.3s';
           card.style.opacity = '0';
@@ -403,7 +434,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
           card.style.overflow = 'hidden';
           setTimeout(function(){ card.remove(); if(voiceMessages.length===0) renderVoiceMessages(); }, 300);
         }
-        // Refresh write count since deletion burns writes
         fetchWriteCount();
       } else {
         throw new Error(data.error || 'Unknown error');
@@ -412,6 +442,72 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       showToast('Delete failed: ' + e.message, 'error');
       if(card){ card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
     }
+  }
+
+  // ===== DELETE ALL VOICE MESSAGES =====
+  deleteAllVoiceBtn.addEventListener('click', function(){
+    if(voiceMessages.length === 0) return;
+    showConfirm(
+      'Delete All Voice Messages',
+      'This will permanently delete all ' + voiceMessages.length + ' voice messages from Cloudflare KV. Each deletion uses ~4 KV writes (total ~' + (voiceMessages.length * 4) + ' writes). Text messages will NOT be affected. This cannot be undone.',
+      function(){ doDeleteAllVoice(); }
+    );
+  });
+
+  async function doDeleteAllVoice(){
+    var total = voiceMessages.length;
+    if(total === 0) return;
+
+    deleteAllVoiceBtn.disabled = true;
+    deleteAllVoiceBtn.textContent = 'Deleting...';
+    voiceBulkProgress.classList.add('active');
+    voiceBulkStatus.classList.add('active');
+
+    var deleted = 0;
+    var failed = 0;
+
+    for(var i = 0; i < voiceMessages.length; i++){
+      var key = voiceMessages[i].key;
+      var pct = Math.round(((i + 1) / total) * 100);
+      voiceBulkBar.style.width = pct + '%';
+      voiceBulkStatus.textContent = 'Deleting ' + (i + 1) + ' of ' + total + '...';
+
+      try {
+        var resp = await fetch(WORKER_URL + '/message/' + key, {
+          method: 'DELETE',
+          headers: { 'X-Owner-Token': ownerToken }
+        });
+        if(resp.ok){
+          var data = await resp.json();
+          if(data.success) deleted++;
+          else failed++;
+        } else {
+          failed++;
+        }
+      } catch(e){
+        failed++;
+      }
+    }
+
+    voiceBulkBar.style.width = '100%';
+    voiceBulkStatus.textContent = 'Done. Deleted: ' + deleted + (failed > 0 ? ', Failed: ' + failed : '');
+
+    voiceMessages = [];
+    voiceCountBadge.textContent = '0';
+    renderVoiceMessages();
+
+    deleteAllVoiceBtn.textContent = 'Delete All Voice';
+    deleteAllVoiceBtn.disabled = true;
+
+    showToast('All ' + deleted + ' voice messages deleted' + (failed > 0 ? ' (' + failed + ' failed)' : ''), deleted > 0 ? 'success' : 'error');
+    fetchWriteCount();
+
+    // Hide progress after 5s
+    setTimeout(function(){
+      voiceBulkProgress.classList.remove('active');
+      voiceBulkStatus.classList.remove('active');
+      voiceBulkBar.style.width = '0%';
+    }, 5000);
   }
 
   // ===== TEXT MESSAGES =====
@@ -464,6 +560,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   }
 
   deleteAllTextBtn.addEventListener('click', function(){
+    if(textMessages.length === 0) return;
     showConfirm('Delete All Text Messages', 'This will permanently delete all ' + textMessages.length + ' text messages. Voice messages will NOT be affected. This action cannot be undone.', function(){
       doDeleteAllText();
     });
@@ -473,7 +570,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     deleteAllTextBtn.disabled = true;
     deleteAllTextBtn.textContent = 'Deleting...';
     try {
-      // Read fresh chat.json
       var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
       if(fresh.sha) chatFileSha = fresh.sha;
       if(!fresh.content) throw new Error('No chat file');
@@ -481,10 +577,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       var chatData = await parseChatContent(fresh.content);
       var now = Date.now();
       var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-      // Keep only non-text messages (voice, etc.)
       var remaining = allMsgs.filter(function(m){ return m.type !== 'text'; });
 
-      // Save back
       var saved = await saveChatToGitHub(remaining);
       if(saved){
         showToast('All ' + textMessages.length + ' text messages deleted', 'success');
@@ -520,14 +614,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     var jsonStr = atob(b64Content.replace(/\n/g, ''));
     var parsed = JSON.parse(jsonStr);
     if(parsed.ciphertext){
-      var decrypted = await decryptText(parsed.ciphertext, ENCRYPT_PASSWORD);
+      var decrypted = await decryptText(parsed.ciphertext, _rp());
       return JSON.parse(decrypted);
     }
     return parsed;
   }
 
   async function saveChatToGitHub(messages){
-    // Always fetch fresh SHA first
     try {
       var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
       if(fresh.sha) chatFileSha = fresh.sha;
@@ -535,9 +628,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
     var now = new Date().toISOString();
     var payload = { messages: messages, updatedAt: now };
-    var encrypted = await encryptText(JSON.stringify(payload), ENCRYPT_PASSWORD);
+    var encrypted = await encryptText(JSON.stringify(payload), _rp());
     var b64 = btoa(JSON.stringify({ v: 1, ciphertext: encrypted, updatedAt: now }));
-    var body = { message: 'Dashboard: delete text messages ' + now, content: b64, branch: GITHUB_BRANCH };
+    var body = { message: 'Dashboard: delete messages ' + now, content: b64, branch: GITHUB_BRANCH };
     if(chatFileSha) body.sha = chatFileSha;
 
     var result = await githubApi('PUT', '/contents/' + CHAT_FILE, body);
