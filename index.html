@@ -1689,7 +1689,6 @@
     roleBtns.forEach(function(btn){
       btn.addEventListener('click', function(){
         myRole = btn.dataset.role;
-        localStorage.setItem('chatRole', myRole);
         enterChat();
       });
     });
@@ -1753,14 +1752,7 @@
   function tryUnlock() {
     if (passwordInput.value === CHAT_PASSWORD) {
       wrongMsg.style.display = 'none';
-      // Check if user already chose a role before
-      var savedRole = localStorage.getItem('chatRole');
-      if (savedRole === 'dumbi' || savedRole === 'dumbo') {
-        myRole = savedRole;
-        enterChat();
-      } else {
-        show(roleSection);
-      }
+      show(roleSection);
     } else {
       wrongMsg.style.display = 'block';
       passwordInput.value = '';
