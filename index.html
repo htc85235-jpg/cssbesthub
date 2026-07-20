@@ -2329,7 +2329,7 @@
         var delBtn = e.target.closest('.quicks-del');
         if (delBtn) {
           var item = delBtn.closest('.quicks-item');
-          if (item) { item.parentNode.removeChild(item); // Data stays in DOM until user clicks "Save" }
+          if (item) { item.parentNode.removeChild(item); } // Data stays in DOM until user clicks "Save"
           return;
         }
         // Send on item click
