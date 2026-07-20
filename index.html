@@ -497,7 +497,7 @@
     sendOnlineHeartbeat(); // Send immediately on enter
     onlineHeartbeatTimer = setInterval(function() {
       sendOnlineHeartbeat();
-    }, 8000); // Every 8 seconds
+    }, 15000); // Every 15 seconds to minimize KV writes
   }
 
   function stopPresenceHeartbeat() {
@@ -523,7 +523,7 @@
     checkStatus(); // Check immediately
     statusCheckTimer = setInterval(function() {
       checkStatus();
-    }, 1500); // Every 1.5 seconds for fast typing detection
+    }, 2000); // Every 2 seconds for typing detection
   }
 
   function stopStatusCheck() {
@@ -1578,5 +1578,6 @@
 
 })();
 </script>
+
 
 </body></html>
