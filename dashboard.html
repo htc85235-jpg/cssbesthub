@@ -414,6 +414,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       card.style.pointerEvents = 'none';
     }
     try {
+      // Step 1: Delete voice data from KV
       var resp = await fetch(WORKER_URL + '/message/' + key, {
         method: 'DELETE',
         headers: { 'X-Owner-Token': ownerToken }
@@ -421,6 +422,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       if(!resp.ok) throw new Error('Delete failed');
       var data = await resp.json();
       if(data.success){
+        // Step 2: Also remove voice message entry from GitHub chat.json
+        await removeVoiceFromChatJson(key);
+
         showToast('Voice message deleted', 'success');
         voiceMessages = voiceMessages.filter(function(m){ return m.key !== key; });
         voiceCountBadge.textContent = voiceMessages.length;
@@ -441,6 +445,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     } catch(e){
       showToast('Delete failed: ' + e.message, 'error');
       if(card){ card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
+    }
+  }
+
+  // Remove a single voice message entry from GitHub chat.json by its voiceKey
+  async function removeVoiceFromChatJson(voiceKey){
+    try {
+      var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+      if(fresh.sha) chatFileSha = fresh.sha;
+      if(!fresh.content) return;
+
+      var chatData = await parseChatContent(fresh.content);
+      var now = Date.now();
+      var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
+      var before = allMsgs.length;
+      allMsgs = allMsgs.filter(function(m){ return m.type !== 'voice' || m.voiceKey !== voiceKey; });
+      if(allMsgs.length < before){
+        await saveChatToGitHub(allMsgs);
+      }
+    } catch(e){
+      console.log('removeVoiceFromChatJson failed (non-critical):', e);
+    }
+  }
+
+  // Remove ALL voice message entries from GitHub chat.json
+  async function removeAllVoiceFromChatJson(){
+    try {
+      var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+      if(fresh.sha) chatFileSha = fresh.sha;
+      if(!fresh.content) return;
+
+      var chatData = await parseChatContent(fresh.content);
+      var now = Date.now();
+      var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
+      var remaining = allMsgs.filter(function(m){ return m.type !== 'voice'; });
+
+      if(remaining.length < allMsgs.length){
+        await saveChatToGitHub(remaining);
+      }
+    } catch(e){
+      console.log('removeAllVoiceFromChatJson failed (non-critical):', e);
     }
   }
 
@@ -477,6 +521,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       voiceBulkBar.style.width = '100%';
       var savedInfo = data.writesSaved ? ' (saved ~' + data.writesSaved + ' writes)' : '';
       voiceBulkStatus.textContent = 'Done. Deleted: ' + data.deleted + savedInfo + (data.failed > 0 ? ', Failed: ' + data.failed : '');
+
+      // Also remove all voice entries from GitHub chat.json
+      await removeAllVoiceFromChatJson();
 
       voiceMessages = [];
       voiceCountBadge.textContent = '0';

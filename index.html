@@ -771,11 +771,39 @@
   function renderMessages(messages) {
     if (!messagesContainer) return;
 
-    // Smart incremental rendering: only add new messages, never rebuild
-    var newMsgs = [];
+    // Build a set of current message IDs from the server
+    var currentMsgIds = {};
     for (var i = 0; i < messages.length; i++) {
-      if (!renderedMsgIds[messages[i].id]) {
-        newMsgs.push(messages[i]);
+      currentMsgIds[messages[i].id] = true;
+    }
+
+    // Remove DOM elements for messages that no longer exist in chat.json (deleted)
+    var removedAny = false;
+    var existingMsgEls = messagesContainer.querySelectorAll('.chat-msg[data-msg-id]');
+    existingMsgEls.forEach(function(el) {
+      var msgId = el.dataset.msgId;
+      if (!currentMsgIds[msgId]) {
+        // Also clean up associated seen-at label if it exists right after
+        var nextEl = el.nextElementSibling;
+        if (nextEl && nextEl.classList.contains('seen-at-label')) {
+          nextEl.remove();
+        }
+        el.remove();
+        delete renderedMsgIds[msgId];
+        removedAny = true;
+      }
+    });
+
+    // If we removed messages, also clean up orphaned date dividers
+    if (removedAny) {
+      _cleanOrphanedDateDividers();
+    }
+
+    // Smart incremental rendering: only add new messages
+    var newMsgs = [];
+    for (var j = 0; j < messages.length; j++) {
+      if (!renderedMsgIds[messages[j].id]) {
+        newMsgs.push(messages[j]);
       }
     }
 
@@ -872,6 +900,22 @@
         }
       }
     });
+  }
+
+  // Clean up date dividers that have no messages after them (orphaned by deletion)
+  function _cleanOrphanedDateDividers() {
+    var children = Array.from(messagesContainer.children);
+    for (var i = children.length - 1; i >= 0; i--) {
+      var el = children[i];
+      if (el.classList.contains('chat-date')) {
+        // Check if next sibling is another date divider, seen-at-label, or nothing
+        var next = el.nextElementSibling;
+        if (!next || next.classList.contains('chat-date')) {
+          // This date divider has no messages after it — remove it
+          el.remove();
+        }
+      }
+    }
   }
 
   function _refreshTicks(messages) {
@@ -1283,6 +1327,21 @@
       currentAudio = null;
       currentPlayBtn = null;
       currentMsgDiv = null;
+      // If voice data is gone (deleted), show a visual indicator on the message
+      if (e.message && (e.message.indexOf('404') !== -1 || e.message.indexOf('not found') !== -1)) {
+        if (msgDiv) {
+          var durEl = msgDiv.querySelector('.voice-dur.total');
+          if (durEl) durEl.textContent = 'Deleted';
+          var waveEl = msgDiv.querySelector('.voice-waves-mini');
+          if (waveEl) {
+            waveEl.style.opacity = '0.3';
+            waveEl.style.pointerEvents = 'none';
+          }
+          btn.disabled = true;
+          btn.style.opacity = '0.4';
+          btn.style.cursor = 'not-allowed';
+        }
+      }
     }
   }
 
