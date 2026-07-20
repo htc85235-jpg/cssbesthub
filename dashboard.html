@@ -231,7 +231,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   var textMessages = [];
 
   // ===== CALCULATED WRITE COUNTER STATE =====
-  // Stores daily KV write counts based on actual operations observed
+  // Seeds from Cloudflare GraphQL (actual writes) then adds precise operation costs.
+  // This ensures it starts with the real number and only increases from there.
+  //
   // Write costs: Upload = 3 writes (put data + put index + put rate-limit)
   //              Individual delete = 4 writes (delete data + delete :data + delete key + put index)
   //              Bulk delete N msgs = 3N+1 writes (3 deletes × N + 1 index put)
@@ -249,7 +251,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       var stored = localStorage.getItem(key);
       if(stored) return JSON.parse(stored);
     } catch(e){}
-    return { uploads: 0, individualDeletes: 0, bulkDeleteMsgs: 0, bulkDeleteOps: 0, orphanCleans: 0, prevVoiceCount: 0 };
+    return { cfBaseline: -1, uploads: 0, individualDeletes: 0, bulkDeleteMsgs: 0, bulkDeleteOps: 0, orphanCleans: 0 };
   }
 
   function saveCalcState(state){
@@ -257,12 +259,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     localStorage.setItem(key, JSON.stringify(state));
   }
 
+  // Total = Cloudflare baseline (real writes already counted) + operation-tracked writes since baseline was set
   function calcTotalWrites(state){
-    var uploadWrites = state.uploads * WRITES_PER_UPLOAD;
-    var indivDeleteWrites = state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE;
-    var bulkDeleteWrites = (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG) + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT);
-    var orphanWrites = state.orphanCleans;
-    return uploadWrites + indivDeleteWrites + bulkDeleteWrites + orphanWrites;
+    var baseline = state.cfBaseline >= 0 ? state.cfBaseline : 0;
+    var opWrites = (state.uploads * WRITES_PER_UPLOAD)
+                 + (state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE)
+                 + (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG)
+                 + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT)
+                 + state.orphanCleans;
+    return baseline + opWrites;
   }
 
   // Track voice count changes to detect new uploads
@@ -352,6 +357,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
           localStorage.setItem('dash_maxWrites', String(maxWritesEver));
         }
         displayWriteCount(maxWritesEver, data.source, data.date);
+        // Seed the calculated counter from Cloudflare's real write count
+        seedCalcBaseline(writes);
       } else {
         if(maxWritesEver > 0){
           displayWriteCount(maxWritesEver, 'cached-max', '');
@@ -409,8 +416,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     });
   });
 
-  // Auto-refresh write count every 30 seconds
-  writeCountTimer = setInterval(fetchWriteCount, 30000);
+  // Auto-refresh write count every 30 seconds (also checks for new uploads)
+  writeCountTimer = setInterval(function(){
+    fetchWriteCount();
+    loadVoiceMessages();
+  }, 30000);
 
   // ===== CALCULATED WRITE COUNTER =====
   function updateCalcWriteCount(){
@@ -441,33 +451,75 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       calcWcUsed.style.textShadow = '0 0 12px rgba(196,181,253,0.3)';
     }
 
+    var baseline = state.cfBaseline >= 0 ? state.cfBaseline : 0;
+    var opWrites = (state.uploads * WRITES_PER_UPLOAD)
+                 + (state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE)
+                 + (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG)
+                 + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT)
+                 + state.orphanCleans;
     var uploadWrites = state.uploads * WRITES_PER_UPLOAD;
     var indivDeleteWrites = state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE;
     var bulkDeleteWrites = (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG) + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT);
 
     calcWcBreakdown.innerHTML =
-      '<span>Uploads:</span> ' + state.uploads + ' &times; 3 = ' + uploadWrites +
-      ' &nbsp;|&nbsp; <span>Ind. Deletes:</span> ' + state.individualDeletes + ' &times; 4 = ' + indivDeleteWrites +
-      (state.bulkDeleteMsgs > 0 ? ' &nbsp;|&nbsp; <span>Bulk Deletes:</span> ' + state.bulkDeleteMsgs + ' &times; 3 + ' + state.bulkDeleteOps + ' = ' + bulkDeleteWrites : '') +
-      (state.orphanCleans > 0 ? ' &nbsp;|&nbsp; <span>Orphan Cleans:</span> ' + state.orphanCleans : '');
+      '<span>CF Baseline:</span> ' + baseline +
+      (opWrites > 0 ? ' + <span>Ops:</span> ' + opWrites : '') +
+      (state.uploads > 0 ? ' &nbsp;|&nbsp; <span>Uploads:</span> ' + state.uploads + ' &times; 3 = ' + uploadWrites : '') +
+      (state.individualDeletes > 0 ? ' &nbsp;|&nbsp; <span>Ind. Deletes:</span> ' + state.individualDeletes + ' &times; 4 = ' + indivDeleteWrites : '') +
+      (state.bulkDeleteMsgs > 0 ? ' &nbsp;|&nbsp; <span>Bulk:</span> ' + state.bulkDeleteMsgs + ' &times; 3 + ' + state.bulkDeleteOps + ' = ' + bulkDeleteWrites : '');
+
+    calcWcSource.textContent = baseline > 0
+      ? 'CF baseline + ' + opWrites + ' tracked operation writes'
+      : 'Waiting for Cloudflare baseline...';
+  }
+
+  // Seed the calculated counter from Cloudflare GraphQL real write count
+  function seedCalcBaseline(cfWrites){
+    var state = getCalcState();
+    var currentTotal = calcTotalWrites(state);
+
+    if(cfWrites > currentTotal){
+      // CF shows more writes than we tracked — raise the baseline to match
+      // Keep tracked operations as-is, just increase baseline to cover the gap
+      var gap = cfWrites - currentTotal;
+      if(state.cfBaseline < 0){
+        // First ever seed — set baseline to CF count, reset ops
+        state.cfBaseline = cfWrites;
+        state.uploads = 0;
+        state.individualDeletes = 0;
+        state.bulkDeleteMsgs = 0;
+        state.bulkDeleteOps = 0;
+        state.orphanCleans = 0;
+      } else {
+        // CF discovered writes we didn't track (e.g. worker cleanup, orphan scan)
+        // Add the gap to baseline so total matches CF
+        state.cfBaseline += gap;
+      }
+      saveCalcState(state);
+      updateCalcWriteCount();
+    }
+  }
+
+  function opWritesTotal(state){
+    return (state.uploads * WRITES_PER_UPLOAD)
+         + (state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE)
+         + (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG)
+         + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT)
+         + state.orphanCleans;
   }
 
   // Detect new uploads by comparing voice message count changes
   function detectUploads(currentVoiceCount){
-    var state = getCalcState();
-    if(lastKnownVoiceCount === 0 && state.uploads === 0 && currentVoiceCount > 0){
-      // First load of the day with existing messages — seed upload count
-      // These messages are currently in KV, so they were uploaded today (24h TTL)
-      state.uploads = currentVoiceCount;
-      saveCalcState(state);
-    } else if(lastKnownVoiceCount > 0 && currentVoiceCount > lastKnownVoiceCount){
-      // New messages appeared since last check
+    if(currentVoiceCount > lastKnownVoiceCount && lastKnownVoiceCount >= 0){
       var newUploads = currentVoiceCount - lastKnownVoiceCount;
-      state.uploads += newUploads;
-      saveCalcState(state);
+      if(newUploads > 0){
+        var state = getCalcState();
+        state.uploads += newUploads;
+        saveCalcState(state);
+        updateCalcWriteCount();
+      }
     }
     lastKnownVoiceCount = currentVoiceCount;
-    updateCalcWriteCount();
   }
 
   // ===== VOICE MESSAGES =====
@@ -483,8 +535,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       voiceCountBadge.textContent = voiceMessages.length;
       deleteAllVoiceBtn.disabled = voiceMessages.length === 0;
       renderVoiceMessages();
-      // Detect new uploads for calculated write counter
-      detectUploads(voiceMessages.length);
+      // Track voice count for detecting new uploads while dashboard is open
+      lastKnownVoiceCount = voiceMessages.length;
     } catch(e){
       voiceList.innerHTML = '<div class="txt-section-empty">Failed to load voice messages. Check auth.</div>';
     }
