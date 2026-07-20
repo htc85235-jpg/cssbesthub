@@ -11,7 +11,7 @@
   var GITHUB_BRANCH = 'main';
   var CHAT_FILE = 'chat.json';
   var WORKER_URL = 'https://voice-box-worker.htc85235.workers.dev';
-  var POLL_INTERVAL = 1000; // 1 second for near-instant message delivery
+  var POLL_INTERVAL = 800; // 0.8s for near-instant message delivery
   var AUTO_DELETE_MS = 24 * 60 * 60 * 1000; // 24 hours
   var MAX_VOICE_DURATION = 180; // 3 min max recording
 
@@ -562,9 +562,17 @@
   // updateWriteCount removed — moved to private dashboard
 
   // ===== LOAD MESSAGES FROM GITHUB =====
+  var loadMessagesCallId = 0; // Track the latest loadMessages call to discard stale results
+
   async function loadMessages() {
+    // Assign a unique ID to this call so we can discard stale results
+    var thisCallId = ++loadMessagesCallId;
     try {
       var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
+
+      // GUARD: If myRole was cleared (chat closed) or a newer load superseded us, discard results
+      if (!myRole || thisCallId !== loadMessagesCallId) return;
+
       if (data.sha) chatFileSha = data.sha;
       if (data.content) {
         var chatData = await parseChatContent(data.content);
@@ -598,6 +606,9 @@
             saveMessagesToGitHub(chatData.messages || [], true);
           }, 2000);
         }
+
+        // GUARD: Re-check myRole before rendering (could have changed during async await)
+        if (!myRole || thisCallId !== loadMessagesCallId) return;
 
         renderMessages(chatData.messages || []);
       }
@@ -771,6 +782,9 @@
   function renderMessages(messages) {
     if (!messagesContainer) return;
 
+    // SAFETY: Never render if myRole is not set — messages would all appear as "received"
+    if (!myRole) return;
+
     // Build a set of current message IDs from the server
     var currentMsgIds = {};
     for (var i = 0; i < messages.length; i++) {
@@ -943,7 +957,7 @@
   }
 
   function appendMessage(msg) {
-    if (!messagesContainer) return;
+    if (!messagesContainer || !myRole) return;
     renderedMsgIds[msg.id] = true; // Track as rendered
     var isSent = msg.sender === myRole;
     var otherRole = myRole === 'dumbi' ? 'dumbo' : 'dumbi';
@@ -1586,16 +1600,27 @@
   }
 
   // ===== POLLING =====
+  var pollTimer = null;
+  var pollInProgress = false;
+
   function startPolling() {
-    if (pollTimer) clearInterval(pollTimer);
-    loadMessages(); // Initial load
-    pollTimer = setInterval(function(){
-      loadMessages();
-    }, POLL_INTERVAL);
+    stopPolling();
+    loadMessages(); // Initial load — instant
+    // Use recursive setTimeout instead of setInterval for faster, overlap-free polling
+    // After each loadMessages completes, schedule the next one immediately
+    function scheduleNext() {
+      pollTimer = setTimeout(function(){
+        if (!myRole) return; // Don't poll if chat was closed
+        loadMessages().then(function(){
+          if (myRole) scheduleNext(); // Only continue if still in chat
+        });
+      }, POLL_INTERVAL);
+    }
+    scheduleNext();
   }
 
   function stopPolling() {
-    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
   }
 
   // ===== INJECT OVERLAY =====
@@ -1800,6 +1825,11 @@
     }
     if (headerStatus) headerStatus.textContent = 'Messages auto-delete in 24h';
 
+    // FORCE FULL RE-RENDER: Clear all stale DOM and tracking state
+    // This prevents messages rendered with a previous (or null) myRole from staying
+    renderedMsgIds = {};
+    if (messagesContainer) messagesContainer.innerHTML = '';
+
     chatInput.focus();
 
     // Fetch status (presence only — write count moved to dashboard)
@@ -1818,6 +1848,9 @@
     stopTypingStatus();
     stopPresenceHeartbeat();
     stopStatusCheck();
+
+    // Invalidate any in-flight loadMessages calls so they don't render with null myRole
+    loadMessagesCallId++;
 
     // Send explicit offline signal to clear presence immediately
     if (myRole) {
