@@ -30,20 +30,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .logout-btn{background:none;border:1px solid #334155;color:#94a3b8;padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer;transition:all 0.15s;}
 .logout-btn:hover{border-color:#f87171;color:#f87171;}
 
-/* Write Count Card */
-.wc-card{background:linear-gradient(145deg,#1a1f2e,#151923);border-radius:14px;padding:20px;margin-bottom:24px;box-shadow:0 4px 20px rgba(0,0,0,0.3);border:1px solid #1e2538;}
-.wc-card .wc-title{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
-.wc-card .wc-numbers{display:flex;align-items:baseline;gap:6px;margin-bottom:14px;}
-.wc-card .wc-used{font-size:36px;font-weight:800;font-variant-numeric:tabular-nums;color:#fde68a;text-shadow:0 0 12px rgba(253,230,138,0.3);}
-.wc-card .wc-sep{font-size:18px;color:#475569;font-weight:300;}
-.wc-card .wc-limit{font-size:18px;color:#64748b;font-weight:600;}
-.wc-card .wc-bar-track{width:100%;height:6px;background:#1e2233;border-radius:3px;overflow:hidden;}
+/* Write Count Cards Row */
+.wc-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+.wc-card{background:linear-gradient(145deg,#1a1f2e,#151923);border-radius:14px;padding:16px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.3);border:1px solid #1e2538;flex:1;min-width:240px;}
+.wc-card .wc-title{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.wc-card .wc-title .wc-badge{font-size:8px;padding:1px 5px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.wc-card .wc-badge.live{background:#1e3a5f;color:#60a5fa;}
+.wc-card .wc-badge.calc{background:#3b1f4e;color:#c084fc;}
+.wc-card .wc-numbers{display:flex;align-items:baseline;gap:4px;margin-bottom:10px;}
+.wc-card .wc-used{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;color:#fde68a;text-shadow:0 0 12px rgba(253,230,138,0.3);}
+.wc-card .wc-sep{font-size:16px;color:#475569;font-weight:300;}
+.wc-card .wc-limit{font-size:14px;color:#64748b;font-weight:600;}
+.wc-card .wc-bar-track{width:100%;height:5px;background:#1e2233;border-radius:3px;overflow:hidden;}
 .wc-card .wc-bar-fill{height:100%;border-radius:3px;transition:width 0.6s ease,background 0.3s;background:linear-gradient(90deg,#22c55e,#84cc16);}
 .wc-card .wc-bar-fill.warn{background:linear-gradient(90deg,#f59e0b,#f97316);}
 .wc-card .wc-bar-fill.danger{background:linear-gradient(90deg,#ef4444,#dc2626);}
-.wc-card .wc-remaining{font-size:11px;color:#475569;margin-top:8px;}
-.wc-card .wc-source{font-size:9px;color:#334155;margin-top:4px;}
-.wc-refresh-btn{background:none;border:1px solid #334155;color:#64748b;padding:4px 10px;border-radius:6px;font-size:10px;cursor:pointer;margin-top:8px;transition:all 0.15s;}
+.wc-card .wc-remaining{font-size:10px;color:#475569;margin-top:6px;}
+.wc-card .wc-source{font-size:8px;color:#334155;margin-top:3px;}
+.wc-card .wc-breakdown{font-size:9px;color:#475569;margin-top:6px;line-height:1.5;}
+.wc-card .wc-breakdown span{color:#94a3b8;}
+.wc-refresh-btn{background:none;border:1px solid #334155;color:#64748b;padding:3px 8px;border-radius:6px;font-size:9px;cursor:pointer;margin-top:6px;transition:all 0.15s;}
 .wc-refresh-btn:hover{border-color:#6366f1;color:#a5b4fc;}
 
 /* Section */
@@ -105,7 +111,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 /* Responsive */
 @media(max-width:480px){
   .dash-wrap{padding:12px;}
-  .wc-card .wc-used{font-size:28px;}
+  .wc-row{flex-direction:column;}
+  .wc-card{min-width:0;}
+  .wc-card .wc-used{font-size:26px;}
   .vmsg-card{padding:10px 12px;}
   .section-head .section-btns{flex-wrap:wrap;}
 }
@@ -131,18 +139,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <button class="logout-btn" id="logout-btn">Logout</button>
   </div>
 
-  <!-- Write Count -->
-  <div class="wc-card" id="wc-card">
-    <div class="wc-title">KV Writes Used Today</div>
-    <div class="wc-numbers">
-      <span class="wc-used" id="wc-used">--</span>
-      <span class="wc-sep">/</span>
-      <span class="wc-limit">1,000</span>
+  <!-- Write Count Cards -->
+  <div class="wc-row">
+    <!-- Live Write Count (Cloudflare GraphQL) -->
+    <div class="wc-card" id="wc-card-live">
+      <div class="wc-title">Live Write Count <span class="wc-badge live">LIVE</span></div>
+      <div class="wc-numbers">
+        <span class="wc-used" id="wc-used">--</span>
+        <span class="wc-sep">/</span>
+        <span class="wc-limit">1,000</span>
+      </div>
+      <div class="wc-bar-track"><div class="wc-bar-fill" id="wc-bar" style="width:0%"></div></div>
+      <div class="wc-remaining" id="wc-remaining">Loading...</div>
+      <div class="wc-source" id="wc-source"></div>
+      <button class="wc-refresh-btn" id="wc-refresh">Refresh Live</button>
     </div>
-    <div class="wc-bar-track"><div class="wc-bar-fill" id="wc-bar" style="width:0%"></div></div>
-    <div class="wc-remaining" id="wc-remaining">Loading...</div>
-    <div class="wc-source" id="wc-source"></div>
-    <button class="wc-refresh-btn" id="wc-refresh">Refresh</button>
+
+    <!-- Calculated Write Count (Operation-based) -->
+    <div class="wc-card" id="wc-card-calc">
+      <div class="wc-title">Calculated Writes <span class="wc-badge calc">ACCURATE</span></div>
+      <div class="wc-numbers">
+        <span class="wc-used" id="calc-wc-used" style="color:#c4b5fd;text-shadow:0 0 12px rgba(196,181,253,0.3);">0</span>
+        <span class="wc-sep">/</span>
+        <span class="wc-limit">1,000</span>
+      </div>
+      <div class="wc-bar-track"><div class="wc-bar-fill" id="calc-wc-bar" style="width:0%"></div></div>
+      <div class="wc-remaining" id="calc-wc-remaining">0 writes remaining today</div>
+      <div class="wc-breakdown" id="calc-wc-breakdown"><span>Uploads:</span> 0 &times; 3 = 0 &nbsp;|&nbsp; <span>Deletes:</span> 0</div>
+      <div class="wc-source" id="calc-wc-source">Based on operations observed today</div>
+    </div>
   </div>
 
   <!-- Voice Messages -->
@@ -205,6 +230,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   var voiceMessages = [];
   var textMessages = [];
 
+  // ===== CALCULATED WRITE COUNTER STATE =====
+  // Stores daily KV write counts based on actual operations observed
+  // Write costs: Upload = 3 writes (put data + put index + put rate-limit)
+  //              Individual delete = 4 writes (delete data + delete :data + delete key + put index)
+  //              Bulk delete N msgs = 3N+1 writes (3 deletes × N + 1 index put)
+  //              Orphan cleanup = 1 write per orphan key deleted
+  var WRITES_PER_UPLOAD = 3;
+  var WRITES_PER_INDIVIDUAL_DELETE = 4;  // 3 deletes + 1 index put
+  var WRITES_PER_BULK_DELETE_MSG = 3;     // 3 deletes per msg in bulk
+  var WRITES_BULK_INDEX_PUT = 1;          // 1 index put after all bulk deletes
+
+  function todayKey(){ return new Date().toISOString().slice(0, 10); }
+
+  function getCalcState(){
+    var key = 'calcWC_' + todayKey();
+    try {
+      var stored = localStorage.getItem(key);
+      if(stored) return JSON.parse(stored);
+    } catch(e){}
+    return { uploads: 0, individualDeletes: 0, bulkDeleteMsgs: 0, bulkDeleteOps: 0, orphanCleans: 0, prevVoiceCount: 0 };
+  }
+
+  function saveCalcState(state){
+    var key = 'calcWC_' + todayKey();
+    localStorage.setItem(key, JSON.stringify(state));
+  }
+
+  function calcTotalWrites(state){
+    var uploadWrites = state.uploads * WRITES_PER_UPLOAD;
+    var indivDeleteWrites = state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE;
+    var bulkDeleteWrites = (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG) + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT);
+    var orphanWrites = state.orphanCleans;
+    return uploadWrites + indivDeleteWrites + bulkDeleteWrites + orphanWrites;
+  }
+
+  // Track voice count changes to detect new uploads
+  var lastKnownVoiceCount = 0;
+
   // ===== DOM =====
   var loginWrap = document.getElementById('login-wrap');
   var dashWrap = document.getElementById('dash-wrap');
@@ -228,6 +291,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   var deleteAllTextBtn = document.getElementById('delete-all-text-btn');
   var toastEl = document.getElementById('toast');
   var confirmOverlay = document.getElementById('confirm-overlay');
+  // Calculated write counter DOM
+  var calcWcUsed = document.getElementById('calc-wc-used');
+  var calcWcBar = document.getElementById('calc-wc-bar');
+  var calcWcRemaining = document.getElementById('calc-wc-remaining');
+  var calcWcBreakdown = document.getElementById('calc-wc-breakdown');
+  var calcWcSource = document.getElementById('calc-wc-source');
 
   // ===== LOGIN =====
   pwBtn.addEventListener('click', doLogin);
@@ -262,6 +331,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     fetchWriteCount();
     loadVoiceMessages();
     loadTextMessages();
+    // Initialize calculated write counter display
+    updateCalcWriteCount();
   }
 
   // ===== WRITE COUNT (NEVER DECREASES) =====
@@ -341,6 +412,64 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   // Auto-refresh write count every 30 seconds
   writeCountTimer = setInterval(fetchWriteCount, 30000);
 
+  // ===== CALCULATED WRITE COUNTER =====
+  function updateCalcWriteCount(){
+    var state = getCalcState();
+    var total = calcTotalWrites(state);
+    displayCalcWriteCount(total, state);
+  }
+
+  function displayCalcWriteCount(total, state){
+    var remaining = Math.max(0, 1000 - total);
+    var pct = Math.min(100, (total / 1000) * 100);
+
+    calcWcUsed.textContent = total;
+    calcWcBar.style.width = pct + '%';
+    calcWcRemaining.textContent = remaining + ' writes remaining today';
+
+    if(pct > 95){
+      calcWcBar.className = 'wc-bar-fill danger';
+      calcWcUsed.style.color = '#fca5a5';
+      calcWcUsed.style.textShadow = '0 0 12px rgba(252,165,165,0.4)';
+    } else if(pct > 80){
+      calcWcBar.className = 'wc-bar-fill warn';
+      calcWcUsed.style.color = '#fdba74';
+      calcWcUsed.style.textShadow = '0 0 12px rgba(253,186,116,0.3)';
+    } else {
+      calcWcBar.className = 'wc-bar-fill';
+      calcWcUsed.style.color = '#c4b5fd';
+      calcWcUsed.style.textShadow = '0 0 12px rgba(196,181,253,0.3)';
+    }
+
+    var uploadWrites = state.uploads * WRITES_PER_UPLOAD;
+    var indivDeleteWrites = state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE;
+    var bulkDeleteWrites = (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG) + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT);
+
+    calcWcBreakdown.innerHTML =
+      '<span>Uploads:</span> ' + state.uploads + ' &times; 3 = ' + uploadWrites +
+      ' &nbsp;|&nbsp; <span>Ind. Deletes:</span> ' + state.individualDeletes + ' &times; 4 = ' + indivDeleteWrites +
+      (state.bulkDeleteMsgs > 0 ? ' &nbsp;|&nbsp; <span>Bulk Deletes:</span> ' + state.bulkDeleteMsgs + ' &times; 3 + ' + state.bulkDeleteOps + ' = ' + bulkDeleteWrites : '') +
+      (state.orphanCleans > 0 ? ' &nbsp;|&nbsp; <span>Orphan Cleans:</span> ' + state.orphanCleans : '');
+  }
+
+  // Detect new uploads by comparing voice message count changes
+  function detectUploads(currentVoiceCount){
+    var state = getCalcState();
+    if(lastKnownVoiceCount === 0 && state.uploads === 0 && currentVoiceCount > 0){
+      // First load of the day with existing messages — seed upload count
+      // These messages are currently in KV, so they were uploaded today (24h TTL)
+      state.uploads = currentVoiceCount;
+      saveCalcState(state);
+    } else if(lastKnownVoiceCount > 0 && currentVoiceCount > lastKnownVoiceCount){
+      // New messages appeared since last check
+      var newUploads = currentVoiceCount - lastKnownVoiceCount;
+      state.uploads += newUploads;
+      saveCalcState(state);
+    }
+    lastKnownVoiceCount = currentVoiceCount;
+    updateCalcWriteCount();
+  }
+
   // ===== VOICE MESSAGES =====
   async function loadVoiceMessages(){
     voiceList.innerHTML = '<div class="loading"><div class="spinner"></div>Loading voice messages...</div>';
@@ -354,6 +483,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       voiceCountBadge.textContent = voiceMessages.length;
       deleteAllVoiceBtn.disabled = voiceMessages.length === 0;
       renderVoiceMessages();
+      // Detect new uploads for calculated write counter
+      detectUploads(voiceMessages.length);
     } catch(e){
       voiceList.innerHTML = '<div class="txt-section-empty">Failed to load voice messages. Check auth.</div>';
     }
@@ -425,7 +556,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         // Step 2: Also remove voice message entry from GitHub chat.json
         await removeVoiceFromChatJson(key);
 
-        showToast('Voice message deleted', 'success');
+        // Step 3: Track calculated write cost (4 writes: 3 deletes + 1 index put)
+        var cState = getCalcState();
+        cState.individualDeletes += 1;
+        saveCalcState(cState);
+        updateCalcWriteCount();
+        lastKnownVoiceCount = Math.max(0, lastKnownVoiceCount - 1);
+
+        showToast('Voice message deleted (+4 writes)', 'success');
         voiceMessages = voiceMessages.filter(function(m){ return m.key !== key; });
         voiceCountBadge.textContent = voiceMessages.length;
         deleteAllVoiceBtn.disabled = voiceMessages.length === 0;
@@ -525,6 +663,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       // Also remove all voice entries from GitHub chat.json
       await removeAllVoiceFromChatJson();
 
+      // Track calculated write cost for bulk delete: 3N+1 writes
+      var bulkWrites = (data.deleted * WRITES_PER_BULK_DELETE_MSG) + WRITES_BULK_INDEX_PUT;
+      var cState = getCalcState();
+      cState.bulkDeleteMsgs += data.deleted;
+      cState.bulkDeleteOps += 1;
+      saveCalcState(cState);
+      updateCalcWriteCount();
+      lastKnownVoiceCount = 0;
+
       voiceMessages = [];
       voiceCountBadge.textContent = '0';
       renderVoiceMessages();
@@ -532,7 +679,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       deleteAllVoiceBtn.textContent = 'Delete All Voice';
       deleteAllVoiceBtn.disabled = true;
 
-      showToast('All ' + data.deleted + ' voice messages deleted' + savedInfo, 'success');
+      showToast('All ' + data.deleted + ' voice messages deleted (+' + bulkWrites + ' writes)' + savedInfo, 'success');
       fetchWriteCount();
     } catch(e){
       voiceBulkBar.style.width = '0%';
