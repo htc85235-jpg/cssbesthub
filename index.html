@@ -127,10 +127,11 @@
     + '    .presence-bubble.dumbo-bub.typing { box-shadow: 0 0 8px rgba(34,197,94,0.6); }'
     + '    @keyframes onlinePulse { 0%,100%{opacity:0.6} 50%{opacity:1} }'
     + '    @keyframes typingPulse { 0%,100%{opacity:0.35;transform:scale(1)} 50%{opacity:1;transform:scale(1.35)} }'
-    + '    .write-count { font-size:7.5px; color:#555c6e; font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:2px; margin-right:6px; }'
-    + '    .write-count svg { width:8px; height:8px; opacity:0.4; }'
-    + '    .write-count .wc-num { color:#d4af37; font-weight:700; }'
-    + '    .write-count .wc-limit { opacity:0.4; }'
+    + '    .write-count { font-size:8px; font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:3px; margin-right:6px; padding:2px 6px; border-radius:6px; background:linear-gradient(145deg, #2a2f3a, #1e222b); box-shadow: 2px 2px 6px #0d0f14, -2px -2px 6px #333845; }'
+    + '    .write-count .wc-num { color:#fde68a; font-weight:800; text-shadow: 0 0 8px rgba(253,230,138,0.5), 0 1px 2px rgba(0,0,0,0.6); }'
+    + '    .write-count .wc-sep { color:rgba(255,255,255,0.3); font-weight:300; }'
+    + '    .write-count .wc-limit { color:rgba(255,255,255,0.45); font-weight:600; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }'
+    + '    .write-count .wc-label { color:rgba(255,255,255,0.25); font-size:6px; margin-left:1px; }'
     + '    .chat-header-timer { font-size:9px; color:#d4af37; display:flex; align-items:center; gap:3px; font-variant-numeric:tabular-nums; }'
     + '    .chat-header-timer svg { width:10px; height:10px; }'
 
@@ -275,9 +276,8 @@
     + '          <div class="presence-bubble dumbi-bub" id="presence-dumbi" title="Dumbi"></div>'
     + '          <div class="presence-bubble dumbo-bub" id="presence-dumbo" title="Dumbo"></div>'
     + '        </div>'
-    + '        <div class="write-count" id="write-count" title="Cloudflare KV writes today">'
-    + '          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>'
-    + '          <span class="wc-num" id="write-count-num">0</span><span class="wc-limit">/1K</span>'
+    + '        <div class="write-count" id="write-count" title="Real Cloudflare KV writes today (live)">'
+    + '          <span class="wc-num" id="write-count-num">0</span><span class="wc-sep">/</span><span class="wc-limit">1K</span><span class="wc-label">writes</span>'
     + '        </div>'
     + '        <div class="chat-header-timer" id="chat-delete-timer">'
     + '          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
@@ -533,14 +533,21 @@
 
   async function checkStatus() {
     try {
-      var resp = await fetch(WORKER_URL + '/status');
-      if (resp.ok) {
-        var data = await resp.json();
+      // Fetch presence from /status AND real KV writes from /kv-stats in parallel
+      var [statusResp, kvResp] = await Promise.all([
+        fetch(WORKER_URL + '/status'),
+        fetch(WORKER_URL + '/kv-stats')
+      ]);
+      if (statusResp.ok) {
+        var data = await statusResp.json();
         otherPresence = { dumbi: data.dumbi, dumbo: data.dumbo };
         updatePresenceBubbles(data.dumbi, data.dumbo);
-        if (data.writes !== undefined) {
-          dailyWrites = data.writes;
-          updateWriteCount();
+      }
+      if (kvResp.ok) {
+        var kvData = await kvResp.json();
+        if (kvData.writes !== undefined) {
+          dailyWrites = kvData.writes;
+          updateWriteCount(kvData.writesRemaining);
         }
       }
     } catch(e) {
@@ -570,14 +577,19 @@
     }
   }
 
-  function updateWriteCount() {
+  function updateWriteCount(remaining) {
     var el = document.getElementById('write-count-num');
     if (el) el.textContent = dailyWrites;
-    // Color warning: yellow normal, red if over 800
-    if (el && dailyWrites > 800) {
-      el.style.color = dailyWrites > 950 ? '#ef4444' : '#f59e0b';
+    // 3D color: golden yellow normally, orange at 800+, red at 950+
+    if (el && dailyWrites > 950) {
+      el.style.color = '#fca5a5';
+      el.style.textShadow = '0 0 10px rgba(252,165,165,0.7), 0 1px 2px rgba(0,0,0,0.6)';
+    } else if (el && dailyWrites > 800) {
+      el.style.color = '#fdba74';
+      el.style.textShadow = '0 0 8px rgba(253,186,116,0.5), 0 1px 2px rgba(0,0,0,0.6)';
     } else if (el) {
-      el.style.color = '#d4af37';
+      el.style.color = '#fde68a';
+      el.style.textShadow = '0 0 8px rgba(253,230,138,0.5), 0 1px 2px rgba(0,0,0,0.6)';
     }
   }
 
