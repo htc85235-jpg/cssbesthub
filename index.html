@@ -2423,19 +2423,17 @@
       });
     }
 
-    // No auto-close on blur/visibility — just pause/resume polling & presence
+    // Auto-close on tab hidden, minimize, or switch away
     document.addEventListener('visibilitychange', function(){
-      if (document.hidden) {
-        stopPolling();
-        stopPresenceHeartbeat();
-        stopStatusCheck();
-        closeQuicksBox();
-      } else {
-        if (overlay && overlay.style.display === 'flex' && myRole) {
-          startPolling();
-          startPresenceHeartbeat();
-          startStatusCheck();
-        }
+      if (document.hidden && overlay && overlay.style.display === 'flex') {
+        closeOverlay();
+      }
+    });
+
+    // Auto-close when window loses focus (click outside browser, alt-tab, etc.)
+    window.addEventListener('blur', function(){
+      if (overlay && overlay.style.display === 'flex') {
+        closeOverlay();
       }
     });
 
@@ -2445,12 +2443,12 @@
         navigator.sendBeacon(WORKER_URL + '/offline',
           new Blob([JSON.stringify({ role: myRole })], { type: 'application/json' }));
       }
-      closeQuicksBox();
+      closeOverlay();
     });
 
-    // Close quicks on pagehide (browser minimized, page navigated away)
+    // Close on pagehide (browser minimized, page navigated away)
     window.addEventListener('pagehide', function(){
-      closeQuicksBox();
+      closeOverlay();
     });
 
     listenersAttached = true;
