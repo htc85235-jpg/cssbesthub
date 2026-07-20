@@ -50,6 +50,18 @@
   var lastOnlineSend = 0;
   var otherPresence = { dumbi: { online: false, typing: false }, dumbo: { online: false, typing: false } };
 
+  // ===== STICKER PACKS =====
+  var STICKER_PACKS = [
+    { id: 'love_hearts', name: '💕', label: 'Love Hearts', slug: '7yM1YFiOpilcz9dR5WIZ', ext: 'png', suffix: '', count: 24 },
+    { id: 'funny_cat', name: '🐱', label: 'Funny Cat Meme', slug: 'S9ltCItX7E5lM0bykI0p', ext: 'png', suffix: '-1', count: 19 },
+    { id: 'hearts', name: '❤️', label: 'Hearts', slug: 'I8SwsizLcgp8ERiWIJnU', ext: 'png', suffix: '', count: 24 },
+    { id: 'couples_love', name: '💛', label: 'Couples Love', slug: '30dcbX61SjwIdiaGpEE1', ext: 'webp', suffix: '', count: 24 },
+    { id: 'couple', name: '👫', label: 'Couple', slug: '9lVDzLrezHA5vK4sTdIn', ext: 'webp', suffix: '', count: 24 },
+    { id: 'meme', name: '😂', label: 'Meme', slug: '3Z9iM32IU8i9XEUjzhMs', ext: 'webp', suffix: '-1', count: 24 },
+    { id: 'quby', name: '🎀', label: 'Quby Deluxe', slug: 'Y6HmEbLim68pXhi6K8P1', ext: 'png', suffix: '', count: 24 }
+  ];
+  var recentStickers = []; // max 20, in-memory only
+
 
   // ===== DOM =====
   var trigger = null;
@@ -71,6 +83,10 @@
   var headerRole = null;
   var headerStatus = null;
   var deleteTimerEl = null;
+  var stickerBtn = null;
+  var stickerPicker = null;
+  var stickerPickerOpen = false;
+  var activeStickerPack = null;
 
   // ===== OVERLAY HTML =====
   var OVERLAY_HTML = ''
@@ -197,6 +213,27 @@
     + '    .chat-send-btn { width:30px; height:30px; border-radius:50%; background:#d4af37; border:none; color:#1a1d24; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
     + '    .chat-send-btn:active { box-shadow: inset 3px 3px 6px #0d0f14, inset -3px -3px 6px #2a2f3a; }'
     + '    .chat-send-btn svg { width:13px; height:13px; }'
+    + '    .chat-sticker-btn { width:30px; height:30px; border-radius:50%; background:#252830; border:none; color:#d4af37; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; box-shadow: 3px 3px 6px #0d0f14, -3px -3px 6px #2a2f3a; transition:all 0.15s; flex-shrink:0; }'
+    + '    .chat-sticker-btn:hover { color:#3b82f6; }'
+    + '    .chat-sticker-btn.active { color:#3b82f6; background:#1a2a3a; }'
+    + '    .sticker-picker { display:none; flex-direction:column; background:#1a1d24; border-top:1px solid rgba(42,47,58,0.6); flex-shrink:0; max-height:260px; overflow:hidden; }'
+    + '    .sticker-picker.open { display:flex; }'
+    + '    .sticker-tab-bar { display:flex; align-items:center; gap:2px; padding:6px 8px; border-bottom:1px solid rgba(42,47,58,0.4); overflow-x:auto; flex-shrink:0; }'
+    + '    .sticker-tab-bar::-webkit-scrollbar { height:2px; }'
+    + '    .sticker-tab-bar::-webkit-scrollbar-thumb { background:#333; border-radius:2px; }'
+    + '    .sticker-tab { padding:4px 8px; border-radius:6px; background:transparent; border:none; color:#8b8fa3; cursor:pointer; font-size:16px; white-space:nowrap; transition:all 0.15s; }'
+    + '    .sticker-tab:hover { background:rgba(255,255,255,0.05); }'
+    + '    .sticker-tab.active { background:rgba(212,175,55,0.15); color:#d4af37; }'
+    + '    .sticker-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:8px; overflow-y:auto; flex:1; }'
+    + '    .sticker-grid::-webkit-scrollbar { width:3px; }'
+    + '    .sticker-grid::-webkit-scrollbar-thumb { background:#333; border-radius:2px; }'
+    + '    .sticker-item { display:flex; align-items:center; justify-content:center; padding:4px; cursor:pointer; border-radius:8px; transition:transform 0.12s,background 0.12s; }'
+    + '    .sticker-item:hover { transform:scale(1.1); background:rgba(255,255,255,0.05); }'
+    + '    .sticker-item:active { transform:scale(0.95); }'
+    + '    .sticker-item img { width:64px; height:64px; object-fit:contain; pointer-events:none; }'
+    + '    .chat-msg.sticker-msg { background:transparent !important; padding:2px 4px !important; box-shadow:none !important; max-width:160px; }'
+    + '    .chat-msg.sticker-msg .msg-sticker-img { max-width:150px; max-height:150px; border-radius:8px; display:block; }'
+    + '    .chat-msg.sticker-msg .msg-time { clear:both; }'
 
     // Recording bar
     + '    .chat-rec-bar { display:none; align-items:center; gap:6px; padding:6px 10px; border-top:1px solid rgba(59,130,246,0.2); background:rgba(59,130,246,0.05); flex-shrink:0; }'
@@ -302,6 +339,12 @@
     + '        <button class="rec-cancel" id="chat-rec-cancel" type="button">Cancel</button>'
     + '      </div>'
 
+    // Sticker picker
+    + '      <div class="sticker-picker" id="sticker-picker">'
+    + '        <div class="sticker-tab-bar" id="sticker-tab-bar"></div>'
+    + '        <div class="sticker-grid" id="sticker-grid"></div>'
+    + '      </div>'
+
     // Input area
     + '      <div class="chat-input-area">'
     + '        <div class="presence-bubbles">'
@@ -309,6 +352,7 @@
     + '          <div class="presence-bubble dumbi-bub" id="presence-dumbi" title="Dumbi"></div>'
     + '        </div>'
     + '        <input id="chat-input" type="text" autocomplete="off" placeholder="Type a message..."/>'
+    + '        <button class="chat-sticker-btn" id="chat-sticker-btn" type="button">😊</button>'
     + '        <button class="chat-mic-btn" id="chat-mic-btn" type="button">'
     + '          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>'
     + '        </button>'
@@ -712,6 +756,133 @@
     }
   }
 
+  // ===== STICKER PICKER =====
+  function getStickerUrl(pack, index, thumb) {
+    var base = 'https://cdn2.cdnstep.com/' + pack.slug + '/' + index + pack.suffix;
+    if (thumb) return base + '.thumb128.' + pack.ext;
+    return base + '.' + pack.ext;
+  }
+
+  function toggleStickerPicker() {
+    if (stickerPickerOpen) {
+      closeStickerPicker();
+    } else {
+      openStickerPicker();
+    }
+  }
+
+  function openStickerPicker() {
+    if (!stickerPicker) return;
+    stickerPickerOpen = true;
+    stickerPicker.classList.add('open');
+    if (stickerBtn) stickerBtn.classList.add('active');
+    if (!activeStickerPack) activeStickerPack = 'recent';
+    renderStickerTabs();
+    renderStickerGrid();
+  }
+
+  function closeStickerPicker() {
+    if (!stickerPicker) return;
+    stickerPickerOpen = false;
+    stickerPicker.classList.remove('open');
+    if (stickerBtn) stickerBtn.classList.remove('active');
+  }
+
+  function renderStickerTabs() {
+    var tabBar = document.getElementById('sticker-tab-bar');
+    if (!tabBar) return;
+    var html = '<button class="sticker-tab' + (activeStickerPack === 'recent' ? ' active' : '') + '" data-pack="recent">🕐</button>';
+    for (var i = 0; i < STICKER_PACKS.length; i++) {
+      var p = STICKER_PACKS[i];
+      html += '<button class="sticker-tab' + (activeStickerPack === p.id ? ' active' : '') + '" data-pack="' + p.id + '">' + p.name + '</button>';
+    }
+    tabBar.innerHTML = html;
+    var tabs = tabBar.querySelectorAll('.sticker-tab');
+    for (var t = 0; t < tabs.length; t++) {
+      tabs[t].addEventListener('click', function(){
+        activeStickerPack = this.dataset.pack;
+        renderStickerTabs();
+        renderStickerGrid();
+      });
+    }
+  }
+
+  function renderStickerGrid() {
+    var grid = document.getElementById('sticker-grid');
+    if (!grid) return;
+    var html = '';
+    if (activeStickerPack === 'recent') {
+      if (recentStickers.length === 0) {
+        grid.innerHTML = '<div style="text-align:center;padding:20px;color:#555c6e;font-size:12px;grid-column:1/-1;">No recent stickers yet</div>';
+        return;
+      }
+      for (var r = 0; r < recentStickers.length; r++) {
+        var rs = recentStickers[r];
+        var rPack = null;
+        for (var rp = 0; rp < STICKER_PACKS.length; rp++) {
+          if (STICKER_PACKS[rp].id === rs.packId) { rPack = STICKER_PACKS[rp]; break; }
+        }
+        if (!rPack) continue;
+        var rUrl = getStickerUrl(rPack, rs.index, true);
+        html += '<div class="sticker-item" data-pack-id="' + rs.packId + '" data-sticker-index="' + rs.index + '"><img src="' + rUrl + '" loading="lazy" alt="sticker"/></div>';
+      }
+    } else {
+      var pack = null;
+      for (var pi = 0; pi < STICKER_PACKS.length; pi++) {
+        if (STICKER_PACKS[pi].id === activeStickerPack) { pack = STICKER_PACKS[pi]; break; }
+      }
+      if (!pack) { grid.innerHTML = ''; return; }
+      for (var si = 0; si < pack.count; si++) {
+        var sUrl = getStickerUrl(pack, si, true);
+        html += '<div class="sticker-item" data-pack-id="' + pack.id + '" data-sticker-index="' + si + '"><img src="' + sUrl + '" loading="lazy" alt="sticker"/></div>';
+      }
+    }
+    grid.innerHTML = html;
+    var items = grid.querySelectorAll('.sticker-item');
+    for (var it = 0; it < items.length; it++) {
+      items[it].addEventListener('click', function(){
+        var packId = this.dataset.packId;
+        var index = parseInt(this.dataset.stickerIndex, 10);
+        sendStickerMessage(packId, index);
+      });
+    }
+  }
+
+  function sendStickerMessage(packId, index) {
+    if (!myRole) return;
+    var pack = null;
+    for (var i = 0; i < STICKER_PACKS.length; i++) {
+      if (STICKER_PACKS[i].id === packId) { pack = STICKER_PACKS[i]; break; }
+    }
+    if (!pack) return;
+    var fullUrl = getStickerUrl(pack, index, false);
+
+    var msg = {
+      id: 'stk_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
+      type: 'sticker',
+      sender: myRole,
+      ts: Date.now(),
+      stickerPack: packId,
+      stickerIndex: index,
+      stickerUrl: fullUrl
+    };
+
+    // Add to recent stickers (dedupe, max 20)
+    var stickerKey = packId + '_' + index;
+    recentStickers = recentStickers.filter(function(s){ return (s.packId + '_' + s.index) !== stickerKey; });
+    recentStickers.unshift({ packId: packId, index: index });
+    if (recentStickers.length > 20) recentStickers.length = 20;
+
+    locallySentIds[msg.id] = Date.now();
+    appendMessage(msg);
+    scrollToBottom();
+    closeStickerPicker();
+
+    saveMessagesToGitHub(msg, false).catch(function(e){
+      console.error('[Chat] Send sticker failed:', e);
+    });
+  }
+
   // ===== SEND TEXT MESSAGE =====
   async function sendTextMessage() {
     var text = chatInput.value.trim();
@@ -1108,6 +1279,25 @@
       }
 
 
+    } else if (msg.type === 'sticker') {
+      div.classList.add('sticker-msg');
+      var stickerImgUrl = msg.stickerUrl || '';
+      var stickerPackLabel = '';
+      var stickerPack = null;
+      for (var spi = 0; spi < STICKER_PACKS.length; spi++) {
+        if (STICKER_PACKS[spi].id === msg.stickerPack) {
+          stickerPackLabel = STICKER_PACKS[spi].label;
+          stickerPack = STICKER_PACKS[spi];
+          break;
+        }
+      }
+      // Fallback: reconstruct URL from pack+index if stickerUrl missing
+      if (!stickerImgUrl && stickerPack && typeof msg.stickerIndex === 'number') {
+        stickerImgUrl = getStickerUrl(stickerPack, msg.stickerIndex, false);
+      }
+      div.innerHTML =
+        '<img class="msg-sticker-img" src="' + stickerImgUrl + '" alt="' + stickerPackLabel + ' sticker" loading="lazy" onerror="this.style.display=\'none\'"/>' +
+        '<div class="msg-time">' + formatTime12(msg.ts) + ' ' + ticksHtml + '</div>';
     } else {
       var senderLabel = isSent ? '' : '<div class="msg-sender">' + (msg.sender === 'dumbi' ? 'Dumbi' : 'Dumbo') + '</div>';
       div.innerHTML =
@@ -1688,6 +1878,8 @@
     chatInput      = document.getElementById('chat-input');
     sendBtn        = document.getElementById('chat-send-btn');
     micBtn         = document.getElementById('chat-mic-btn');
+    stickerBtn     = document.getElementById('chat-sticker-btn');
+    stickerPicker  = document.getElementById('sticker-picker');
     recBar         = document.getElementById('chat-rec-bar');
     waveContainer  = document.getElementById('chat-rec-waves');
     recTimerEl     = document.getElementById('chat-rec-timer');
@@ -1806,6 +1998,21 @@
         startRecording();
       }
     });
+
+    // Sticker button: toggle picker
+    if (stickerBtn) {
+      stickerBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        toggleStickerPicker();
+      });
+    }
+
+    // Close sticker picker when tapping messages area
+    if (messagesContainer) {
+      messagesContainer.addEventListener('click', function(){
+        if (stickerPickerOpen) closeStickerPicker();
+      });
+    }
 
     // Cancel recording
     var cancelBtn = document.getElementById('chat-rec-cancel');
@@ -1931,6 +2138,11 @@
     pendingSeenUpdates = [];
     isTypingNow = false;
     lastTypingCheckResult = false;
+    recentStickers = [];
+    stickerPickerOpen = false;
+    activeStickerPack = null;
+    if (stickerPicker) stickerPicker.classList.remove('open');
+    if (stickerBtn) stickerBtn.classList.remove('active');
     // write count vars no longer in chat — handled by private dashboard
     otherPresence = { dumbi: { online: false, typing: false }, dumbo: { online: false, typing: false } };
 
