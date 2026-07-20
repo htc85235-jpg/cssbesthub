@@ -162,11 +162,12 @@
     + '    .voice-play-btn.playing { background:#3b82f6 !important; color:#fff !important; }'
     + '    .voice-wave-progress { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }'
     + '    .voice-waves-mini { display:flex; align-items:center; gap:1.5px; height:20px; overflow:hidden; position:relative; width:100%; cursor:pointer; }'
-    + '    .voice-waves-mini .vbar { width:2.5px; border-radius:1px; background:#1a7a3a; transition:height 0.1s; flex-shrink:0; }'
+    + '    .voice-waves-mini .vbar { width:2.5px; border-radius:1px; background:#1a7a3a; transition:height 0.1s; flex-shrink:0; pointer-events:none; }'
     + '    .chat-msg.sent .voice-waves-mini .vbar { background:#1a7a3a; }'
     + '    .voice-progress-overlay { position:absolute; left:0; top:0; bottom:0; width:0; background:rgba(59,130,246,0.12); transition:width 0.1s linear; pointer-events:none; }'
-    + '    .voice-seek-dot { position:absolute; top:50%; width:10px; height:10px; border-radius:50%; background:#3b82f6; left:0; transform:translate(-50%,-50%); pointer-events:none; box-shadow: 0 0 4px rgba(59,130,246,0.5); transition:left 0.1s linear; opacity:0; }'
+    + '    .voice-seek-dot { position:absolute; top:50%; width:12px; height:12px; border-radius:50%; background:#3b82f6; left:0; transform:translate(-50%,-50%); pointer-events:none; box-shadow: 0 0 6px rgba(59,130,246,0.6); opacity:0; z-index:2; }'
     + '    .voice-waves-mini.seeking .voice-seek-dot, .voice-waves-mini.playing .voice-seek-dot { opacity:1; }'
+    + '    .voice-waves-mini.seeking .voice-seek-dot { transition:none; }'
 
     + '    .voice-time-row { display:flex; align-items:center; justify-content:space-between; gap:4px; }'
     + '    .voice-dur { font-size:9px; opacity:0.5; white-space:nowrap; font-variant-numeric:tabular-nums; }'
@@ -1000,16 +1001,17 @@
       var waveContainer = div.querySelector('.voice-waves-mini');
       if (waveContainer) {
         var isDragging = false;
-        function seekToPosition(e) {
-          var rect = waveContainer.getBoundingClientRect();
-          var x = (e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0)) - rect.left;
-          var pct = Math.max(0, Math.min(1, x / rect.width));
-          // Update visual position
+        // Store pending seek position for when audio loads
+        var pendingSeekPct = null;
+
+        function applySeekVisual(pct) {
           var overlay = waveContainer.querySelector('.voice-progress-overlay');
           if (overlay) overlay.style.width = (pct * 100) + '%';
           var seekDot = waveContainer.querySelector('.voice-seek-dot');
           if (seekDot) seekDot.style.left = (pct * 100) + '%';
-          // If audio is loaded, seek
+        }
+
+        function applySeekAudio(pct) {
           if (currentAudio && currentPlayBtn === playBtn && currentAudio.duration) {
             currentAudio.currentTime = pct * currentAudio.duration;
             var elapsedEl = div.querySelector('.voice-dur.elapsed');
@@ -1019,7 +1021,18 @@
             }
           }
         }
+
+        function seekToPosition(e) {
+          var rect = waveContainer.getBoundingClientRect();
+          var x = (e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0)) - rect.left;
+          var pct = Math.max(0, Math.min(1, x / rect.width));
+          applySeekVisual(pct);
+          pendingSeekPct = pct;
+          applySeekAudio(pct);
+        }
+
         waveContainer.addEventListener('mousedown', function(e) {
+          e.preventDefault();
           isDragging = true;
           waveContainer.classList.add('seeking');
           seekToPosition(e);
@@ -1045,6 +1058,19 @@
         waveContainer.addEventListener('touchend', function() {
           isDragging = false;
           waveContainer.classList.remove('seeking');
+        });
+
+        // Apply pending seek when audio finishes loading
+        playBtn.addEventListener('audioReady', function() {
+          if (pendingSeekPct !== null && currentAudio && currentPlayBtn === playBtn && currentAudio.duration) {
+            currentAudio.currentTime = pendingSeekPct * currentAudio.duration;
+            var elapsedEl = div.querySelector('.voice-dur.elapsed');
+            if (elapsedEl) {
+              elapsedEl.style.display = '';
+              elapsedEl.textContent = formatTime(Math.floor(currentAudio.currentTime));
+            }
+            pendingSeekPct = null;
+          }
         });
       }
     } else {
@@ -1224,6 +1250,8 @@
 
             await audio.play();
             startProgressTimer(audio, msgDiv);
+            // Fire audioReady so pending waveform seek can apply
+            btn.dispatchEvent(new Event('audioReady'));
             played = true;
             break;
           } else {
@@ -1265,6 +1293,7 @@
           };
           await rawAudio.play();
           startProgressTimer(rawAudio, msgDiv);
+          btn.dispatchEvent(new Event('audioReady'));
           played = true;
         } catch(e) {
           throw new Error('No compatible audio format found');
