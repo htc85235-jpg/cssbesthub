@@ -127,6 +127,23 @@
     + '    .quicks-item:hover { border-color:rgba(212,175,55,0.4); color:#d4af37; transform:translateY(-1px); box-shadow:2px 2px 5px #0d0f14,-2px -2px 4px #2a2f3a,0 0 8px rgba(212,175,55,0.1); }'
     + '    .quicks-item:active { box-shadow:inset 2px 2px 4px #0d0f14,inset -2px -2px 4px #2a2f3a; transform:translateY(0); }'
     + '    .quicks-item.flash { background:linear-gradient(145deg,#3a2a1a,#2a1f14); border-color:rgba(212,175,55,0.6); color:#f0c040; }'
+    + '    .quicks-add-btn { width:22px; height:22px; border-radius:50%; background:linear-gradient(145deg,#2a2f3a,#1e222b); border:1.5px solid rgba(212,175,55,0.3); color:#d4af37; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a; transition:all 0.15s; flex-shrink:0; padding:0; }'
+    + '    .quicks-add-btn:hover { border-color:rgba(212,175,55,0.6); box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a,0 0 8px rgba(212,175,55,0.15); }'
+    + '    .quicks-add-btn:active { box-shadow:inset 2px 2px 4px #0d0f14,inset -2px -2px 4px #2a2f3a; }'
+    + '    .quicks-input-row { display:none; align-items:center; gap:4px; padding:4px 6px; border-top:1px solid rgba(42,47,58,0.3); }'
+    + '    .quicks-input-row.open { display:flex; }'
+    + '    .quicks-input-row input { flex:1; background:#1a1d24; border:1px solid rgba(42,47,58,0.5); border-radius:6px; padding:4px 8px; color:#c9d1e0; font-size:10px; outline:none; box-shadow:inset 1px 1px 3px #0d0f14,inset -1px -1px 2px #2a2f3a; }'
+    + '    .quicks-input-row input:focus { border-color:rgba(212,175,55,0.4); color:#d4af37; }'
+    + '    .quicks-input-row input::placeholder { color:#555c6e; }'
+    + '    .quicks-input-confirm { width:22px; height:22px; border-radius:6px; background:linear-gradient(145deg,#2a2f3a,#1e222b); border:1px solid rgba(59,130,246,0.3); color:#3b82f6; font-size:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 4px #0d0f14,-2px -2px 4px #2a2f3a; flex-shrink:0; padding:0; }'
+    + '    .quicks-input-confirm:hover { border-color:rgba(59,130,246,0.6); }'
+    + '    .quicks-item[draggable="true"] { cursor:grab; }'
+    + '    .quicks-item[draggable="true"]:active { cursor:grabbing; }'
+    + '    .quicks-item.dragging { opacity:0.4; transform:scale(0.95); }'
+    + '    .quicks-item.drag-over { border-color:rgba(212,175,55,0.7); background:linear-gradient(145deg,#3a2a1a,#2a1f14); box-shadow:0 0 10px rgba(212,175,55,0.2); }'
+    + '    .quicks-item .quicks-del { display:none; position:absolute; top:-4px; right:-4px; width:14px; height:14px; border-radius:50%; background:#ef4444; color:#fff; font-size:8px; line-height:1; cursor:pointer; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(0,0,0,0.3); z-index:5; padding:0; border:none; }'
+    + '    .quicks-item:hover .quicks-del { display:flex; }'
+    + '    .quicks-item.custom { position:relative; }'
 
     // Prompt section (password)
     + '    .chat-prompt { padding:20px 16px; text-align:center; }'
@@ -344,34 +361,9 @@
     + '        <button class="quicks-btn" id="quicks-btn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Quicks</button>'
     + '        <button id="chat-close" aria-label="Close">&times;</button>'
     + '        <div class="quicks-box" id="quicks-box">'
-    + '          <div class="quicks-box-header"><span class="quicks-box-title">Quick Messages</span><button class="quicks-box-close" id="quicks-box-close" type="button">&times;</button></div>'
-    + '          <div class="quicks-grid" id="quicks-grid">'
-    + '            <div class="quicks-item" data-quick="Assalamualaikum!">Assalamualaikum!</div>'
-    + '            <div class="quicks-item" data-quick="How are you Dumbo Mera?">How are you Dumbo Mera?</div>'
-    + '            <div class="quicks-item" data-quick="Main theek hu Dumbo Mera">Main theek hu Dumbo Mera</div>'
-    + '            <div class="quicks-item" data-quick="Kahan ho?">Kahan ho?</div>'
-    + '            <div class="quicks-item" data-quick="Kya kar rahy ho aap?">Kya kar rahy ho aap?</div>'
-    + '            <div class="quicks-item" data-quick="I lobe you Dhair Sara">I lobe you Dhair Sara</div>'
-    + '            <div class="quicks-item" data-quick="I Miss you Dhair Sara">I Miss you Dhair Sara</div>'
-    + '            <div class="quicks-item" data-quick="Ami is here. Can\'t use phone">Ami is here. Can\'t use phone</div>'
-    + '            <div class="quicks-item" data-quick="Heart main pain hai">Heart main pain hai</div>'
-    + '            <div class="quicks-item" data-quick="Tabiyat down hai dumbo Mera">Tabiyat down hai dumbo Mera</div>'
-    + '            <div class="quicks-item" data-quick="Talk you later">Talk you later</div>'
-    + '            <div class="quicks-item" data-quick="I\'m going to sleep">I\'m going to sleep</div>'
-    + '            <div class="quicks-item" data-quick="Ami Kaisi hain?">Ami Kaisi hain?</div>'
-    + '            <div class="quicks-item" data-quick="Just woke">Just woke</div>'
-    + '            <div class="quicks-item" data-quick="I had bad dream">I had bad dream</div>'
-    + '            <div class="quicks-item" data-quick="I\'m feeling anxious">I\'m feeling anxious</div>'
-    + '            <div class="quicks-item" data-quick="I need a hug">I need a hug</div>'
-    + '            <div class="quicks-item" data-quick="Good Night Dumbo Mera 💞🌃">Good Night Dumbo Mera 💞🌃</div>'
-    + '            <div class="quicks-item" data-quick="Good Morning Dumbo Mera 💞">Good Morning Dumbo Mera 💞</div>'
-    + '            <div class="quicks-item" data-quick="We can do it">We can do it</div>'
-    + '            <div class="quicks-item" data-quick="Playing with Noor">Playing with Noor</div>'
-    + '            <div class="quicks-item" data-quick="Going Out for hours">Going Out for hours</div>'
-    + '            <div class="quicks-item" data-quick="Going out for Walk">Going out for Walk</div>'
-    + '            <div class="quicks-item" data-quick="Don\'t wait for my msg. It\'ll take time">Don\'t wait for my msg. It\'ll take time</div>'
-    + '            <div class="quicks-item" data-quick="Ghusa aa Raha hai">Ghusa aa Raha hai</div>'
-    + '          </div>'
+    + '          <div class="quicks-box-header"><span class="quicks-box-title">Quick Messages</span><div style="display:flex;align-items:center;gap:4px;"><button class="quicks-add-btn" id="quicks-add-btn" type="button">+</button><button class="quicks-box-close" id="quicks-box-close" type="button">&times;</button></div></div>'
+    + '          <div class="quicks-input-row" id="quicks-input-row"><input id="quicks-input" type="text" placeholder="Type new quick text..." maxlength="80"/><button class="quicks-input-confirm" id="quicks-input-confirm" type="button">\u2713</button></div>'
+    + '          <div class="quicks-grid" id="quicks-grid"></div>'
     + '        </div>'
     + '      </div>'
 
@@ -2015,10 +2007,84 @@
   }
 
   // ===== QUICKS BOX =====
+  var DEFAULT_QUICKS = [
+    'Assalamualaikum!',
+    'How are you Dumbo Mera?',
+    'Main theek hu Dumbo Mera',
+    'Kahan ho?',
+    'Kya kar rahy ho aap?',
+    'I lobe you Dhair Sara',
+    'I Miss you Dhair Sara',
+    'Ami is here. Can\'t use phone',
+    'Heart main pain hai',
+    'Tabiyat down hai dumbo Mera',
+    'Talk you later',
+    'I\'m going to sleep',
+    'Ami Kaisi hain?',
+    'Just woke',
+    'I had bad dream',
+    'I\'m feeling anxious',
+    'I need a hug',
+    'Good Night Dumbo Mera \uD83D\uDC8E\uD83C\uDF03',
+    'Good Morning Dumbo Mera \uD83D\uDC8E',
+    'We can do it',
+    'Playing with Noor',
+    'Going Out for hours',
+    'Going out for Walk',
+    'Don\'t wait for my msg. It\'ll take time',
+    'Ghusa aa Raha hai'
+  ];
+
+  function loadQuicksOrder() {
+    try {
+      var saved = localStorage.getItem('quicks_order');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return null;
+  }
+
+  function saveQuicksOrder() {
+    var grid = document.getElementById('quicks-grid');
+    if (!grid) return;
+    var items = grid.querySelectorAll('.quicks-item');
+    var order = [];
+    items.forEach(function(item) {
+      var txt = item.getAttribute('data-quick');
+      var isCustom = item.classList.contains('custom');
+      order.push({ text: txt, custom: isCustom });
+    });
+    try { localStorage.setItem('quicks_order', JSON.stringify(order)); } catch(e) {}
+  }
+
+  function renderQuicksGrid() {
+    var grid = document.getElementById('quicks-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    var order = loadQuicksOrder();
+    var items = order || DEFAULT_QUICKS.map(function(t){ return { text: t, custom: false }; });
+    items.forEach(function(entry) {
+      var div = document.createElement('div');
+      div.className = 'quicks-item' + (entry.custom ? ' custom' : '');
+      div.setAttribute('data-quick', entry.text);
+      div.setAttribute('draggable', 'true');
+      div.textContent = entry.text;
+      if (entry.custom) {
+        var del = document.createElement('button');
+        del.className = 'quicks-del';
+        del.setAttribute('type', 'button');
+        del.textContent = '\u00D7';
+        div.appendChild(del);
+      }
+      grid.appendChild(div);
+    });
+  }
+
   function closeQuicksBox() {
     quicksOpen = false;
     if (quicksBtn) quicksBtn.classList.remove('active');
     if (quicksBox) quicksBox.classList.remove('open');
+    var inputRow = document.getElementById('quicks-input-row');
+    if (inputRow) inputRow.classList.remove('open');
   }
 
   function sendQuickText(text) {
@@ -2036,6 +2102,78 @@
     saveMessagesToGitHub(msg, false).catch(function(e){
       console.error('[Chat] Quick send failed:', e);
     });
+  }
+
+  function addQuickText() {
+    var input = document.getElementById('quicks-input');
+    if (!input) return;
+    var text = input.value.trim();
+    if (!text) return;
+    var grid = document.getElementById('quicks-grid');
+    if (!grid) return;
+    var div = document.createElement('div');
+    div.className = 'quicks-item custom';
+    div.setAttribute('data-quick', text);
+    div.setAttribute('draggable', 'true');
+    div.textContent = text;
+    var del = document.createElement('button');
+    del.className = 'quicks-del';
+    del.setAttribute('type', 'button');
+    del.textContent = '\u00D7';
+    div.appendChild(del);
+    grid.appendChild(div);
+    input.value = '';
+    saveQuicksOrder();
+  }
+
+  var quicksDragSrc = null;
+
+  function handleQuicksDragStart(e) {
+    var item = e.target.closest('.quicks-item');
+    if (!item) return;
+    quicksDragSrc = item;
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+  }
+
+  function handleQuicksDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    var item = e.target.closest('.quicks-item');
+    if (item && item !== quicksDragSrc) {
+      item.classList.add('drag-over');
+    }
+  }
+
+  function handleQuicksDragLeave(e) {
+    var item = e.target.closest('.quicks-item');
+    if (item) item.classList.remove('drag-over');
+  }
+
+  function handleQuicksDrop(e) {
+    e.preventDefault();
+    var target = e.target.closest('.quicks-item');
+    if (!target || !quicksDragSrc || target === quicksDragSrc) return;
+    target.classList.remove('drag-over');
+    var grid = document.getElementById('quicks-grid');
+    if (!grid) return;
+    var allItems = Array.from(grid.querySelectorAll('.quicks-item'));
+    var fromIdx = allItems.indexOf(quicksDragSrc);
+    var toIdx = allItems.indexOf(target);
+    if (fromIdx < toIdx) {
+      grid.insertBefore(quicksDragSrc, target.nextSibling);
+    } else {
+      grid.insertBefore(quicksDragSrc, target);
+    }
+    saveQuicksOrder();
+  }
+
+  function handleQuicksDragEnd(e) {
+    if (quicksDragSrc) quicksDragSrc.classList.remove('dragging');
+    quicksDragSrc = null;
+    var grid = document.getElementById('quicks-grid');
+    if (grid) grid.querySelectorAll('.quicks-item.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
   }
 
   // ===== ATTACH LISTENERS =====
@@ -2111,6 +2249,7 @@
           if (stickerPickerOpen) closeStickerPicker();
           quicksOpen = true;
           quicksBtn.classList.add('active');
+          renderQuicksGrid();
           quicksBox.classList.add('open');
         }
       });
@@ -2124,18 +2263,71 @@
       });
     }
 
-    // Quicks box: prevent clicks inside from closing it, but send on item click
+    // Quicks box: prevent clicks inside from closing it
     if (quicksBox) {
       quicksBox.addEventListener('click', function(e){
         e.stopPropagation();
+        // Delete custom item
+        var delBtn = e.target.closest('.quicks-del');
+        if (delBtn) {
+          var item = delBtn.closest('.quicks-item');
+          if (item) { item.parentNode.removeChild(item); saveQuicksOrder(); }
+          return;
+        }
+        // Send on item click
         var item = e.target.closest('.quicks-item');
         if (item) {
           sendQuickText(item.getAttribute('data-quick'));
-          // Flash animation
           item.classList.add('flash');
           setTimeout(function(){ item.classList.remove('flash'); }, 300);
         }
       });
+
+      // Drag & drop events on grid
+      var quicksGrid = document.getElementById('quicks-grid');
+      if (quicksGrid) {
+        quicksGrid.addEventListener('dragstart', handleQuicksDragStart);
+        quicksGrid.addEventListener('dragover', handleQuicksDragOver);
+        quicksGrid.addEventListener('dragleave', handleQuicksDragLeave);
+        quicksGrid.addEventListener('drop', handleQuicksDrop);
+        quicksGrid.addEventListener('dragend', handleQuicksDragEnd);
+      }
+
+      // Add button
+      var quicksAddBtn = document.getElementById('quicks-add-btn');
+      if (quicksAddBtn) {
+        quicksAddBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          var inputRow = document.getElementById('quicks-input-row');
+          var input = document.getElementById('quicks-input');
+          if (inputRow) {
+            if (inputRow.classList.contains('open')) {
+              inputRow.classList.remove('open');
+            } else {
+              inputRow.classList.add('open');
+              if (input) input.focus();
+            }
+          }
+        });
+      }
+
+      // Confirm add text
+      var quicksInputConfirm = document.getElementById('quicks-input-confirm');
+      if (quicksInputConfirm) {
+        quicksInputConfirm.addEventListener('click', function(e){
+          e.stopPropagation();
+          addQuickText();
+        });
+      }
+
+      // Enter key in input
+      var quicksInput = document.getElementById('quicks-input');
+      if (quicksInput) {
+        quicksInput.addEventListener('keydown', function(e){
+          e.stopPropagation();
+          if (e.key === 'Enter') { e.preventDefault(); addQuickText(); }
+        });
+      }
     }
 
     // Close quicks when tapping outside
