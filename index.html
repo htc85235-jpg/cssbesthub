@@ -6,9 +6,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL: scoped 3D styles (ID-scoped + !important to win Tailwind wars) ===== */
+/* ===== SECRET CALL v4: dark 3D theme, ID-scoped + !important ===== */
 
-/* Container overlays */
+#sc-pw-overlay, #sc-call-overlay, #sc-floating-pill {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
+}
+
+/* Overlay containers */
 #sc-pw-overlay, #sc-call-overlay {
   position: fixed !important;
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
@@ -17,28 +21,23 @@
   display: none !important;
   align-items: center !important;
   justify-content: center !important;
-  margin: 0 !important; padding: 20px !important;
-  background: radial-gradient(ellipse at center, rgba(20,10,40,0.88), rgba(5,5,15,0.96)) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
+  margin: 0 !important; padding: 16px !important;
+  background: radial-gradient(ellipse at center, rgba(8,6,20,0.96), rgba(0,0,0,0.99)) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   color: #e8e8f5 !important;
   box-sizing: border-box !important;
   overflow: auto !important;
 }
-#sc-pw-overlay.sc-open, #sc-call-overlay.sc-open {
-  display: flex !important;
-}
+#sc-pw-overlay.sc-open, #sc-call-overlay.sc-open { display: flex !important; }
 
-/* Universal reset INSIDE our overlays (scoped — does NOT affect site) */
-#sc-pw-overlay *, #sc-call-overlay * {
+/* Universal reset inside overlays */
+#sc-pw-overlay *, #sc-call-overlay *, #sc-floating-pill * {
   box-sizing: border-box !important;
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0 !important; padding: 0 !important;
   border: 0 !important;
-  font-size: 14px !important;
-  font-weight: 400 !important;
+  font-size: 13px !important; font-weight: 400 !important;
   vertical-align: baseline !important;
   background: transparent !important;
   color: inherit !important;
@@ -48,371 +47,338 @@
   list-style: none !important;
   letter-spacing: normal !important;
   text-transform: none !important;
-  float: none !important;
-  clear: none !important;
-  position: static !important;
-  inset: auto !important;
-  width: auto !important;
-  height: auto !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  max-width: none !important;
-  max-height: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  cursor: auto !important;
-  transition: none !important;
-  transform: none !important;
-  filter: none !important;
-  box-shadow: none !important;
-  outline: 0 !important;
-  border-radius: 0 !important;
-  overflow: visible !important;
-  white-space: normal !important;
-  word-break: normal !important;
-  z-index: auto !important;
+  float: none !important; clear: none !important;
+  position: static !important; inset: auto !important;
+  width: auto !important; height: auto !important;
+  min-width: 0 !important; min-height: 0 !important;
+  max-width: none !important; max-height: none !important;
+  opacity: 1 !important; visibility: visible !important;
+  pointer-events: auto !important; cursor: auto !important;
+  transition: none !important; transform: none !important;
+  filter: none !important; box-shadow: none !important;
+  outline: 0 !important; border-radius: 0 !important;
+  overflow: visible !important; white-space: normal !important;
+  word-break: normal !important; z-index: auto !important;
 }
 
-/* Stage (perspective container) */
+/* Stage */
 #sc-pw-overlay .sc3d-stage, #sc-call-overlay .sc3d-stage {
-  perspective: 1400px !important;
+  perspective: 1200px !important;
   perspective-origin: 50% 30% !important;
-  width: 100% !important;
-  height: 100% !important;
+  width: 100% !important; height: 100% !important;
   display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 !important;
+  align-items: center !important; justify-content: center !important;
 }
 
-/* ===== 3D CARD (password) ===== */
+/* ===== 3D CARDS (smaller, darker) ===== */
 #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
   position: relative !important;
   width: 100% !important;
-  max-width: 420px !important;
-  padding: 40px 32px 32px !important;
-  border-radius: 24px !important;
+  max-width: 320px !important;
+  padding: 28px 22px 22px !important;
+  border-radius: 20px !important;
   transform-style: preserve-3d !important;
-  border: 1px solid rgba(180,140,255,0.25) !important;
-  background: linear-gradient(135deg, rgba(40,20,80,0.95), rgba(15,10,40,0.95)) !important;
+  border: 1px solid rgba(139,92,246,0.35) !important;
+  background:
+    linear-gradient(135deg, rgba(18,12,35,0.98), rgba(6,4,18,0.98)) !important;
   box-shadow:
-    0 30px 60px -15px rgba(0,0,0,0.7),
-    0 0 60px rgba(120,80,255,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    0 25px 50px -12px rgba(0,0,0,0.85),
+    0 0 50px rgba(139,92,246,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.08) !important;
   animation: sc3d-float 6s ease-in-out infinite !important;
 }
-#sc-pw-overlay .sc3d-card { transform: rotateX(8deg) !important; max-width: 380px !important; }
+#sc-pw-overlay .sc3d-card { transform: rotateX(8deg) !important; max-width: 300px !important; }
 #sc-call-overlay .sc3d-card-call {
   transform: rotateX(6deg) !important;
-  max-width: 440px !important;
-  border-color: rgba(140,180,255,0.3) !important;
-  background: linear-gradient(135deg, rgba(30,15,60,0.95), rgba(10,8,30,0.95)) !important;
+  max-width: 340px !important;
+  border-color: rgba(100,160,255,0.3) !important;
   box-shadow:
-    0 35px 70px -15px rgba(0,0,0,0.8),
-    0 0 80px rgba(100,160,255,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.12) !important;
+    0 30px 60px -12px rgba(0,0,0,0.9),
+    0 0 60px rgba(100,160,255,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.1) !important;
   animation: sc3d-float-call 7s ease-in-out infinite !important;
 }
 @keyframes sc3d-float {
   0%, 100% { transform: rotateX(8deg) translateY(0); }
-  50% { transform: rotateX(8deg) translateY(-6px); }
+  50% { transform: rotateX(8deg) translateY(-5px); }
 }
 @keyframes sc3d-float-call {
   0%, 100% { transform: rotateX(6deg) translateY(0); }
-  50% { transform: rotateX(6deg) translateY(-8px); }
+  50% { transform: rotateX(6deg) translateY(-6px); }
 }
 
 /* Title */
 #sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title {
   display: block !important;
   text-align: center !important;
-  font-size: 22px !important;
-  font-weight: 700 !important;
+  font-size: 18px !important; font-weight: 700 !important;
   letter-spacing: 0.5px !important;
-  margin: 0 0 6px !important;
-  background: linear-gradient(90deg, #a78bfa, #f0abfc, #60a5fa) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
-  text-shadow: 0 0 30px rgba(167,139,250,0.4) !important;
+  margin: 0 0 4px !important;
+  background: linear-gradient(90deg, #a78bfa, #60a5fa, #f0abfc) !important;
+  -webkit-background-clip: text !important; background-clip: text !important;
+  -webkit-text-fill-color: transparent !important; color: transparent !important;
+  text-shadow: 0 0 24px rgba(139,92,246,0.5) !important;
 }
 #sc-pw-overlay .sc3d-subtitle, #sc-call-overlay .sc3d-subtitle {
-  display: block !important;
-  text-align: center !important;
-  font-size: 12px !important;
-  color: rgba(220,220,240,0.6) !important;
-  margin: 0 0 24px !important;
-  letter-spacing: 0.3px !important;
-  font-weight: 400 !important;
+  display: block !important; text-align: center !important;
+  font-size: 11px !important; color: rgba(180,180,210,0.55) !important;
+  margin: 0 0 18px !important; letter-spacing: 0.3px !important;
 }
 
 /* Password input */
-#sc-pw-overlay .sc3d-input-wrap {
-  display: block !important;
-  position: relative !important;
-  margin-bottom: 20px !important;
-}
+#sc-pw-overlay .sc3d-input-wrap { display: block !important; position: relative !important; margin-bottom: 14px !important; }
 #sc-pw-overlay .sc3d-input {
-  display: block !important;
-  width: 100% !important;
-  padding: 14px 18px !important;
-  font-size: 15px !important;
+  display: block !important; width: 100% !important;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
   font-family: 'JetBrains Mono', monospace !important;
   color: #e8e8f5 !important;
-  background: rgba(10,8,25,0.6) !important;
-  border: 1px solid rgba(160,130,255,0.3) !important;
-  border-radius: 12px !important;
+  background: rgba(5,4,15,0.7) !important;
+  border: 1px solid rgba(139,92,246,0.3) !important;
+  border-radius: 10px !important;
   outline: none !important;
   letter-spacing: 1px !important;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
 }
 #sc-pw-overlay .sc3d-input:focus {
-  border-color: rgba(180,140,255,0.7) !important;
-  box-shadow: 0 0 0 3px rgba(120,80,255,0.15), 0 0 20px rgba(120,80,255,0.2) !important;
-  background: rgba(15,12,30,0.8) !important;
+  border-color: rgba(167,139,250,0.7) !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.15), 0 0 16px rgba(139,92,246,0.25) !important;
+  background: rgba(10,8,25,0.85) !important;
 }
-#sc-pw-overlay .sc3d-input::placeholder { color: rgba(180,180,200,0.35) !important; letter-spacing: 0.5px !important; }
+#sc-pw-overlay .sc3d-input::placeholder { color: rgba(160,160,190,0.3) !important; letter-spacing: 0.5px !important; }
 
-/* Error text */
-#sc-pw-overlay .sc3d-error, #sc-call-overlay .sc3d-status {
-  display: block !important;
-  text-align: center !important;
-  font-size: 12px !important;
-  color: #fca5a5 !important;
-  margin: 0 0 14px !important;
-  min-height: 16px !important;
-  font-weight: 500 !important;
+/* Error / status */
+#sc-pw-overlay .sc3d-error {
+  display: block !important; text-align: center !important;
+  font-size: 11px !important; color: #fca5a5 !important;
+  margin: 0 0 10px !important; min-height: 14px !important; font-weight: 500 !important;
 }
-#sc-call-overlay .sc3d-status { color: rgba(220,220,240,0.7) !important; margin: 16px 0 4px !important; min-height: 20px !important; font-size: 13px !important; }
+#sc-call-overlay .sc3d-status {
+  display: block !important; text-align: center !important;
+  font-size: 12px !important; color: rgba(200,200,220,0.7) !important;
+  margin: 12px 0 4px !important; min-height: 18px !important; font-weight: 500 !important;
+}
 #sc-call-overlay .sc3d-status.sc-busy { color: #fcd34d !important; }
 #sc-call-overlay .sc3d-status.sc-ok { color: #6ee7b7 !important; }
 #sc-call-overlay .sc3d-status.sc-err { color: #fca5a5 !important; }
 
-/* Shake animation */
+/* Shake */
 #sc-pw-overlay .sc3d-shake { animation: sc3d-shake 0.4s !important; }
 @keyframes sc3d-shake {
-  0%, 100% { transform: translateX(0) rotateX(8deg); }
-  20% { transform: translateX(-10px) rotateX(8deg); }
-  40% { transform: translateX(10px) rotateX(8deg); }
-  60% { transform: translateX(-8px) rotateX(8deg); }
-  80% { transform: translateX(8px) rotateX(8deg); }
+  0%,100% { transform: translateX(0) rotateX(8deg); }
+  20% { transform: translateX(-8px) rotateX(8deg); }
+  40% { transform: translateX(8px) rotateX(8deg); }
+  60% { transform: translateX(-6px) rotateX(8deg); }
+  80% { transform: translateX(6px) rotateX(8deg); }
 }
 
-/* ===== 3D BUTTONS ===== */
+/* ===== 3D BUTTONS (all buttons 3D) ===== */
 #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn {
   display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
+  align-items: center !important; justify-content: center !important;
+  gap: 6px !important;
   width: 100% !important;
-  padding: 14px 20px !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
+  padding: 12px 16px !important;
+  font-size: 13px !important; font-weight: 600 !important;
   font-family: 'Space Grotesk', sans-serif !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.4px !important;
   color: #fff !important;
   border: none !important;
-  border-radius: 14px !important;
+  border-radius: 11px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease !important;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease !important;
   user-select: none !important;
   overflow: hidden !important;
   position: relative !important;
   text-align: center !important;
   background: #6d28d9 !important;
-  box-shadow: 0 6px 0 #4c1d95, 0 8px 18px rgba(139,92,246,0.45) !important;
+  box-shadow: 0 5px 0 #4c1d95, 0 6px 14px rgba(139,92,246,0.4) !important;
 }
 #sc-pw-overlay .sc3d-btn::before, #sc-call-overlay .sc3d-btn::before {
   content: "" !important;
   position: absolute !important;
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-  background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0) 50%) !important;
-  border-radius: 14px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0) 50%) !important;
+  border-radius: 11px !important;
   pointer-events: none !important;
   margin: 0 !important; padding: 0 !important; border: 0 !important;
   width: auto !important; height: auto !important;
 }
-#sc-pw-overlay .sc3d-btn:disabled, #sc-call-overlay .sc3d-btn:disabled {
-  opacity: 0.5 !important; cursor: not-allowed !important;
-}
+#sc-pw-overlay .sc3d-btn:disabled, #sc-call-overlay .sc3d-btn:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
 
-/* Purple 3D button */
+/* Purple */
 #sc-pw-overlay .sc3d-btn-purple, #sc-call-overlay .sc3d-btn-purple {
   background: linear-gradient(180deg, #8b5cf6, #6d28d9) !important;
-  box-shadow: 0 6px 0 #4c1d95, 0 8px 18px rgba(139,92,246,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+  box-shadow: 0 5px 0 #4c1d95, 0 6px 14px rgba(139,92,246,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
   color: #fff !important;
 }
 #sc-pw-overlay .sc3d-btn-purple:hover:not(:disabled), #sc-call-overlay .sc3d-btn-purple:hover:not(:disabled) {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 0 #4c1d95, 0 12px 24px rgba(139,92,246,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
-  filter: brightness(1.08) !important;
+  box-shadow: 0 7px 0 #4c1d95, 0 10px 20px rgba(139,92,246,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
+  filter: brightness(1.1) !important;
 }
 #sc-pw-overlay .sc3d-btn-purple:active:not(:disabled), #sc-call-overlay .sc3d-btn-purple:active:not(:disabled) {
-  transform: translateY(4px) !important;
-  box-shadow: 0 2px 0 #4c1d95, 0 4px 8px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  transform: translateY(3px) !important;
+  box-shadow: 0 2px 0 #4c1d95, 0 3px 6px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
 }
 
-/* Emerald 3D button */
+/* Emerald */
 #sc-call-overlay .sc3d-btn-emerald {
   background: linear-gradient(180deg, #34d399, #059669) !important;
-  box-shadow: 0 6px 0 #065f46, 0 8px 18px rgba(52,211,153,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+  box-shadow: 0 5px 0 #065f46, 0 6px 14px rgba(52,211,153,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
   color: #fff !important;
 }
 #sc-call-overlay .sc3d-btn-emerald:hover:not(:disabled) {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 0 #065f46, 0 12px 24px rgba(52,211,153,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
-  filter: brightness(1.08) !important;
+  box-shadow: 0 7px 0 #065f46, 0 10px 20px rgba(52,211,153,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
+  filter: brightness(1.1) !important;
 }
 #sc-call-overlay .sc3d-btn-emerald:active:not(:disabled) {
-  transform: translateY(4px) !important;
-  box-shadow: 0 2px 0 #065f46, 0 4px 8px rgba(52,211,153,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  transform: translateY(3px) !important;
+  box-shadow: 0 2px 0 #065f46, 0 3px 6px rgba(52,211,153,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
 }
 
-/* Red 3D button */
+/* Red */
 #sc-call-overlay .sc3d-btn-red {
   background: linear-gradient(180deg, #f87171, #dc2626) !important;
-  box-shadow: 0 6px 0 #991b1b, 0 8px 18px rgba(248,113,113,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+  box-shadow: 0 5px 0 #991b1b, 0 6px 14px rgba(248,113,113,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
   color: #fff !important;
 }
 #sc-call-overlay .sc3d-btn-red:hover:not(:disabled) {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 0 #991b1b, 0 12px 24px rgba(248,113,113,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
-  filter: brightness(1.08) !important;
+  box-shadow: 0 7px 0 #991b1b, 0 10px 20px rgba(248,113,113,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
+  filter: brightness(1.1) !important;
 }
 #sc-call-overlay .sc3d-btn-red:active:not(:disabled) {
-  transform: translateY(4px) !important;
-  box-shadow: 0 2px 0 #991b1b, 0 4px 8px rgba(248,113,113,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  transform: translateY(3px) !important;
+  box-shadow: 0 2px 0 #991b1b, 0 3px 6px rgba(248,113,113,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
 }
 
-/* Ghost button */
+/* Ghost */
 #sc-call-overlay .sc3d-btn-ghost {
-  background: rgba(255,255,255,0.06) !important;
-  color: rgba(230,230,245,0.85) !important;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgba(220,220,240,0.85) !important;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
   border: 1px solid rgba(255,255,255,0.1) !important;
 }
 #sc-call-overlay .sc3d-btn-ghost:hover:not(:disabled) {
   transform: translateY(-2px) !important;
   background: rgba(255,255,255,0.1) !important;
-  box-shadow: 0 6px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12) !important;
 }
 #sc-call-overlay .sc3d-btn-ghost:active:not(:disabled) {
   transform: translateY(2px) !important;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
 }
 
-/* Close button (X) */
+/* Close X (3D circular) */
 #sc-pw-overlay .sc3d-close, #sc-call-overlay .sc3d-close {
   position: absolute !important;
-  top: 14px !important; right: 14px !important;
-  width: 32px !important; height: 32px !important;
+  top: 10px !important; right: 10px !important;
+  width: 28px !important; height: 28px !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 50% !important;
   border: 1px solid rgba(255,255,255,0.12) !important;
-  background: rgba(255,255,255,0.06) !important;
-  color: rgba(230,230,245,0.7) !important;
+  background: rgba(40,30,60,0.6) !important;
+  color: rgba(220,220,240,0.7) !important;
   cursor: pointer !important;
-  font-size: 14px !important;
+  font-size: 12px !important;
   transition: all 0.15s !important;
   z-index: 5 !important;
   padding: 0 !important;
-  box-shadow: none !important;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
 }
 #sc-pw-overlay .sc3d-close:hover, #sc-call-overlay .sc3d-close:hover {
-  background: rgba(248,113,113,0.2) !important;
+  background: rgba(248,113,113,0.25) !important;
   color: #fca5a5 !important;
   border-color: rgba(248,113,113,0.4) !important;
-  transform: rotate(90deg) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+}
+#sc-pw-overlay .sc3d-close:active, #sc-call-overlay .sc3d-close:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
 }
 
-/* Icon badge */
+/* Icon badge (smaller) */
 #sc-pw-overlay .sc3d-icon-badge, #sc-call-overlay .sc3d-icon-badge {
-  width: 64px !important; height: 64px !important;
-  margin: 0 auto 16px !important;
+  width: 52px !important; height: 52px !important;
+  margin: 0 auto 12px !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
-  border-radius: 20px !important;
-  background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(236,72,153,0.25)) !important;
-  border: 1px solid rgba(180,140,255,0.35) !important;
-  box-shadow: 0 8px 20px rgba(139,92,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15) !important;
-  font-size: 28px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.3)) !important;
+  border: 1px solid rgba(167,139,250,0.4) !important;
+  box-shadow: 0 6px 16px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+  font-size: 22px !important;
   color: #c4b5fd !important;
-  transform: translateZ(30px) !important;
+  transform: translateZ(20px) !important;
 }
 #sc-call-overlay .sc3d-icon-badge.sc-call-active {
-  background: linear-gradient(135deg, rgba(52,211,153,0.25), rgba(16,185,129,0.25)) !important;
-  border-color: rgba(110,231,183,0.4) !important;
+  background: linear-gradient(135deg, rgba(52,211,153,0.3), rgba(16,185,129,0.3)) !important;
+  border-color: rgba(110,231,183,0.5) !important;
   color: #6ee7b7 !important;
-  box-shadow: 0 8px 20px rgba(52,211,153,0.3), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+  box-shadow: 0 6px 16px rgba(52,211,153,0.35), inset 0 1px 0 rgba(255,255,255,0.15) !important;
   animation: sc3d-pulse 2s ease-in-out infinite !important;
 }
 @keyframes sc3d-pulse {
-  0%, 100% { box-shadow: 0 8px 20px rgba(52,211,153,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
-  50% { box-shadow: 0 8px 30px rgba(52,211,153,0.6), inset 0 1px 0 rgba(255,255,255,0.2); }
+  0%,100% { box-shadow: 0 6px 16px rgba(52,211,153,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  50% { box-shadow: 0 6px 26px rgba(52,211,153,0.65), inset 0 1px 0 rgba(255,255,255,0.2); }
 }
 
-/* FontAwesome icon sizing inside our overlay */
+/* FontAwesome icons */
 #sc-pw-overlay i.fa, #sc-pw-overlay i.fas, #sc-pw-overlay i.far, #sc-pw-overlay i.fab,
-#sc-call-overlay i.fa, #sc-call-overlay i.fas, #sc-call-overlay i.far, #sc-call-overlay i.fab {
+#sc-call-overlay i.fa, #sc-call-overlay i.fas, #sc-call-overlay i.far, #sc-call-overlay i.fab,
+#sc-floating-pill i.fa, #sc-floating-pill i.fas {
   display: inline-block !important;
-  font-style: normal !important;
-  font-variant: normal !important;
+  font-style: normal !important; font-variant: normal !important;
   text-rendering: auto !important;
   -webkit-font-smoothing: antialiased !important;
   line-height: 1 !important;
   font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome", sans-serif !important;
   font-weight: 900 !important;
   background: transparent !important;
-  border: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  width: auto !important;
-  height: auto !important;
+  border: 0 !important; padding: 0 !important; margin: 0 !important;
+  width: auto !important; height: auto !important;
 }
 
 /* Button row */
 #sc-call-overlay .sc3d-btn-row {
-  display: flex !important;
-  gap: 12px !important;
-  margin-top: 16px !important;
+  display: flex !important; gap: 10px !important; margin-top: 12px !important;
 }
 #sc-call-overlay .sc3d-btn-row .sc3d-btn { flex: 1 !important; }
 
 /* Timer */
 #sc-call-overlay .sc3d-timer {
-  display: block !important;
-  text-align: center !important;
+  display: block !important; text-align: center !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 28px !important;
-  font-weight: 700 !important;
+  font-size: 24px !important; font-weight: 700 !important;
   color: #e8e8f5 !important;
   letter-spacing: 2px !important;
-  margin: 8px 0 4px !important;
-  text-shadow: 0 0 20px rgba(110,231,183,0.4) !important;
+  margin: 6px 0 2px !important;
+  text-shadow: 0 0 18px rgba(110,231,183,0.45) !important;
 }
 
-/* Avatar */
+/* Avatar (smaller) */
 #sc-call-overlay .sc3d-avatar {
-  width: 80px !important; height: 80px !important;
-  margin: 8px auto 12px !important;
+  width: 64px !important; height: 64px !important;
+  margin: 6px auto 10px !important;
   border-radius: 50% !important;
   background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
-  font-size: 32px !important;
+  font-size: 26px !important;
   color: #fff !important;
-  box-shadow: 0 0 0 4px rgba(139,92,246,0.2), 0 0 30px rgba(139,92,246,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 0 24px rgba(139,92,246,0.4) !important;
   position: relative !important;
 }
 #sc-call-overlay .sc3d-avatar.sc-live::before,
 #sc-call-overlay .sc3d-avatar.sc-live::after {
   content: "" !important;
   position: absolute !important;
-  top: -8px !important; left: -8px !important; right: -8px !important; bottom: -8px !important;
+  top: -6px !important; left: -6px !important; right: -6px !important; bottom: -6px !important;
   border-radius: 50% !important;
   border: 2px solid rgba(110,231,183,0.5) !important;
   animation: sc3d-ring 2s ease-out infinite !important;
@@ -426,65 +392,58 @@
   100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* Code section at bottom */
+/* Code section at bottom (smaller) */
 #sc-call-overlay .sc3d-code-section {
   display: block !important;
-  margin-top: 22px !important;
-  padding: 14px 16px 12px !important;
-  border-radius: 14px !important;
-  background: linear-gradient(135deg, rgba(20,15,40,0.7), rgba(15,10,30,0.7)) !important;
-  border: 1px solid rgba(140,180,255,0.2) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 0 20px rgba(100,160,255,0.08) !important;
+  margin-top: 16px !important;
+  padding: 10px 12px 8px !important;
+  border-radius: 11px !important;
+  background: linear-gradient(135deg, rgba(10,8,22,0.8), rgba(5,4,15,0.8)) !important;
+  border: 1px solid rgba(139,92,246,0.25) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 0 16px rgba(139,92,246,0.1) !important;
 }
 #sc-call-overlay .sc3d-code-label {
   display: block !important;
-  font-size: 10px !important;
-  font-weight: 600 !important;
+  font-size: 9px !important; font-weight: 600 !important;
   letter-spacing: 1.5px !important;
-  color: rgba(180,200,255,0.5) !important;
+  color: rgba(167,139,250,0.55) !important;
   text-transform: uppercase !important;
-  margin-bottom: 6px !important;
-  text-align: center !important;
+  margin-bottom: 4px !important; text-align: center !important;
 }
 #sc-call-overlay .sc3d-code-value {
   display: block !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 26px !important;
-  font-weight: 700 !important;
-  letter-spacing: 6px !important;
-  text-align: center !important;
+  font-size: 22px !important; font-weight: 700 !important;
+  letter-spacing: 5px !important; text-align: center !important;
   color: #a5b4fc !important;
-  text-shadow: 0 0 12px rgba(165,180,252,0.6), 0 0 24px rgba(165,180,252,0.3) !important;
+  text-shadow: 0 0 10px rgba(165,180,252,0.7), 0 0 20px rgba(165,180,252,0.4) !important;
   animation: sc3d-code-glow 3s ease-in-out infinite !important;
   user-select: all !important;
 }
 @keyframes sc3d-code-glow {
-  0%, 100% { text-shadow: 0 0 12px rgba(165,180,252,0.6), 0 0 24px rgba(165,180,252,0.3); }
-  50% { text-shadow: 0 0 18px rgba(165,180,252,0.9), 0 0 36px rgba(165,180,252,0.5); }
+  0%,100% { text-shadow: 0 0 10px rgba(165,180,252,0.7), 0 0 20px rgba(165,180,252,0.4); }
+  50% { text-shadow: 0 0 16px rgba(165,180,252,0.95), 0 0 30px rgba(165,180,252,0.55); }
 }
 #sc-call-overlay .sc3d-code-hint {
   display: block !important;
-  font-size: 10px !important;
-  color: rgba(180,180,200,0.4) !important;
+  font-size: 9px !important;
+  color: rgba(160,160,190,0.4) !important;
   text-align: center !important;
-  margin-top: 6px !important;
-  letter-spacing: 0.3px !important;
+  margin-top: 4px !important; letter-spacing: 0.3px !important;
 }
 
-/* Step toggling */
+/* Steps */
 #sc-call-overlay .sc3d-step { display: none !important; }
 #sc-call-overlay .sc3d-step.sc-active { display: block !important; }
 
-/* Hint text */
+/* Hint */
 #sc-pw-overlay .sc3d-hint, #sc-call-overlay .sc3d-hint {
-  display: block !important;
-  text-align: center !important;
-  font-size: 11px !important;
-  color: rgba(180,180,200,0.45) !important;
-  margin-top: 14px !important;
-  line-height: 1.5 !important;
+  display: block !important; text-align: center !important;
+  font-size: 10px !important;
+  color: rgba(160,160,190,0.45) !important;
+  margin-top: 10px !important; line-height: 1.5 !important;
 }
-#sc-call-overlay .sc3d-hint strong { color: rgba(220,220,240,0.7) !important; font-weight: 700 !important; }
+#sc-call-overlay .sc3d-hint strong { color: rgba(200,200,220,0.75) !important; font-weight: 700 !important; }
 
 /* Disclaimer trigger */
 #sc-disclaimer-trigger {
@@ -497,14 +456,69 @@
   text-shadow: 0 0 12px rgba(196,181,253,0.5) !important;
 }
 
+/* ===== FLOATING PILL (call in progress indicator) ===== */
+#sc-floating-pill {
+  position: fixed !important;
+  bottom: 16px !important; right: 16px !important;
+  z-index: 2147483646 !important;
+  display: none !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 10px 8px 14px !important;
+  border-radius: 40px !important;
+  background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95)) !important;
+  box-shadow: 0 8px 20px rgba(16,185,129,0.4), 0 0 30px rgba(16,185,129,0.3), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  color: #fff !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: 12px !important; font-weight: 600 !important;
+  border: 1px solid rgba(110,231,183,0.5) !important;
+}
+#sc-floating-pill.sc-show { display: flex !important; }
+#sc-floating-pill .sc-pill-icon {
+  font-size: 14px !important; color: #fff !important;
+  animation: sc-pill-pulse 1.5s ease-in-out infinite !important;
+}
+@keyframes sc-pill-pulse {
+  0%,100% { opacity: 1; } 50% { opacity: 0.5; }
+}
+#sc-floating-pill .sc-pill-timer {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 12px !important; font-weight: 700 !important;
+  color: #fff !important; min-width: 38px !important;
+}
+#sc-floating-pill .sc-pill-btn {
+  display: inline-flex !important;
+  align-items: center !important; justify-content: center !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important; font-weight: 700 !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  border-radius: 20px !important;
+  cursor: pointer !important;
+  border: none !important;
+  transition: transform 0.1s, box-shadow 0.1s !important;
+}
+#sc-floating-pill .sc-pill-btn-open {
+  background: linear-gradient(180deg, #fff, #e5e7eb) !important;
+  color: #059669 !important;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+#sc-floating-pill .sc-pill-btn-open:hover { transform: translateY(-1px) !important; }
+#sc-floating-pill .sc-pill-btn-open:active { transform: translateY(2px) !important; box-shadow: 0 1px 0 rgba(0,0,0,0.2) !important; }
+#sc-floating-pill .sc-pill-btn-end {
+  background: linear-gradient(180deg, #f87171, #dc2626) !important;
+  color: #fff !important;
+  box-shadow: 0 3px 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25) !important;
+}
+#sc-floating-pill .sc-pill-btn-end:hover { transform: translateY(-1px) !important; }
+#sc-floating-pill .sc-pill-btn-end:active { transform: translateY(2px) !important; box-shadow: 0 1px 0 #991b1b !important; }
+
 /* Mobile */
 @media (max-width: 480px) {
-  #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
-    padding: 28px 20px 22px !important;
-  }
-  #sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title { font-size: 19px !important; }
-  #sc-call-overlay .sc3d-code-value { font-size: 22px !important; letter-spacing: 4px !important; }
-  #sc-call-overlay .sc3d-timer { font-size: 24px !important; }
+  #sc-pw-overlay .sc3d-card { max-width: 280px !important; padding: 24px 18px 20px !important; }
+  #sc-call-overlay .sc3d-card-call { max-width: 300px !important; padding: 24px 18px 20px !important; }
+  #sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title { font-size: 16px !important; }
+  #sc-call-overlay .sc3d-code-value { font-size: 18px !important; letter-spacing: 4px !important; }
+  #sc-call-overlay .sc3d-timer { font-size: 20px !important; }
 }
 </style>
 <!-- ===== END SECRET CALL HEAD ===== -->
@@ -3130,31 +3144,15 @@
   function deriveCode(password) {
     var s = 'cssbesthub-call-' + password;
     var seed = 2166136261 >>> 0;
-    for (var i = 0; i < s.length; i++) {
-      seed ^= s.charCodeAt(i);
-      seed = Math.imul(seed, 16777619) >>> 0;
-    }
+    for (var i = 0; i < s.length; i++) { seed ^= s.charCodeAt(i); seed = Math.imul(seed, 16777619) >>> 0; }
     var h2 = 2166136261 >>> 0;
-    for (var j = 0; j < s.length; j++) {
-      h2 ^= (s.charCodeAt(j) * 31 + j);
-      h2 = Math.imul(h2, 16777619) >>> 0;
-    }
-    var bytes = [
-      (seed >>> 0) & 0xff,
-      (seed >>> 8) & 0xff,
-      (seed >>> 16) & 0xff,
-      (seed >>> 24) & 0xff,
-      (h2 >>> 0) & 0xff,
-      (h2 >>> 8) & 0xff
-    ];
+    for (var j = 0; j < s.length; j++) { h2 ^= (s.charCodeAt(j) * 31 + j); h2 = Math.imul(h2, 16777619) >>> 0; }
+    var bytes = [(seed>>>0)&0xff,(seed>>>8)&0xff,(seed>>>16)&0xff,(seed>>>24)&0xff,(h2>>>0)&0xff,(h2>>>8)&0xff];
     var alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
     var code = '';
-    for (var c = 0; c < 6; c++) {
-      code += alphabet[bytes[c] % alphabet.length];
-    }
+    for (var c = 0; c < 6; c++) code += alphabet[bytes[c] % alphabet.length];
     return code;
   }
-
   var CALL_CODE = deriveCode(PASSWORD);
 
   var PW_HTML = '\
@@ -3186,19 +3184,19 @@
         <div class="sc3d-title">Secret Call</div>\
         <div class="sc3d-subtitle">Connect with one other person</div>\
         <div class="sc3d-btn-row">\
-          <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create"><i class="fas fa-plus"></i> Create Call</button>\
-          <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join"><i class="fas fa-phone"></i> Join Call</button>\
+          <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create"><i class="fas fa-plus"></i> Create</button>\
+          <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join"><i class="fas fa-phone"></i> Join</button>\
         </div>\
         <div class="sc3d-status" id="sc-status-choose"></div>\
-        <div class="sc3d-hint">Person A clicks <strong>Create</strong>, Person B clicks <strong>Join</strong>.<br>The code below is the same for both — no need to share it.</div>\
+        <div class="sc3d-hint">Person A clicks <strong>Create</strong>, Person B clicks <strong>Join</strong>.<br>Same code shown below — no need to share.</div>\
       </div>\
 \
       <div class="sc3d-step" id="sc-step-creating">\
         <div class="sc3d-icon-badge"><i class="fas fa-satellite-dish"></i></div>\
         <div class="sc3d-title">Hosting Call</div>\
-        <div class="sc3d-subtitle">Waiting for the other person to join…</div>\
+        <div class="sc3d-subtitle">Waiting for the other person…</div>\
         <div class="sc3d-avatar" id="sc-avatar-creating"><i class="fas fa-user"></i></div>\
-        <div class="sc3d-status sc-busy" id="sc-status-creating">Listening for incoming call…</div>\
+        <div class="sc3d-status sc-busy" id="sc-status-creating">Listening…</div>\
         <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-create"><i class="fas fa-times"></i> Cancel</button>\
       </div>\
 \
@@ -3227,22 +3225,27 @@
       <div class="sc3d-code-section">\
         <div class="sc3d-code-label">Call Code</div>\
         <div class="sc3d-code-value" id="sc-code-value">------</div>\
-        <div class="sc3d-code-hint">Same code is shown to everyone who unlocked this window</div>\
+        <div class="sc3d-code-hint">Same code shown to everyone who unlocked</div>\
       </div>\
     </div>\
   </div>\
 </div>';
 
-  var peer = null;
-  var localStream = null;
-  var activeCall = null;
-  var activeConn = null;
-  var timerInterval = null;
-  var callStartTs = 0;
-  var isHost = false;
-  var isMuted = false;
+  var FLOATING_PILL_HTML = '\
+<div id="sc-floating-pill">\
+  <i class="fas fa-phone sc-pill-icon"></i>\
+  <span class="sc-pill-timer" id="sc-pill-timer">00:00</span>\
+  <button class="sc-pill-btn sc-pill-btn-open" id="sc-pill-open"><i class="fas fa-expand"></i> Open</button>\
+  <button class="sc-pill-btn sc-pill-btn-end" id="sc-pill-end"><i class="fas fa-phone-slash"></i> End</button>\
+</div>';
+
+  // State
+  var peer = null, localStream = null, activeCall = null, activeConn = null;
+  var timerInterval = null, callStartTs = 0;
+  var isHost = false, isMuted = false;
 
   function $(id) { return document.getElementById(id); }
+
   function showStep(name) {
     ['choose','creating','joining','incall'].forEach(function(s){
       var el = $('sc-step-' + s);
@@ -3250,8 +3253,7 @@
     });
   }
   function setStatus(stepId, text, cls) {
-    var el = $(stepId);
-    if (!el) return;
+    var el = $(stepId); if (!el) return;
     el.textContent = text;
     el.className = 'sc3d-status' + (cls ? ' ' + cls : '');
   }
@@ -3272,10 +3274,10 @@
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(function(){
       var s = Math.floor((Date.now() - callStartTs) / 1000);
-      var mm = String(Math.floor(s / 60)).padStart(2,'0');
-      var ss = String(s % 60).padStart(2,'0');
-      var el = $('sc-timer');
-      if (el) el.textContent = mm + ':' + ss;
+      var mm = String(Math.floor(s/60)).padStart(2,'0');
+      var ss = String(s%60).padStart(2,'0');
+      var t1 = $('sc-timer'); if (t1) t1.textContent = mm + ':' + ss;
+      var t2 = $('sc-pill-timer'); if (t2) t2.textContent = mm + ':' + ss;
     }, 1000);
   }
   function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
@@ -3289,46 +3291,77 @@
       localStream.getTracks().forEach(function(t){ try { t.stop(); } catch(e){} });
       localStream = null;
     }
+    var ex = document.getElementById('sc-remote-audio'); if (ex) ex.remove();
     isHost = false; isMuted = false;
+    hideFloatingPill();
   }
 
-  function injectModals() {
-    if (!$('sc-pw-overlay')) {
-      var div1 = document.createElement('div');
-      div1.innerHTML = PW_HTML;
-      while (div1.firstChild) document.body.appendChild(div1.firstChild);
+  function playRemote(rs) {
+    var ex = document.getElementById('sc-remote-audio'); if (ex) ex.remove();
+    var audio = document.createElement('audio');
+    audio.id = 'sc-remote-audio';
+    audio.autoplay = true;
+    audio.setAttribute('playsinline', 'true');
+    audio.setAttribute('webkit-playsinline', 'true');
+    audio.srcObject = rs;
+    // Route to earpiece (communications) instead of speaker on supported browsers
+    if (typeof audio.setSinkId === 'function') {
+      try { audio.setSinkId('communications').catch(function(){}); } catch(e) {}
     }
-    if (!$('sc-call-overlay')) {
-      var div2 = document.createElement('div');
-      div2.innerHTML = CALL_HTML;
-      while (div2.firstChild) document.body.appendChild(div2.firstChild);
-    }
-    var codeEl = $('sc-code-value');
-    if (codeEl && codeEl.textContent !== CALL_CODE) codeEl.textContent = CALL_CODE;
-    bindEvents();
+    document.body.appendChild(audio);
+    audio.play().catch(function(){});
   }
 
-  function bindEvents() {
-    var pairs = [
-      ['sc-pw-close', function(){ closeOverlay('sc-pw-overlay'); resetPwForm(); }],
-      ['sc-pw-submit', handlePwSubmit],
-      ['sc-call-close', function(){ teardown(); closeOverlay('sc-call-overlay'); showStep('choose'); }],
-      ['sc-btn-create', handleCreate],
-      ['sc-btn-join', handleJoin],
-      ['sc-btn-hangup', function(){ teardown(); showStep('choose'); setStatus('sc-status-choose', 'Call ended.', 'sc-ok'); }],
-      ['sc-btn-mute', handleMute],
-      ['sc-btn-cancel-create', function(){ teardown(); showStep('choose'); }],
-      ['sc-btn-cancel-join', function(){ teardown(); showStep('choose'); }]
-    ];
-    pairs.forEach(function(p){
-      var el = $(p[0]);
-      if (el && !el.dataset.scBound) { el.dataset.scBound = '1'; el.addEventListener('click', p[1]); }
-    });
-    var pwInput = $('sc-pw-input');
-    if (pwInput && !pwInput.dataset.scBound) {
-      pwInput.dataset.scBound = '1';
-      pwInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') handlePwSubmit(); });
+  // ===== Floating pill =====
+  function showFloatingPill() {
+    var p = $('sc-floating-pill'); if (p) p.classList.add('sc-show');
+  }
+  function hideFloatingPill() {
+    var p = $('sc-floating-pill'); if (p) p.classList.remove('sc-show');
+  }
+
+  // ===== Window close (keeps call running) =====
+  function closeCallWindow() {
+    closeOverlay('sc-call-overlay');
+    if (activeCall || (peer && isHost)) showFloatingPill();
+  }
+
+  // ===== Reopen call window =====
+  function reopenCallWindow() {
+    hideFloatingPill();
+    openOverlay('sc-call-overlay');
+    if (activeCall) showStep('incall');
+    else if (isHost) showStep('creating');
+    else showStep('joining');
+  }
+
+  // ===== Hangup (ends call) =====
+  function handleHangup() {
+    teardown();
+    closeOverlay('sc-call-overlay');
+    hideFloatingPill();
+    showStep('choose');
+    setStatus('sc-status-choose', 'Call ended.', 'sc-ok');
+  }
+
+  function handleCancel() {
+    teardown();
+    hideFloatingPill();
+    showStep('choose');
+  }
+
+  function handleMute() {
+    if (!localStream) {
+      // Already torn down — just go back to choose
+      showStep('choose');
+      return;
     }
+    isMuted = !isMuted;
+    localStream.getAudioTracks().forEach(function(t){ t.enabled = !isMuted; });
+    var btn = $('sc-btn-mute');
+    if (btn) btn.innerHTML = isMuted
+      ? '<i class="fas fa-microphone-slash"></i> Unmute'
+      : '<i class="fas fa-microphone"></i> Mute';
   }
 
   function resetPwForm() {
@@ -3337,9 +3370,7 @@
   }
 
   function handlePwSubmit() {
-    var inp = $('sc-pw-input');
-    var err = $('sc-pw-error');
-    if (!inp) return;
+    var inp = $('sc-pw-input'); if (!inp) return;
     if (inp.value === PASSWORD) {
       resetPwForm();
       closeOverlay('sc-pw-overlay');
@@ -3347,7 +3378,7 @@
       showStep('choose');
       setStatus('sc-status-choose', '', '');
     } else {
-      if (err) err.textContent = 'Incorrect password. Try again.';
+      var err = $('sc-pw-error'); if (err) err.textContent = 'Incorrect password. Try again.';
       inp.value = '';
       var card = $('sc-pw-card');
       if (card) { card.classList.remove('sc3d-shake'); void card.offsetWidth; card.classList.add('sc3d-shake'); }
@@ -3359,27 +3390,27 @@
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = true;
     showStep('creating');
-    setStatus('sc-status-creating', 'Requesting microphone access…', 'sc-busy');
-    ensureMicrophone(function(err, stream){
-      if (err) { setStatus('sc-status-creating', 'Microphone access denied. Please allow it and try again.', 'sc-err'); return; }
+    setStatus('sc-status-creating', 'Requesting microphone…', 'sc-busy');
+    ensureMicrophone(function(err){
+      if (err) { setStatus('sc-status-creating', 'Microphone access denied.', 'sc-err'); return; }
       setStatus('sc-status-creating', 'Starting host session…', 'sc-busy');
       try { peer = new Peer(CALL_CODE, { debug: 1 }); }
-      catch (e) { setStatus('sc-status-creating', 'Could not start host: ' + (e.message || e), 'sc-err'); return; }
-      peer.on('open', function(id){ setStatus('sc-status-creating', 'Hosting as "' + id + '". Waiting for the other person to join…', 'sc-busy'); });
+      catch (e) { setStatus('sc-status-creating', 'Could not start: ' + (e.message||e), 'sc-err'); return; }
+      peer.on('open', function(id){ setStatus('sc-status-creating', 'Hosting. Waiting for join…', 'sc-busy'); });
       peer.on('call', function(call){
         activeCall = call;
         call.answer(localStream);
         call.on('stream', function(rs){ playRemote(rs); enterInCall(); });
-        call.on('close', function(){ teardown(); showStep('choose'); setStatus('sc-status-choose', 'Other person left the call.', 'sc-ok'); });
-        call.on('error', function(e){ setStatus('sc-status-creating', 'Call error: ' + (e.message || e), 'sc-err'); });
+        call.on('close', function(){ handleHangup(); });
+        call.on('error', function(e){ setStatus('sc-status-creating', 'Error: ' + (e.message||e), 'sc-err'); });
       });
       peer.on('connection', function(conn){ activeConn = conn; });
       peer.on('error', function(err){
         var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
-        if (msg === 'unavailable-id') setStatus('sc-status-creating', 'A host already exists. Try "Join Call" instead.', 'sc-err');
-        else if (msg === 'peer-unavailable') setStatus('sc-status-creating', 'Cannot reach the host. Ask the other person to click "Create Call" first.', 'sc-err');
+        if (msg === 'unavailable-id') setStatus('sc-status-creating', 'A host already exists. Try "Join" instead.', 'sc-err');
+        else if (msg === 'peer-unavailable') setStatus('sc-status-creating', 'Cannot reach the other person.', 'sc-err');
         else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') setStatus('sc-status-creating', 'Network issue. Retrying…', 'sc-err');
-        else if (msg === 'browser-incompatible') setStatus('sc-status-creating', 'This browser does not support WebRTC calls.', 'sc-err');
+        else if (msg === 'browser-incompatible') setStatus('sc-status-creating', 'Browser does not support WebRTC.', 'sc-err');
         else setStatus('sc-status-creating', 'Error: ' + msg, 'sc-err');
       });
     });
@@ -3389,26 +3420,26 @@
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = false;
     showStep('joining');
-    setStatus('sc-status-joining', 'Requesting microphone access…', 'sc-busy');
-    ensureMicrophone(function(err, stream){
-      if (err) { setStatus('sc-status-joining', 'Microphone access denied. Please allow it and try again.', 'sc-err'); return; }
+    setStatus('sc-status-joining', 'Requesting microphone…', 'sc-busy');
+    ensureMicrophone(function(err){
+      if (err) { setStatus('sc-status-joining', 'Microphone access denied.', 'sc-err'); return; }
       setStatus('sc-status-joining', 'Connecting to host…', 'sc-busy');
       try { peer = new Peer({ debug: 1 }); }
-      catch (e) { setStatus('sc-status-joining', 'Could not start: ' + (e.message || e), 'sc-err'); return; }
-      peer.on('open', function(myId){
+      catch (e) { setStatus('sc-status-joining', 'Could not start: ' + (e.message||e), 'sc-err'); return; }
+      peer.on('open', function(){
         setStatus('sc-status-joining', 'Ringing the host…', 'sc-busy');
         try { activeCall = peer.call(CALL_CODE, localStream); }
-        catch (e) { setStatus('sc-status-joining', 'Could not place call: ' + (e.message || e), 'sc-err'); return; }
-        if (!activeCall) { setStatus('sc-status-joining', 'Host is not online yet. Ask them to click "Create Call" first.', 'sc-err'); return; }
+        catch (e) { setStatus('sc-status-joining', 'Could not place call.', 'sc-err'); return; }
+        if (!activeCall) { setStatus('sc-status-joining', 'Host not online. Ask them to click "Create" first.', 'sc-err'); return; }
         activeCall.on('stream', function(rs){ playRemote(rs); enterInCall(); });
-        activeCall.on('close', function(){ teardown(); showStep('choose'); setStatus('sc-status-choose', 'Call ended.', 'sc-ok'); });
-        activeCall.on('error', function(e){ setStatus('sc-status-joining', 'Call error: ' + (e.message || e), 'sc-err'); });
+        activeCall.on('close', function(){ handleHangup(); });
+        activeCall.on('error', function(e){ setStatus('sc-status-joining', 'Error: ' + (e.message||e), 'sc-err'); });
       });
       peer.on('error', function(err){
         var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
-        if (msg === 'peer-unavailable') setStatus('sc-status-joining', 'Host is not online yet. Ask them to click "Create Call" first, then retry.', 'sc-err');
+        if (msg === 'peer-unavailable') setStatus('sc-status-joining', 'Host not online. Ask them to click "Create" first.', 'sc-err');
         else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') setStatus('sc-status-joining', 'Network issue. Retrying…', 'sc-err');
-        else if (msg === 'browser-incompatible') setStatus('sc-status-joining', 'This browser does not support WebRTC calls.', 'sc-err');
+        else if (msg === 'browser-incompatible') setStatus('sc-status-joining', 'Browser does not support WebRTC.', 'sc-err');
         else setStatus('sc-status-joining', 'Error: ' + msg, 'sc-err');
       });
     });
@@ -3420,23 +3451,94 @@
     startTimer();
   }
 
-  function playRemote(rs) {
-    var ex = document.getElementById('sc-remote-audio');
-    if (ex) ex.remove();
-    var audio = document.createElement('audio');
-    audio.id = 'sc-remote-audio';
-    audio.autoplay = true;
-    audio.srcObject = rs;
-    document.body.appendChild(audio);
-    audio.play().catch(function(){});
+  // =======================================================================
+  // EVENT DELEGATION (hydration-proof — works even if DOM gets replaced)
+  // =======================================================================
+  function handleAction(id) {
+    switch(id) {
+      case 'sc-pw-close': closeOverlay('sc-pw-overlay'); resetPwForm(); break;
+      case 'sc-pw-submit': handlePwSubmit(); break;
+      case 'sc-call-close': closeCallWindow(); break;
+      case 'sc-btn-create': handleCreate(); break;
+      case 'sc-btn-join': handleJoin(); break;
+      case 'sc-btn-hangup': handleHangup(); break;
+      case 'sc-btn-mute': handleMute(); break;
+      case 'sc-btn-cancel-create': handleCancel(); break;
+      case 'sc-btn-cancel-join': handleCancel(); break;
+      case 'sc-pill-open': reopenCallWindow(); break;
+      case 'sc-pill-end': handleHangup(); break;
+    }
   }
 
-  function handleMute() {
-    if (!localStream) return;
-    isMuted = !isMuted;
-    localStream.getAudioTracks().forEach(function(t){ t.enabled = !isMuted; });
-    var btn = $('sc-btn-mute');
-    if (btn) btn.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i> Unmute' : '<i class="fas fa-microphone"></i> Mute';
+  var KNOWN_IDS = 'sc-pw-close,sc-pw-submit,sc-call-close,sc-btn-create,sc-btn-join,sc-btn-hangup,sc-btn-mute,sc-btn-cancel-create,sc-btn-cancel-join,sc-pill-open,sc-pill-end';
+
+  document.addEventListener('click', function(e) {
+    // 1) Check if click is on a known button (delegated)
+    var actionEl = e.target.closest(KNOWN_IDS.split(',').join(','));
+    if (actionEl && actionEl.id) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleAction(actionEl.id);
+      return;
+    }
+
+    // 2) Click-outside-to-close for call overlay
+    var co = $('sc-call-overlay');
+    if (co && co.classList.contains('sc-open')) {
+      if (!e.target.closest('.sc3d-card-call')) {
+        closeCallWindow();
+      }
+      return;
+    }
+
+    // 3) Click-outside-to-close for password overlay
+    var po = $('sc-pw-overlay');
+    if (po && po.classList.contains('sc-open')) {
+      if (!e.target.closest('.sc3d-card')) {
+        closeOverlay('sc-pw-overlay');
+        resetPwForm();
+      }
+      return;
+    }
+  }, true); // capture phase — fires before site's own handlers
+
+  // Delegated keydown for password Enter
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    var po = $('sc-pw-overlay');
+    if (po && po.classList.contains('sc-open')) {
+      var inp = $('sc-pw-input');
+      if (inp && document.activeElement === inp) {
+        e.preventDefault();
+        handlePwSubmit();
+      }
+    }
+  });
+
+  // =======================================================================
+  // Inject modals + floating pill
+  // =======================================================================
+  function injectUI() {
+    if (!$('sc-pw-overlay')) {
+      var d1 = document.createElement('div'); d1.innerHTML = PW_HTML;
+      while (d1.firstChild) document.body.appendChild(d1.firstChild);
+    }
+    if (!$('sc-call-overlay')) {
+      var d2 = document.createElement('div'); d2.innerHTML = CALL_HTML;
+      while (d2.firstChild) document.body.appendChild(d2.firstChild);
+    }
+    if (!$('sc-floating-pill')) {
+      var d3 = document.createElement('div'); d3.innerHTML = FLOATING_PILL_HTML;
+      while (d3.firstChild) document.body.appendChild(d3.firstChild);
+    }
+    var codeEl = $('sc-code-value');
+    if (codeEl && codeEl.textContent !== CALL_CODE) codeEl.textContent = CALL_CODE;
+    // Restore floating pill visibility if call still active
+    if (activeCall || (peer && isHost)) {
+      // Only show pill if call window is closed
+      var co = $('sc-call-overlay');
+      if (co && !co.classList.contains('sc-open')) showFloatingPill();
+    }
   }
 
   function bindDisclaimerTrigger() {
@@ -3452,23 +3554,29 @@
       target.dataset.scTriggerBound = '1';
       target.addEventListener('click', function(e){
         e.preventDefault(); e.stopPropagation();
-        openOverlay('sc-pw-overlay');
-        var inp = $('sc-pw-input');
-        if (inp) setTimeout(function(){ inp.focus(); }, 50);
+        // If call is active, reopen call window; otherwise open password
+        if (activeCall || (peer && isHost)) {
+          reopenCallWindow();
+        } else {
+          openOverlay('sc-pw-overlay');
+          var inp = $('sc-pw-input');
+          if (inp) setTimeout(function(){ inp.focus(); }, 50);
+        }
       });
     }
     return true;
   }
 
   function start() {
-    injectModals();
+    injectUI();
     bindDisclaimerTrigger();
+    // Poll for 60s (hydration can be slow on some pages)
     var pollCount = 0;
     var pollInterval = setInterval(function(){
       pollCount++;
-      injectModals();
+      injectUI();
       bindDisclaimerTrigger();
-      if (pollCount >= 40) clearInterval(pollInterval);
+      if (pollCount >= 120) clearInterval(pollInterval); // 120 * 500ms = 60s
     }, 500);
     window.addEventListener('beforeunload', teardown);
   }
