@@ -339,6 +339,79 @@
   text-shadow: 0 0 10px rgba(59, 130, 246, 0.85) !important;
 }
 
+/* ===== v20: EMERGENCY CALL BUTTON — red, full-width, above Create/Join ===== */
+#sc-call-overlay .sc3d-btn-emergency {
+  background: #eef0f5 !important;
+  color: #dc2626 !important;
+  text-shadow: 0 0 6px rgba(220, 38, 38, 0.65) !important;
+  width: 100% !important;
+  margin-bottom: 10px !important;
+  padding: 16px 18px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  border: 2px solid #fecaca !important;
+  box-shadow:
+    5px 5px 10px rgba(163, 177, 198, 0.55),
+    -5px -5px 10px rgba(255, 255, 255, 0.9) !important;
+}
+
+#sc-call-overlay .sc3d-btn-emergency:hover {
+  color: #b91c1c !important;
+  text-shadow: 0 0 10px rgba(220, 38, 38, 0.85), 0 0 18px rgba(220, 38, 38, 0.45) !important;
+  background: #fef2f2 !important;
+}
+
+#sc-call-overlay .sc3d-btn-emergency:active {
+  color: #b91c1c !important;
+  box-shadow:
+    inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.8) !important;
+}
+
+#sc-call-overlay .sc3d-btn-emergency i {
+  font-size: 15px !important;
+  animation: scEmergencyPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes scEmergencyPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.15); }
+}
+
+/* v20: Emergency Call status banner */
+#sc-call-overlay .sc3d-emergency-status {
+  width: 100% !important;
+  margin-top: 8px !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  text-align: center !important;
+  display: none;
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+  text-shadow: none !important;
+}
+
+#sc-call-overlay .sc3d-emergency-status.sc-show { display: block !important; }
+#sc-call-overlay .sc3d-emergency-status.sc-busy {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border-color: #fde68a !important;
+}
+#sc-call-overlay .sc3d-emergency-status.sc-ok {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border-color: #bbf7d0 !important;
+}
+#sc-call-overlay .sc3d-emergency-status.sc-err {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca !important;
+}
+
 /* Hang Up — v19: white neumorphic surface, blue glowing text (all texts blue) */
 #sc-call-overlay .sc3d-btn-red,
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup {
@@ -4290,6 +4363,96 @@
   // code that will appear in the code box of same window."
   // So: NO step switch (stay on 'choose' step), just fill the code box + show notification
   // + initialize PeerJS to listen for incoming calls.
+  // =======================================================================
+  // v20: EMERGENCY CALL HANDLER
+  // Sends a POST request to the Vercel backend, which pushes a high-priority
+  // FCM notification to the user's Android phone. The phone rings (even if
+  // locked), user answers, and a WebRTC audio call connects via PeerJS.
+  // =======================================================================
+  var EMERGENCY_BACKEND = 'https://emergency-backend-eight.vercel.app';
+  var emergencyCallInFlight = false;
+
+  function setEmergencyStatus(msg, kind) {
+    // kind: '' (default red-ish), 'sc-busy' (amber), 'sc-ok' (green), 'sc-err' (red)
+    var el = $('sc-emergency-status');
+    if (!el) return;
+    if (!msg) {
+      el.classList.remove('sc-show', 'sc-busy', 'sc-ok', 'sc-err');
+      el.textContent = '';
+      return;
+    }
+    el.textContent = msg;
+    el.classList.remove('sc-busy', 'sc-ok', 'sc-err');
+    if (kind) el.classList.add(kind);
+    el.classList.add('sc-show');
+  }
+
+  function handleEmergencyCall() {
+    if (emergencyCallInFlight) {
+      console.log('[sc] Emergency call already in flight, ignoring');
+      return;
+    }
+    console.log('[sc] Emergency Call button pressed');
+
+    // Confirm with the user (prevent accidental presses)
+    var callerName = '';
+    try {
+      // Try to read a friendly caller name from localStorage (set elsewhere)
+      callerName = localStorage.getItem('sc-emergency-caller-name') || 'Website Caller';
+    } catch(e) { callerName = 'Website Caller'; }
+
+    var ok = window.confirm(
+      'Send an EMERGENCY CALL to the phone?\n\n' +
+      'The phone will ring loudly (even if locked).\n\n' +
+      'Caller name: ' + callerName
+    );
+    if (!ok) {
+      console.log('[sc] Emergency call cancelled by user');
+      return;
+    }
+
+    emergencyCallInFlight = true;
+    setEmergencyStatus('Sending emergency call…', 'sc-busy');
+
+    // Generate a unique call ID so the phone can use it as the WebRTC room ID
+    var callId = 'emg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+
+    var body = JSON.stringify({
+      callerName: callerName,
+      callerId: callId
+    });
+
+    fetch(EMERGENCY_BACKEND + '/api/emergency-call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body
+    }).then(function(resp) {
+      return resp.json().then(function(data) {
+        return { ok: resp.ok, data: data };
+      });
+    }).then(function(result) {
+      emergencyCallInFlight = false;
+      if (result.ok && result.data.status === 'sent') {
+        console.log('[sc] Emergency push sent:', result.data);
+        setEmergencyStatus(
+          '✓ Phone is ringing! Answer to connect. (Call ID: ' + result.data.call_id + ')',
+          'sc-ok'
+        );
+        // After 8 seconds, clear the status
+        setTimeout(function() { setEmergencyStatus('', ''); }, 8000);
+      } else {
+        console.error('[sc] Emergency call failed:', result.data);
+        var errMsg = (result.data && result.data.error) ? result.data.error : 'Unknown error';
+        var hint = (result.data && result.data.hint) ? ' ' + result.data.hint : '';
+        setEmergencyStatus('✗ ' + errMsg + hint, 'sc-err');
+      }
+    }).catch(function(err) {
+      emergencyCallInFlight = false;
+      console.error('[sc] Emergency call network error:', err);
+      setEmergencyStatus('✗ Network error: ' + (err.message || err), 'sc-err');
+    });
+  }
+
   function handleCreate() {
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = true;
@@ -4529,6 +4692,7 @@
     bindButton('sc-pw-close', function(){ closeOverlay('sc-pw-overlay'); resetPwForm(); });
     bindButton('sc-pw-submit', handlePwSubmit);
     bindButton('sc-call-close', closeCallWindow);
+    bindButton('sc-btn-emergency', handleEmergencyCall);
     bindButton('sc-btn-create', handleCreate);
     bindButton('sc-btn-join', handleJoinClick);
     bindButton('sc-btn-hangup', handleHangup);
@@ -4608,6 +4772,8 @@
 \
       <div class="sc3d-step sc-active" id="sc-step-choose">\
         <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
+        <button class="sc3d-btn sc3d-btn-emergency" id="sc-btn-emergency" type="button"><i class="fas fa-bell"></i> Emergency Call</button>\
+        <div class="sc3d-emergency-status" id="sc-emergency-status"></div>\
         <div class="sc3d-btn-row">\
           <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create" type="button"><i class="fas fa-plus"></i> Create</button>\
           <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join" type="button"><i class="fas fa-phone"></i> Join</button>\
