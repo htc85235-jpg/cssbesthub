@@ -108,7 +108,7 @@
   color: #1d4ed8 !important;
   text-shadow: 0 0 10px rgba(59, 130, 246, 0.85), 0 0 20px rgba(59, 130, 246, 0.45) !important;
   box-shadow:
-    inset 3px 3px 6px rgba(59, 130, 246, 0.35),
+    inset 3px 3px 6px rgba(163, 177, 198, 0.55),
     inset -3px -3px 6px rgba(255, 255, 255, 0.95) !important;
 }
 
@@ -141,8 +141,7 @@
 #sc-pw-overlay .sc3d-input:focus, #sc-call-overlay .sc3d-input:focus {
   box-shadow:
     inset 4px 4px 8px rgba(163, 177, 198, 0.65),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.9),
-    0 0 0 2px rgba(99, 179, 237, 0.35) !important;
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9) !important;
 }
 
 /* ===== CODE BOX INPUT — neumorphic recessed groove ===== */
@@ -195,8 +194,7 @@
 #sc-call-overlay .sc3d-current-code-input:focus {
   box-shadow:
     inset 4px 4px 8px rgba(163, 177, 198, 0.65),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.9),
-    0 0 0 2px rgba(99, 179, 237, 0.35) !important;
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9) !important;
 }
 
 /* ===== CODE BOX COPY BUTTON — neumorphic small circle ===== */
@@ -235,7 +233,7 @@
   color: #2563eb !important;
   text-shadow: 0 0 10px rgba(59, 130, 246, 0.85) !important;
   box-shadow:
-    inset 3px 3px 6px rgba(59, 130, 246, 0.4),
+    inset 3px 3px 6px rgba(163, 177, 198, 0.55),
     inset -3px -3px 6px rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -253,7 +251,7 @@
   background: #eef0f5 !important;
   text-shadow: 0 0 8px rgba(59, 130, 246, 0.8), 0 0 16px rgba(59, 130, 246, 0.4) !important;
   box-shadow:
-    inset 2px 2px 4px rgba(59, 130, 246, 0.18),
+    inset 2px 2px 4px rgba(163, 177, 198, 0.35),
     inset -2px -2px 4px rgba(255, 255, 255, 0.85) !important;
 }
 
@@ -358,7 +356,7 @@
 #sc-call-overlay .sc3d-btn-red:active,
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup:active {
   box-shadow:
-    inset 4px 4px 8px rgba(59, 130, 246, 0.35),
+    inset 4px 4px 8px rgba(163, 177, 198, 0.6),
     inset -4px -4px 8px rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -404,12 +402,12 @@
     inset -3px -3px 6px rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Active route button — blue glowing inset */
+/* Active route button — neumorphic inset (no blue box glow); text still glows */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active {
   color: #2563eb !important;
   text-shadow: 0 0 10px rgba(59, 130, 246, 0.85), 0 0 18px rgba(59, 130, 246, 0.45) !important;
   box-shadow:
-    inset 3px 3px 6px rgba(59, 130, 246, 0.35),
+    inset 3px 3px 6px rgba(163, 177, 198, 0.55),
     inset -3px -3px 6px rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -450,7 +448,7 @@
 
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup:active {
   box-shadow:
-    inset 3px 3px 6px rgba(59, 130, 246, 0.4),
+    inset 3px 3px 6px rgba(163, 177, 198, 0.55),
     inset -3px -3px 6px rgba(255, 255, 255, 0.9) !important;
 }
 
@@ -565,8 +563,26 @@
   display: none !important;
 }
 
-/* ===== FONT AWESOME ICONS — neutral inheritance ===== */
-#sc-call-overlay i.fa, #sc-call-overlay i.fas, #sc-call-overlay i.far, #sc-call-overlay i.fab {
+/* ===== FONT AWESOME ICONS — restore FA font-family (override Space Grotesk !important) ===== */
+/* v19.1 FIX: icons were showing as line boxes because the universal selector
+   applied font-family: 'Space Grotesk' !important to <i> tags. Override it
+   here with the proper Font Awesome 6 family + weight per icon class. */
+#sc-pw-overlay i.fa, #sc-call-overlay i.fa,
+#sc-pw-overlay i.fas, #sc-call-overlay i.fas {
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
+  line-height: 1 !important;
+}
+#sc-pw-overlay i.far, #sc-call-overlay i.far {
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  line-height: 1 !important;
+}
+#sc-pw-overlay i.fab, #sc-call-overlay i.fab {
+  font-family: "Font Awesome 6 Brands" !important;
+  font-weight: 400 !important;
   font-style: normal !important;
   line-height: 1 !important;
 }
