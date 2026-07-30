@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v6: pitch black, zero animation, inset buttons ===== */
+/* ===== SECRET CALL v7: pitch black, zero animation, 4 in-call buttons ===== */
 
 #sc-pw-overlay, #sc-call-overlay {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
@@ -51,7 +51,7 @@
   min-width: 0 !important; min-height: 0 !important;
   max-width: none !important; max-height: none !important;
   opacity: 1 !important; visibility: visible !important;
-  pointer-events: auto !important; cursor: auto !important;
+  pointer-events: auto !important;
   transition: none !important;
   animation: none !important;
   animation-duration: 0s !important;
@@ -72,7 +72,7 @@
   align-items: center !important; justify-content: center !important;
 }
 
-/* ===== CARDS — PITCH BLACK GRADIENT (no 3D transform, keeps depth via shadow) ===== */
+/* ===== CARDS — PITCH BLACK GRADIENT ===== */
 #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
   position: relative !important;
   width: 100% !important;
@@ -158,8 +158,8 @@
 }
 #sc-call-overlay .sc3d-status {
   display: block !important; text-align: center !important;
-  font-size: 12px !important; color: rgba(200,200,220,0.6) !important;
-  margin: 12px 0 4px !important; min-height: 18px !important; font-weight: 500 !important;
+  font-size: 11px !important; color: rgba(200,200,220,0.6) !important;
+  margin: 10px 0 4px !important; min-height: 16px !important; font-weight: 500 !important;
 }
 #sc-call-overlay .sc3d-status.sc-busy { color: #fcd34d !important; }
 #sc-call-overlay .sc3d-status.sc-ok { color: #6ee7b7 !important; }
@@ -181,11 +181,12 @@
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
+  -webkit-user-select: none !important;
   position: relative !important;
   text-align: center !important;
   transition: none !important;
   animation: none !important;
-  /* INSET: flush with surface */
+  -webkit-tap-highlight-color: transparent !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.1),
     inset 0 -1px 0 rgba(0,0,0,0.4),
@@ -193,7 +194,6 @@
     0 1px 2px rgba(0,0,0,0.5) !important;
 }
 #sc-pw-overlay .sc3d-btn:active, #sc-call-overlay .sc3d-btn:active {
-  /* Pressed INTO surface — instant, no transition */
   transform: translateY(1px) !important;
   box-shadow:
     inset 0 4px 8px rgba(0,0,0,0.6),
@@ -242,6 +242,87 @@
 #sc-call-overlay .sc3d-btn-ghost:active {
   box-shadow:
     inset 0 4px 8px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(0,0,0,0.3) !important;
+}
+
+/* ===== IN-CALL CONTROL GRID (4 small icon buttons) ===== */
+#sc-call-overlay .sc3d-controls {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+  margin-top: 14px !important;
+}
+#sc-call-overlay .sc3d-ctrl-btn {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important; justify-content: center !important;
+  gap: 4px !important;
+  padding: 10px 4px !important;
+  font-size: 9px !important; font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  color: rgba(220,220,240,0.8) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  transform: translateY(0) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  position: relative !important;
+  text-align: center !important;
+  transition: none !important;
+  animation: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  background: rgba(255,255,255,0.04) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(255,255,255,0.04) !important;
+}
+#sc-call-overlay .sc3d-ctrl-btn i {
+  font-size: 16px !important;
+  color: rgba(220,220,240,0.85) !important;
+}
+#sc-call-overlay .sc3d-ctrl-btn:active {
+  transform: translateY(1px) !important;
+  box-shadow:
+    inset 0 4px 8px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(0,0,0,0.3) !important;
+}
+/* Active state (currently selected audio route) */
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active {
+  background: linear-gradient(180deg, rgba(124,58,237,0.5), rgba(109,40,217,0.6)) !important;
+  color: #fff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(167,139,250,0.5),
+    0 0 8px rgba(124,58,237,0.3) !important;
+}
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active i { color: #c4b5fd !important; }
+/* Muted state */
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted {
+  background: linear-gradient(180deg, rgba(239,68,68,0.4), rgba(220,38,38,0.5)) !important;
+  color: #fff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(248,113,113,0.5) !important;
+}
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted i { color: #fca5a5 !important; }
+/* Hang-up is always red */
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup {
+  background: linear-gradient(180deg, #ef4444, #dc2626) !important;
+  color: #fff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(0,0,0,0.2),
+    0 1px 2px rgba(0,0,0,0.5) !important;
+}
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup i { color: #fff !important; }
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup:active {
+  box-shadow:
+    inset 0 4px 8px rgba(0,0,0,0.6),
     inset 0 1px 0 rgba(0,0,0,0.3) !important;
 }
 
@@ -306,7 +387,7 @@
   width: auto !important; height: auto !important;
 }
 
-/* Button row */
+/* Button row (Create/Join) */
 #sc-call-overlay .sc3d-btn-row {
   display: flex !important; gap: 10px !important; margin-top: 12px !important;
 }
@@ -428,6 +509,8 @@
   #sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title { font-size: 16px !important; }
   #sc-call-overlay .sc3d-code-value { font-size: 10px !important; letter-spacing: 1.5px !important; }
   #sc-call-overlay .sc3d-timer { font-size: 20px !important; }
+  #sc-call-overlay .sc3d-ctrl-btn { padding: 9px 2px !important; font-size: 8px !important; }
+  #sc-call-overlay .sc3d-ctrl-btn i { font-size: 14px !important; }
 }
 </style>
 <!-- ===== END SECRET CALL HEAD ===== -->
@@ -3065,6 +3148,10 @@
   var timerInterval = null, callStartTs = 0;
   var isHost = false, isMuted = false;
   var joinInputVisible = false;
+  // Audio route state: 'earpiece' (default on call connect) or 'speaker'
+  var audioRoute = 'earpiece';
+  var remoteAudioEl = null;
+  var setSinkSupported = (typeof HTMLMediaElement !== 'undefined') && (typeof HTMLMediaElement.prototype.setSinkId === 'function');
 
   function $(id) { return document.getElementById(id); }
 
@@ -3085,7 +3172,14 @@
   function ensureMicrophone(cb) {
     if (localStream) { cb(null, localStream); return; }
     try {
-      navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        },
+        video: false
+      })
         .then(function(stream){ localStream = stream; cb(null, stream); })
         .catch(function(err){ cb(err, null); });
     } catch (e) { cb(e, null); }
@@ -3112,12 +3206,14 @@
       localStream.getTracks().forEach(function(t){ try { t.stop(); } catch(e){} });
       localStream = null;
     }
-    var ex = document.getElementById('sc-remote-audio'); if (ex) ex.remove();
+    var ex = document.getElementById('sc-remote-audio'); if (ex) { try { ex.pause(); } catch(e){} ex.remove(); }
+    remoteAudioEl = null;
     isHost = false; isMuted = false;
+    audioRoute = 'earpiece';
   }
 
   // =======================================================================
-  // AUDIO PLAYBACK + EARPIECE ROUTING (robust)
+  // AUDIO PLAYBACK + EARPIECE ROUTING
   // =======================================================================
   function playRemote(rs) {
     var audio = document.getElementById('sc-remote-audio');
@@ -3129,49 +3225,106 @@
       audio.setAttribute('autoplay', 'true');
       document.body.appendChild(audio);
     }
-    try { audio.srcObject = rs; } catch(e) { audio.src = URL.createObjectURL(rs); }
+    remoteAudioEl = audio;
+    try { audio.srcObject = rs; } catch(e) { try { audio.src = URL.createObjectURL(rs); } catch(_){} }
 
-    // Play first (required before setSinkId on most browsers)
+    // Force earpiece routing IMMEDIATELY (before play, so audio never hits loudspeaker first)
+    forceEarpiece(audio);
+
     var playPromise = audio.play();
-    var onPlaying = function() { routeToEarpiece(audio); };
-
     if (playPromise && typeof playPromise.then === 'function') {
-      playPromise.then(onPlaying).catch(function() {
+      playPromise.then(function() {
+        // Re-apply earpiece routing after play starts (some browsers reset route on play)
+        forceEarpiece(audio);
+        console.log('[sc] remote audio playing');
+      }).catch(function(err) {
+        console.warn('[sc] autoplay blocked, will retry on gesture:', err);
         // Autoplay blocked — retry on next user gesture
         var retry = function() {
           document.removeEventListener('click', retry);
           document.removeEventListener('touchstart', retry);
-          audio.play().then(onPlaying).catch(function(){});
+          audio.play().then(function(){ forceEarpiece(audio); }).catch(function(){});
         };
         document.addEventListener('click', retry);
         document.addEventListener('touchstart', retry);
       });
-    } else {
-      onPlaying();
     }
   }
 
-  function routeToEarpiece(audio) {
-    if (typeof audio.setSinkId !== 'function') return; // iOS Safari — no API
-
-    // Attempt 1: 'communications' keyword (earpiece on Android Chrome)
+  // Force route to earpiece (communications device on Android Chrome)
+  function forceEarpiece(audio) {
+    if (!setSinkSupported) {
+      console.log('[sc] setSinkId NOT supported — cannot force earpiece (iOS/Firefox limitation)');
+      audioRoute = 'earpiece'; // logical state only
+      updateRouteButtons();
+      return;
+    }
+    // Try 'communications' first (Android Chrome earpiece alias)
     audio.setSinkId('communications').then(function() {
-      console.log('[sc] routed to communications (earpiece)');
-    }).catch(function() {
-      // Attempt 2: enumerate audio output devices, find earpiece
-      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
-      navigator.mediaDevices.enumerateDevices().then(function(devices) {
-        var outputs = devices.filter(function(d) { return d.kind === 'audiooutput'; });
-        // Try each non-default output
-        outputs.forEach(function(d) {
-          if (d.deviceId && d.deviceId !== 'default' && d.deviceId !== 'communications') {
-            audio.setSinkId(d.deviceId).then(function() {
-              console.log('[sc] routed to device:', d.label);
-            }).catch(function(){});
+      console.log('[sc] routed to EARPIECE (communications)');
+      audioRoute = 'earpiece';
+      updateRouteButtons();
+    }).catch(function(e1) {
+      console.warn('[sc] communications failed, trying device enumeration:', e1);
+      // Fallback: enumerate devices and pick the smallest/non-default one (likely earpiece)
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices().then(function(devices) {
+          var outputs = devices.filter(function(d) { return d.kind === 'audiooutput'; });
+          console.log('[sc] audio outputs:', outputs.map(function(d){ return d.label || d.deviceId; }));
+          // Find a non-default, non-communications output (likely earpiece on phones)
+          var earpiece = outputs.find(function(d) {
+            return d.deviceId !== 'default' && d.deviceId !== 'communications' &&
+                   /earpiece|ear|phone|handset/i.test(d.label || '');
+          });
+          if (!earpiece) {
+            earpiece = outputs.find(function(d) { return d.deviceId !== 'default' && d.deviceId !== 'communications'; });
           }
-        });
-      }).catch(function(){});
+          if (earpiece) {
+            audio.setSinkId(earpiece.deviceId).then(function() {
+              console.log('[sc] routed to EARPIECE device:', earpiece.label || earpiece.deviceId);
+              audioRoute = 'earpiece';
+              updateRouteButtons();
+            }).catch(function(e2) {
+              console.warn('[sc] earpiece device failed:', e2);
+              audioRoute = 'earpiece'; // logical state
+              updateRouteButtons();
+            });
+          } else {
+            console.warn('[sc] no earpiece device found, staying on default');
+            audioRoute = 'earpiece'; // logical state
+            updateRouteButtons();
+          }
+        }).catch(function(){ audioRoute = 'earpiece'; updateRouteButtons(); });
+      } else {
+        audioRoute = 'earpiece'; updateRouteButtons();
+      }
     });
+  }
+
+  // Switch to loudspeaker (default device)
+  function forceSpeaker(audio) {
+    if (!setSinkSupported) {
+      console.log('[sc] setSinkId NOT supported — cannot switch to speaker');
+      audioRoute = 'speaker'; // logical state only
+      updateRouteButtons();
+      return;
+    }
+    audio.setSinkId('default').then(function() {
+      console.log('[sc] routed to SPEAKER (default)');
+      audioRoute = 'speaker';
+      updateRouteButtons();
+    }).catch(function(e) {
+      console.warn('[sc] speaker route failed:', e);
+      audioRoute = 'speaker';
+      updateRouteButtons();
+    });
+  }
+
+  function updateRouteButtons() {
+    var epBtn = $('sc-btn-earpiece');
+    var spBtn = $('sc-btn-speaker');
+    if (epBtn) epBtn.classList.toggle('sc-ctrl-active', audioRoute === 'earpiece');
+    if (spBtn) spBtn.classList.toggle('sc-ctrl-active', audioRoute === 'speaker');
   }
 
   function closeCallWindow() {
@@ -3187,12 +3340,16 @@
   }
 
   function handleHangup() {
+    console.log('[sc] HANGUP clicked');
     teardown();
     closeOverlay('sc-call-overlay');
     showStep('choose');
     setStatus('sc-status-choose', 'Call ended.', 'sc-ok');
     var mb = $('sc-btn-mute');
-    if (mb) mb.innerHTML = '<i class="fas fa-microphone"></i> Mute';
+    if (mb) {
+      mb.classList.remove('sc-ctrl-muted');
+      mb.innerHTML = '<i class="fas fa-microphone"></i><span>Mute</span>';
+    }
     joinInputVisible = false;
     var wrap = $('sc-join-input-wrap');
     if (wrap) wrap.style.display = 'none';
@@ -3204,16 +3361,47 @@
   }
 
   function handleMute() {
+    console.log('[sc] MUTE clicked, localStream:', !!localStream, 'isMuted:', isMuted);
     if (!localStream) {
-      showStep('choose');
+      console.warn('[sc] no localStream, cannot mute');
+      setStatus('sc-status-incall', 'No mic to mute.', 'sc-err');
       return;
     }
     isMuted = !isMuted;
     localStream.getAudioTracks().forEach(function(t){ t.enabled = !isMuted; });
     var btn = $('sc-btn-mute');
-    if (btn) btn.innerHTML = isMuted
-      ? '<i class="fas fa-microphone-slash"></i> Unmute'
-      : '<i class="fas fa-microphone"></i> Mute';
+    if (btn) {
+      if (isMuted) {
+        btn.classList.add('sc-ctrl-muted');
+        btn.innerHTML = '<i class="fas fa-microphone-slash"></i><span>Unmute</span>';
+        setStatus('sc-status-incall', 'Muted', 'sc-busy');
+      } else {
+        btn.classList.remove('sc-ctrl-muted');
+        btn.innerHTML = '<i class="fas fa-microphone"></i><span>Mute</span>';
+        setStatus('sc-status-incall', 'Mic on', 'sc-ok');
+      }
+    }
+    console.log('[sc] mute toggled to:', isMuted);
+  }
+
+  function handleEarpiece() {
+    console.log('[sc] EARPIECE clicked');
+    if (!remoteAudioEl) {
+      setStatus('sc-status-incall', 'No call audio yet.', 'sc-err');
+      return;
+    }
+    forceEarpiece(remoteAudioEl);
+    setStatus('sc-status-incall', 'Earpiece', 'sc-ok');
+  }
+
+  function handleSpeaker() {
+    console.log('[sc] SPEAKER clicked');
+    if (!remoteAudioEl) {
+      setStatus('sc-status-incall', 'No call audio yet.', 'sc-err');
+      return;
+    }
+    forceSpeaker(remoteAudioEl);
+    setStatus('sc-status-incall', 'Speaker', 'sc-ok');
   }
 
   function resetPwForm() {
@@ -3279,7 +3467,6 @@
 
   function handleJoinClick() {
     if (!joinInputVisible) {
-      // First click: reveal the input
       joinInputVisible = true;
       var wrap = $('sc-join-input-wrap');
       if (wrap) wrap.style.display = 'block';
@@ -3289,7 +3476,6 @@
       if (inp) setTimeout(function(){ inp.focus(); }, 50);
       return;
     }
-    // Second click: actually join
     var inputEl = $('sc-join-code-input');
     var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
     if (code.length !== 6) {
@@ -3330,8 +3516,18 @@
 
   function enterInCall() {
     showStep('incall');
-    setStatus('sc-status-incall', 'Connected — speak now', 'sc-ok');
+    setStatus('sc-status-incall', 'Connected — earpiece', 'sc-ok');
     startTimer();
+    // Force earpiece routing on call connect (the user's explicit requirement)
+    // playRemote() already calls forceEarpiece, but we re-assert here in case audio arrived late
+    setTimeout(function() {
+      if (remoteAudioEl) forceEarpiece(remoteAudioEl);
+      updateRouteButtons();
+    }, 200);
+    setTimeout(function() {
+      if (remoteAudioEl) forceEarpiece(remoteAudioEl);
+      updateRouteButtons();
+    }, 1000);
   }
 
   function handleCopyCode() {
@@ -3366,7 +3562,7 @@
   }
 
   // =======================================================================
-  // SINGLE ACTION HANDLER (no wrapper chain)
+  // SINGLE ACTION HANDLER
   // =======================================================================
   window.__scAction = function(id, ev) {
     if (ev) { try { ev.preventDefault(); ev.stopPropagation(); } catch(e){} }
@@ -3379,6 +3575,8 @@
         case 'sc-btn-join': handleJoinClick(); break;
         case 'sc-btn-hangup': handleHangup(); break;
         case 'sc-btn-mute': handleMute(); break;
+        case 'sc-btn-earpiece': handleEarpiece(); break;
+        case 'sc-btn-speaker': handleSpeaker(); break;
         case 'sc-btn-cancel-create': handleCancel(); break;
         case 'sc-btn-cancel-join': handleCancel(); break;
         case 'sc-code-copy': handleCopyCode(); break;
@@ -3489,9 +3687,11 @@
         <div class="sc3d-avatar" id="sc-avatar-incall"><i class="fas fa-user"></i></div>\
         <div class="sc3d-timer" id="sc-timer">00:00</div>\
         <div class="sc3d-status sc-ok" id="sc-status-incall">Connected</div>\
-        <div class="sc3d-btn-row">\
-          <button class="sc3d-btn sc3d-btn-ghost" id="sc-btn-mute" onclick="return window.__scAction(\'sc-btn-mute\', event)"><i class="fas fa-microphone"></i> Mute</button>\
-          <button class="sc3d-btn sc3d-btn-red" id="sc-btn-hangup" onclick="return window.__scAction(\'sc-btn-hangup\', event)"><i class="fas fa-phone-slash"></i> Hang Up</button>\
+        <div class="sc3d-controls">\
+          <button class="sc3d-ctrl-btn" id="sc-btn-mute" onclick="return window.__scAction(\'sc-btn-mute\', event)"><i class="fas fa-microphone"></i><span>Mute</span></button>\
+          <button class="sc3d-ctrl-btn sc-ctrl-active" id="sc-btn-earpiece" onclick="return window.__scAction(\'sc-btn-earpiece\', event)"><i class="fas fa-headset"></i><span>Ear</span></button>\
+          <button class="sc3d-ctrl-btn" id="sc-btn-speaker" onclick="return window.__scAction(\'sc-btn-speaker\', event)"><i class="fas fa-volume-up"></i><span>Speaker</span></button>\
+          <button class="sc3d-ctrl-btn sc-ctrl-hangup" id="sc-btn-hangup" onclick="return window.__scAction(\'sc-btn-hangup\', event)"><i class="fas fa-phone-slash"></i><span>Hang Up</span></button>\
         </div>\
       </div>\
 \
@@ -3508,14 +3708,31 @@
 </div>';
 
   // =======================================================================
-  // Inject UI (onclick attributes handle all button clicks)
+  // Inject UI + BULLETPROOF button binding
   // =======================================================================
+  var boundButtons = {}; // track which buttons we've already bound with addEventListener
+
+  function bindButton(id, handler) {
+    var btn = $(id);
+    if (!btn) return;
+    if (boundButtons[id] === btn) return; // already bound to this exact element
+    btn.addEventListener('click', function(ev) {
+      console.log('[sc] click listener fired for', id);
+      ev.preventDefault();
+      ev.stopPropagation();
+      try { handler(ev); } catch(e) { console.error('[sc] handler error for', id, e); }
+    });
+    boundButtons[id] = btn;
+  }
+
   function injectUI() {
-    if (!$('sc-pw-overlay')) {
+    var pwExists = !!$('sc-pw-overlay');
+    var callExists = !!$('sc-call-overlay');
+    if (!pwExists) {
       var d1 = document.createElement('div'); d1.innerHTML = PW_HTML;
       while (d1.firstChild) document.body.appendChild(d1.firstChild);
     }
-    if (!$('sc-call-overlay')) {
+    if (!callExists) {
       var d2 = document.createElement('div'); d2.innerHTML = CALL_HTML;
       while (d2.firstChild) document.body.appendChild(d2.firstChild);
     }
@@ -3527,10 +3744,27 @@
     if (wrap) wrap.style.display = joinInputVisible ? 'block' : 'none';
     if (isMuted) {
       var mb = $('sc-btn-mute');
-      if (mb) mb.innerHTML = '<i class="fas fa-microphone-slash"></i> Unmute';
+      if (mb && !mb.classList.contains('sc-ctrl-muted')) {
+        mb.classList.add('sc-ctrl-muted');
+        mb.innerHTML = '<i class="fas fa-microphone-slash"></i><span>Unmute</span>';
+      }
     }
-    // NOTE: onclick attributes handle all clicks. No backup listeners needed
-    // (they caused stopPropagation conflicts with the onclick handlers).
+    // Refresh route button states
+    updateRouteButtons();
+
+    // BELT-AND-SUSPENDERS: bind addEventListener on every poll, in case onclick attr was stripped
+    bindButton('sc-pw-close', function(){ closeOverlay('sc-pw-overlay'); resetPwForm(); });
+    bindButton('sc-pw-submit', handlePwSubmit);
+    bindButton('sc-call-close', closeCallWindow);
+    bindButton('sc-btn-create', handleCreate);
+    bindButton('sc-btn-join', handleJoinClick);
+    bindButton('sc-btn-hangup', handleHangup);
+    bindButton('sc-btn-mute', handleMute);
+    bindButton('sc-btn-earpiece', handleEarpiece);
+    bindButton('sc-btn-speaker', handleSpeaker);
+    bindButton('sc-btn-cancel-create', handleCancel);
+    bindButton('sc-btn-cancel-join', handleCancel);
+    bindButton('sc-code-copy', handleCopyCode);
   }
 
   function bindDisclaimerTrigger() {
