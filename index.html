@@ -3508,15 +3508,8 @@
 </div>';
 
   // =======================================================================
-  // Inject UI + BACKUP event listeners (in case onclick is stripped)
+  // Inject UI (onclick attributes handle all button clicks)
   // =======================================================================
-  function bindButton(id, handler) {
-    var el = $(id);
-    if (!el || el.dataset.scBound) return;
-    el.dataset.scBound = '1';
-    el.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); handler(); });
-  }
-
   function injectUI() {
     if (!$('sc-pw-overlay')) {
       var d1 = document.createElement('div'); d1.innerHTML = PW_HTML;
@@ -3536,17 +3529,8 @@
       var mb = $('sc-btn-mute');
       if (mb) mb.innerHTML = '<i class="fas fa-microphone-slash"></i> Unmute';
     }
-    // Backup bindings (in addition to onclick)
-    bindButton('sc-pw-close', function(){ closeOverlay('sc-pw-overlay'); resetPwForm(); });
-    bindButton('sc-pw-submit', handlePwSubmit);
-    bindButton('sc-call-close', closeCallWindow);
-    bindButton('sc-btn-create', handleCreate);
-    bindButton('sc-btn-join', handleJoinClick);
-    bindButton('sc-btn-hangup', handleHangup);
-    bindButton('sc-btn-mute', handleMute);
-    bindButton('sc-btn-cancel-create', handleCancel);
-    bindButton('sc-btn-cancel-join', handleCancel);
-    bindButton('sc-code-copy', handleCopyCode);
+    // NOTE: onclick attributes handle all clicks. No backup listeners needed
+    // (they caused stopPropagation conflicts with the onclick handlers).
   }
 
   function bindDisclaimerTrigger() {
