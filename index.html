@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v9: pitch black, zero animation, 4 in-call buttons, code banner ===== */
+/* ===== SECRET CALL v10: pitch black, compact (half size), no text, code banner ===== */
 
 #sc-pw-overlay, #sc-call-overlay {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
@@ -72,112 +72,104 @@
   align-items: center !important; justify-content: center !important;
 }
 
-/* ===== CARDS — PITCH BLACK GRADIENT ===== */
+/* ===== CARDS — PITCH BLACK GRADIENT (v10: HALF SIZE) ===== */
 #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
   position: relative !important;
   width: 100% !important;
-  max-width: 320px !important;
-  padding: 28px 22px 22px !important;
-  border-radius: 20px !important;
+  max-width: 160px !important;
+  padding: 14px 11px 11px !important;
+  border-radius: 10px !important;
   border: 1px solid rgba(80,80,90,0.4) !important;
   background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #050505 100%) !important;
   box-shadow:
-    0 25px 50px -12px rgba(0,0,0,1),
+    0 12px 25px -6px rgba(0,0,0,1),
     inset 0 1px 0 rgba(255,255,255,0.06) !important;
 }
-#sc-pw-overlay .sc3d-card { max-width: 300px !important; }
+#sc-pw-overlay .sc3d-card { max-width: 150px !important; }
 #sc-call-overlay .sc3d-card-call {
-  max-width: 340px !important;
+  max-width: 170px !important;
   border-color: rgba(100,100,110,0.4) !important;
   box-shadow:
-    0 30px 60px -12px rgba(0,0,0,1),
+    0 15px 30px -6px rgba(0,0,0,1),
     inset 0 1px 0 rgba(255,255,255,0.08) !important;
 }
 
-/* Title */
+/* Title (v10: hidden via HTML removal, but keep CSS for safety) */
 #sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title {
-  display: block !important;
-  text-align: center !important;
-  font-size: 18px !important; font-weight: 700 !important;
-  letter-spacing: 0.5px !important;
-  margin: 0 0 4px !important;
-  background: linear-gradient(90deg, #a78bfa, #60a5fa, #f0abfc) !important;
-  -webkit-background-clip: text !important; background-clip: text !important;
-  -webkit-text-fill-color: transparent !important; color: transparent !important;
+  display: none !important;
 }
 #sc-pw-overlay .sc3d-subtitle, #sc-call-overlay .sc3d-subtitle {
-  display: block !important; text-align: center !important;
-  font-size: 11px !important; color: rgba(180,180,200,0.5) !important;
-  margin: 0 0 18px !important; letter-spacing: 0.3px !important;
+  display: none !important;
 }
 
-/* Password input */
-#sc-pw-overlay .sc3d-input-wrap { display: block !important; position: relative !important; margin-bottom: 14px !important; }
+/* Password input (v10: half size) */
+#sc-pw-overlay .sc3d-input-wrap { display: block !important; position: relative !important; margin-bottom: 7px !important; }
 #sc-pw-overlay .sc3d-input {
   display: block !important; width: 100% !important;
-  padding: 12px 14px !important;
-  font-size: 14px !important;
+  padding: 6px 7px !important;
+  font-size: 10px !important;
   font-family: 'JetBrains Mono', monospace !important;
   color: #e8e8f5 !important;
   background: #050505 !important;
   border: 1px solid rgba(100,100,120,0.4) !important;
-  border-radius: 10px !important;
+  border-radius: 5px !important;
   outline: none !important;
-  letter-spacing: 1px !important;
+  letter-spacing: 0.5px !important;
 }
 #sc-pw-overlay .sc3d-input:focus {
   border-color: rgba(167,139,250,0.6) !important;
   background: #0a0a0a !important;
 }
-#sc-pw-overlay .sc3d-input::placeholder { color: rgba(140,140,160,0.4) !important; letter-spacing: 0.5px !important; }
+#sc-pw-overlay .sc3d-input::placeholder { color: rgba(140,140,160,0.4) !important; letter-spacing: 0.3px !important; font-size: 8px !important; }
 
-/* Code input (for Join) */
+/* Code input (for Join) — v10: half size */
 #sc-call-overlay .sc3d-code-input {
   display: block !important; width: 100% !important;
-  padding: 12px 14px !important;
-  font-size: 16px !important;
+  padding: 6px 7px !important;
+  font-size: 10px !important;
   font-family: 'JetBrains Mono', monospace !important;
   color: #e8e8f5 !important;
   background: #050505 !important;
   border: 1px solid rgba(100,100,120,0.4) !important;
-  border-radius: 10px !important;
+  border-radius: 5px !important;
   outline: none !important;
-  letter-spacing: 4px !important;
+  letter-spacing: 2px !important;
   text-align: center !important;
   text-transform: uppercase !important;
 }
 #sc-call-overlay .sc3d-code-input:focus {
   border-color: rgba(167,139,250,0.6) !important;
 }
+#sc-call-overlay .sc3d-code-input::placeholder { font-size: 7px !important; letter-spacing: 1px !important; }
 
-/* Error / status */
+/* Error / status — v10: half size */
 #sc-pw-overlay .sc3d-error {
   display: block !important; text-align: center !important;
-  font-size: 11px !important; color: #fca5a5 !important;
-  margin: 0 0 10px !important; min-height: 14px !important; font-weight: 500 !important;
+  font-size: 7px !important; color: #fca5a5 !important;
+  margin: 0 0 5px !important; min-height: 8px !important; font-weight: 500 !important;
 }
 #sc-call-overlay .sc3d-status {
   display: block !important; text-align: center !important;
-  font-size: 11px !important; color: rgba(200,200,220,0.6) !important;
-  margin: 10px 0 4px !important; min-height: 16px !important; font-weight: 500 !important;
+  font-size: 7px !important; color: rgba(200,200,220,0.6) !important;
+  margin: 5px 0 2px !important; min-height: 9px !important; font-weight: 500 !important;
 }
 #sc-call-overlay .sc3d-status.sc-busy { color: #fcd34d !important; }
 #sc-call-overlay .sc3d-status.sc-ok { color: #6ee7b7 !important; }
 #sc-call-overlay .sc3d-status.sc-err { color: #fca5a5 !important; }
 
-/* ===== INSET 3D BUTTONS (large, for Create/Join/Cancel) ===== */
+/* ===== INSET 3D BUTTONS (v10: half size) ===== */
 #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
-  gap: 6px !important;
+  gap: 3px !important;
   width: 100% !important;
-  padding: 12px 16px !important;
-  font-size: 13px !important; font-weight: 600 !important;
+  padding: 6px 8px !important;
+  font-size: 8px !important; font-weight: 600 !important;
   font-family: 'Space Grotesk', sans-serif !important;
-  letter-spacing: 0.4px !important;
+  letter-spacing: 0.2px !important;
   color: #fff !important;
   border: none !important;
-  border-radius: 10px !important;
+  border-radius: 5px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
@@ -191,7 +183,7 @@
     inset 0 1px 0 rgba(255,255,255,0.1),
     inset 0 -1px 0 rgba(0,0,0,0.4),
     inset 0 0 0 1px rgba(0,0,0,0.2),
-    0 1px 2px rgba(0,0,0,0.5) !important;
+    0 1px 1px rgba(0,0,0,0.5) !important;
 }
 #sc-pw-overlay .sc3d-btn:active, #sc-call-overlay .sc3d-btn:active {
   transform: translateY(1px) !important;
@@ -240,24 +232,24 @@
 }
 #sc-call-overlay .sc3d-btn-ghost:hover { background: rgba(255,255,255,0.09) !important; }
 
-/* ===== IN-CALL CONTROL GRID (4 small icon buttons) ===== */
+/* ===== IN-CALL CONTROL GRID (v10: half size) ===== */
 #sc-call-overlay .sc3d-controls {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
-  gap: 8px !important;
-  margin-top: 14px !important;
+  gap: 4px !important;
+  margin-top: 7px !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important; justify-content: center !important;
-  gap: 4px !important;
-  padding: 10px 4px !important;
-  font-size: 9px !important; font-weight: 600 !important;
-  letter-spacing: 0.3px !important;
+  gap: 2px !important;
+  padding: 5px 2px !important;
+  font-size: 6px !important; font-weight: 600 !important;
+  letter-spacing: 0.2px !important;
   color: rgba(220,220,240,0.8) !important;
   border: none !important;
-  border-radius: 12px !important;
+  border-radius: 6px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
@@ -274,7 +266,7 @@
     inset 0 0 0 1px rgba(255,255,255,0.04) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn i {
-  font-size: 16px !important;
+  font-size: 9px !important;
   color: rgba(220,220,240,0.85) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn:active {
@@ -321,18 +313,18 @@
     inset 0 1px 0 rgba(0,0,0,0.3) !important;
 }
 
-/* Close X */
+/* Close X — v10: half size */
 #sc-pw-overlay .sc3d-close, #sc-call-overlay .sc3d-close {
   position: absolute !important;
-  top: 10px !important; right: 10px !important;
-  width: 28px !important; height: 28px !important;
+  top: 5px !important; right: 5px !important;
+  width: 14px !important; height: 14px !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 50% !important;
   background: rgba(30,30,40,0.7) !important;
   color: rgba(220,220,240,0.6) !important;
   cursor: pointer !important;
-  font-size: 12px !important;
+  font-size: 6px !important;
   z-index: 5 !important;
   padding: 0 !important;
   box-shadow:
@@ -348,47 +340,47 @@
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
 }
 
-/* ===== NOTIFICATION BANNER (v9) — "New Call Code Created: XXXXXX" ===== */
+/* ===== NOTIFICATION BANNER (v10: half size) — "New Call Code Created: XXXXXX" ===== */
 #sc-call-overlay .sc3d-banner {
   display: none !important;
   position: relative !important;
-  margin: 0 0 14px 0 !important;
-  padding: 10px 12px !important;
-  border-radius: 10px !important;
+  margin: 0 0 7px 0 !important;
+  padding: 5px 6px !important;
+  border-radius: 5px !important;
   background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(109,40,217,0.12)) !important;
   border: 1px solid rgba(167,139,250,0.4) !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.08),
     inset 0 0 0 1px rgba(167,139,250,0.15),
-    0 2px 8px rgba(124,58,237,0.15) !important;
+    0 1px 4px rgba(124,58,237,0.15) !important;
 }
 #sc-call-overlay .sc3d-banner.sc-banner-show { display: block !important; }
 #sc-call-overlay .sc3d-banner-label {
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
-  font-size: 10px !important;
+  gap: 3px !important;
+  font-size: 5px !important;
   font-weight: 600 !important;
-  letter-spacing: 0.6px !important;
+  letter-spacing: 0.3px !important;
   text-transform: uppercase !important;
   color: #c4b5fd !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 3px !important;
 }
 #sc-call-overlay .sc3d-banner-label i {
-  font-size: 11px !important;
+  font-size: 6px !important;
   color: #a78bfa !important;
 }
 #sc-call-overlay .sc3d-banner-row {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 8px !important;
+  gap: 4px !important;
 }
 #sc-call-overlay .sc3d-banner-code {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 17px !important;
+  font-size: 10px !important;
   font-weight: 700 !important;
-  letter-spacing: 3px !important;
+  letter-spacing: 1.5px !important;
   color: #e8e8f5 !important;
   user-select: all !important;
   flex: 1 !important;
@@ -397,13 +389,13 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 30px !important;
-  height: 30px !important;
-  border-radius: 8px !important;
+  width: 15px !important;
+  height: 15px !important;
+  border-radius: 4px !important;
   cursor: pointer !important;
   background: rgba(124,58,237,0.35) !important;
   color: #c4b5fd !important;
-  font-size: 12px !important;
+  font-size: 6px !important;
   border: none !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.1),
@@ -420,10 +412,10 @@
 }
 #sc-call-overlay .sc3d-banner-dismiss {
   position: absolute !important;
-  top: 6px !important;
-  right: 6px !important;
-  width: 18px !important;
-  height: 18px !important;
+  top: 3px !important;
+  right: 3px !important;
+  width: 9px !important;
+  height: 9px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -431,7 +423,7 @@
   background: rgba(255,255,255,0.05) !important;
   color: rgba(180,180,200,0.6) !important;
   cursor: pointer !important;
-  font-size: 9px !important;
+  font-size: 5px !important;
   border: none !important;
   padding: 0 !important;
 }
@@ -440,17 +432,17 @@
   color: #fca5a5 !important;
 }
 
-/* Icon badge */
+/* Icon badge — v10: half size */
 #sc-pw-overlay .sc3d-icon-badge, #sc-call-overlay .sc3d-icon-badge {
-  width: 52px !important; height: 52px !important;
-  margin: 0 auto 12px !important;
+  width: 26px !important; height: 26px !important;
+  margin: 0 auto 6px !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
-  border-radius: 16px !important;
+  border-radius: 8px !important;
   background: linear-gradient(135deg, rgba(80,60,140,0.4), rgba(120,60,100,0.4)) !important;
   border: 1px solid rgba(120,100,180,0.4) !important;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1) !important;
-  font-size: 22px !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  font-size: 11px !important;
   color: #c4b5fd !important;
 }
 #sc-call-overlay .sc3d-icon-badge.sc-call-active {
@@ -474,64 +466,64 @@
   width: auto !important; height: auto !important;
 }
 
-/* Button row (Create/Join) */
+/* Button row (Create/Join) — v10: half size */
 #sc-call-overlay .sc3d-btn-row {
-  display: flex !important; gap: 10px !important; margin-top: 12px !important;
+  display: flex !important; gap: 5px !important; margin-top: 6px !important;
 }
 #sc-call-overlay .sc3d-btn-row .sc3d-btn { flex: 1 !important; }
 
-/* Timer */
+/* Timer — v10: half size */
 #sc-call-overlay .sc3d-timer {
   display: block !important; text-align: center !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 24px !important; font-weight: 700 !important;
+  font-size: 12px !important; font-weight: 700 !important;
   color: #e8e8f5 !important;
-  letter-spacing: 2px !important;
-  margin: 6px 0 2px !important;
+  letter-spacing: 1px !important;
+  margin: 3px 0 1px !important;
 }
 
-/* Avatar */
+/* Avatar — v10: half size */
 #sc-call-overlay .sc3d-avatar {
-  width: 56px !important; height: 56px !important;
-  margin: 6px auto 8px !important;
+  width: 28px !important; height: 28px !important;
+  margin: 3px auto 4px !important;
   border-radius: 50% !important;
   background: linear-gradient(135deg, #6d28d9, #be185d) !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
-  font-size: 22px !important;
+  font-size: 11px !important;
   color: #fff !important;
-  box-shadow: 0 0 0 3px rgba(109,40,217,0.2), 0 0 20px rgba(0,0,0,0.6) !important;
+  box-shadow: 0 0 0 2px rgba(109,40,217,0.2), 0 0 10px rgba(0,0,0,0.6) !important;
   position: relative !important;
 }
 
-/* ===== CODE DISPLAY (small, with copy) ===== */
+/* ===== CODE DISPLAY (v10: half size, with copy) ===== */
 #sc-call-overlay .sc3d-code-section {
   display: block !important;
-  margin-top: 14px !important;
-  padding: 8px 10px !important;
-  border-radius: 9px !important;
+  margin-top: 7px !important;
+  padding: 4px 5px !important;
+  border-radius: 5px !important;
   background: #050505 !important;
   border: 1px solid rgba(100,100,120,0.3) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
 }
 #sc-call-overlay .sc3d-code-label {
   display: block !important;
-  font-size: 8px !important; font-weight: 600 !important;
-  letter-spacing: 1.5px !important;
+  font-size: 4px !important; font-weight: 600 !important;
+  letter-spacing: 0.8px !important;
   color: rgba(167,139,250,0.5) !important;
   text-transform: uppercase !important;
-  margin-bottom: 3px !important; text-align: center !important;
+  margin-bottom: 2px !important; text-align: center !important;
 }
 #sc-call-overlay .sc3d-code-row {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
+  gap: 3px !important;
 }
 #sc-call-overlay .sc3d-code-value {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 11px !important; font-weight: 700 !important;
-  letter-spacing: 2px !important;
+  font-size: 7px !important; font-weight: 700 !important;
+  letter-spacing: 1px !important;
   color: #a5b4fc !important;
   user-select: all !important;
   flex: 1 !important;
@@ -540,12 +532,12 @@
 #sc-call-overlay .sc3d-code-copy {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
-  width: 24px !important; height: 24px !important;
-  border-radius: 6px !important;
+  width: 12px !important; height: 12px !important;
+  border-radius: 3px !important;
   cursor: pointer !important;
   background: rgba(109,40,217,0.3) !important;
   color: #c4b5fd !important;
-  font-size: 10px !important;
+  font-size: 5px !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.08),
     inset 0 -1px 0 rgba(0,0,0,0.4),
@@ -559,24 +551,18 @@
   background: rgba(16,185,129,0.4) !important;
   color: #6ee7b7 !important;
 }
+/* v10: hint hidden (user requested removal of "Tap copy to share") */
 #sc-call-overlay .sc3d-code-hint {
-  display: block !important;
-  font-size: 8px !important;
-  color: rgba(140,140,160,0.4) !important;
-  text-align: center !important;
-  margin-top: 3px !important; letter-spacing: 0.3px !important;
+  display: none !important;
 }
 
 /* Steps */
 #sc-call-overlay .sc3d-step { display: none !important; }
 #sc-call-overlay .sc3d-step.sc-active { display: block !important; }
 
-/* Hint */
+/* Hint — v10: hidden (user requested removal of hint texts) */
 #sc-pw-overlay .sc3d-hint, #sc-call-overlay .sc3d-hint {
-  display: block !important; text-align: center !important;
-  font-size: 10px !important;
-  color: rgba(140,140,160,0.4) !important;
-  margin-top: 10px !important; line-height: 1.5 !important;
+  display: none !important;
 }
 #sc-call-overlay .sc3d-hint strong { color: rgba(200,200,220,0.7) !important; font-weight: 700 !important; }
 
@@ -589,15 +575,14 @@
   color: #c4b5fd !important;
 }
 
-/* Mobile */
+/* Mobile — v10: keep compact sizes on mobile too */
 @media (max-width: 480px) {
-  #sc-pw-overlay .sc3d-card { max-width: 280px !important; padding: 24px 18px 20px !important; }
-  #sc-call-overlay .sc3d-card-call { max-width: 300px !important; padding: 24px 18px 20px !important; }
-  #sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title { font-size: 16px !important; }
-  #sc-call-overlay .sc3d-code-value { font-size: 10px !important; letter-spacing: 1.5px !important; }
-  #sc-call-overlay .sc3d-timer { font-size: 20px !important; }
-  #sc-call-overlay .sc3d-ctrl-btn { padding: 9px 2px !important; font-size: 8px !important; }
-  #sc-call-overlay .sc3d-ctrl-btn i { font-size: 14px !important; }
+  #sc-pw-overlay .sc3d-card { max-width: 140px !important; padding: 12px 9px 9px !important; }
+  #sc-call-overlay .sc3d-card-call { max-width: 155px !important; padding: 12px 9px 9px !important; }
+  #sc-call-overlay .sc3d-code-value { font-size: 6px !important; letter-spacing: 0.8px !important; }
+  #sc-call-overlay .sc3d-timer { font-size: 10px !important; }
+  #sc-call-overlay .sc3d-ctrl-btn { padding: 4px 1px !important; font-size: 5px !important; }
+  #sc-call-overlay .sc3d-ctrl-btn i { font-size: 8px !important; }
 }
 </style>
 <!-- ===== END SECRET CALL HEAD ===== -->
@@ -3735,8 +3720,6 @@
       joinInputVisible = true;
       var wrap = $('sc-join-input-wrap');
       if (wrap) wrap.style.display = 'block';
-      var hint = $('sc-choose-hint');
-      if (hint) hint.innerHTML = 'Enter the 6-char code, then press <strong>Join</strong>.';
       var inp = $('sc-join-code-input');
       if (inp) setTimeout(function(){ inp.focus(); }, 50);
       return;
@@ -3916,14 +3899,11 @@
     <div class="sc3d-card" id="sc-pw-card">\
       <button class="sc3d-close" id="sc-pw-close" aria-label="Close" type="button"><i class="fas fa-times"></i></button>\
       <div class="sc3d-icon-badge"><i class="fas fa-lock"></i></div>\
-      <div class="sc3d-title">Restricted Access</div>\
-      <div class="sc3d-subtitle">Enter password to continue</div>\
       <div class="sc3d-input-wrap">\
         <input type="password" id="sc-pw-input" class="sc3d-input" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false">\
       </div>\
       <div class="sc3d-error" id="sc-pw-error"></div>\
       <button class="sc3d-btn sc3d-btn-purple" id="sc-pw-submit" type="button"><i class="fas fa-arrow-right"></i> Unlock</button>\
-      <div class="sc3d-hint">Press Enter to submit</div>\
     </div>\
   </div>\
 </div>';
@@ -3945,23 +3925,20 @@
 \
       <div class="sc3d-step sc-active" id="sc-step-choose">\
         <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
-        <div class="sc3d-title">Secret Call</div>\
-        <div class="sc3d-subtitle">Create a call or join with a code</div>\
         <div class="sc3d-btn-row">\
           <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create" type="button"><i class="fas fa-plus"></i> Create</button>\
           <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join" type="button"><i class="fas fa-phone"></i> Join</button>\
         </div>\
         <div class="sc3d-status" id="sc-status-choose"></div>\
-        <div class="sc3d-input-wrap" id="sc-join-input-wrap" style="display:none;margin-top:10px;">\
-          <input type="text" id="sc-join-code-input" class="sc3d-code-input" placeholder="ENTER CODE" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false">\
+        <div class="sc3d-input-wrap" id="sc-join-input-wrap" style="display:none;margin-top:5px;">\
+          <input type="text" id="sc-join-code-input" class="sc3d-code-input" placeholder="CODE" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false">\
         </div>\
-        <div class="sc3d-hint" id="sc-choose-hint">Click <strong>Create</strong> to host.<br>Click <strong>Join</strong> to enter a code.</div>\
       </div>\
 \
       <div class="sc3d-step" id="sc-step-creating">\
         <div class="sc3d-icon-badge"><i class="fas fa-satellite-dish"></i></div>\
-        <div class="sc3d-title">Hosting Call</div>\
-        <div class="sc3d-subtitle">Waiting for the other person…</div>\
+        <div class="sc3d-title" style="display:none">Hosting Call</div>\
+        <div class="sc3d-subtitle" style="display:none">Waiting for the other person…</div>\
         <div class="sc3d-avatar" id="sc-avatar-creating"><i class="fas fa-user"></i></div>\
         <div class="sc3d-status sc-busy" id="sc-status-creating">Listening…</div>\
         <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-create" type="button"><i class="fas fa-times"></i> Cancel</button>\
@@ -3969,8 +3946,8 @@
 \
       <div class="sc3d-step" id="sc-step-joining">\
         <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
-        <div class="sc3d-title">Connecting…</div>\
-        <div class="sc3d-subtitle">Calling the host</div>\
+        <div class="sc3d-title" style="display:none">Connecting…</div>\
+        <div class="sc3d-subtitle" style="display:none">Calling the host</div>\
         <div class="sc3d-avatar" id="sc-avatar-joining"><i class="fas fa-headset"></i></div>\
         <div class="sc3d-status sc-busy" id="sc-status-joining">Ringing…</div>\
         <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-join" type="button"><i class="fas fa-times"></i> Cancel</button>\
@@ -3978,8 +3955,8 @@
 \
       <div class="sc3d-step" id="sc-step-incall">\
         <div class="sc3d-icon-badge sc-call-active"><i class="fas fa-phone"></i></div>\
-        <div class="sc3d-title">In Call</div>\
-        <div class="sc3d-subtitle" id="sc-peer-label">Connected</div>\
+        <div class="sc3d-title" style="display:none">In Call</div>\
+        <div class="sc3d-subtitle" id="sc-peer-label" style="display:none">Connected</div>\
         <div class="sc3d-avatar" id="sc-avatar-incall"><i class="fas fa-user"></i></div>\
         <div class="sc3d-timer" id="sc-timer">00:00</div>\
         <div class="sc3d-status sc-ok" id="sc-status-incall">Connected</div>\
@@ -3997,7 +3974,6 @@
           <div class="sc3d-code-value" id="sc-code-value">------</div>\
           <button class="sc3d-code-copy" id="sc-code-copy" aria-label="Copy code" type="button"><i class="fas fa-copy"></i></button>\
         </div>\
-        <div class="sc3d-code-hint">Tap copy to share</div>\
       </div>\
     </div>\
   </div>\
