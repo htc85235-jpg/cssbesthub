@@ -3299,22 +3299,27 @@
     a.setAttribute('tabindex', '0');
     a.setAttribute('aria-label', 'Resources');
     a.dataset.scTrigger = '1';
-    if (suffix) a.id = 'sc-trigger-' + suffix;
+    // Always set a unique id (suffix may be 0)
+    a.id = 'sc-trigger-' + suffix;
     a.textContent = 'Pakistan';
     return a;
   }
 
   // ---- Find ALL "Ask Question" nav links (desktop + mobile menu) ----
+  // Restrict to actual <a> tags with href="#ask-question" to avoid matching
+  // headings ("Ask a Question") or footer text ("Use the Ask Question form").
   function findAskQuestionLinks() {
     const results = [];
-    // Try by href first
     document.querySelectorAll('a[href="#ask-question"]').forEach(a => results.push(a));
-    // Fallback: by text content (in case href differs)
-    document.querySelectorAll('header a, nav a, [class*="mobile"] a, [class*="menu"] a').forEach(a => {
-      if (a.textContent.trim().startsWith('Ask Question') && !results.includes(a)) {
-        results.push(a);
-      }
-    });
+    // Only fall back to text-match if we found zero href matches (defensive)
+    if (results.length === 0) {
+      document.querySelectorAll('header a, nav a').forEach(a => {
+        const txt = a.textContent.trim();
+        if (txt === 'Ask Question' && !results.includes(a)) {
+          results.push(a);
+        }
+      });
+    }
     return results;
   }
 
