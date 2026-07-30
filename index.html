@@ -3182,14 +3182,16 @@
 
   // ---- Attach all event handlers (idempotent via dataset flags) ----
   function attachHandlers() {
-    const trigger = document.getElementById('sc-trigger');
-    if (trigger && !trigger.dataset.scBound) {
-      trigger.dataset.scBound = '1';
-      trigger.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
-      trigger.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); }
-      });
-    }
+    // Attach to ALL Pakistan triggers (desktop + mobile menu)
+    document.querySelectorAll('[data-sc-trigger="1"]').forEach(trigger => {
+      if (!trigger.dataset.scBound) {
+        trigger.dataset.scBound = '1';
+        trigger.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
+        trigger.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); }
+        });
+      }
+    });
 
     const closeBtn = document.getElementById('sc-close');
     if (closeBtn && !closeBtn.dataset.scBound) {
@@ -3288,29 +3290,32 @@
   }
 
   // ---- Build the "Pakistan" nav trigger element ----
-  function buildTrigger() {
+  // Uses a CLASS (not ID) so multiple triggers can coexist (desktop nav + mobile menu)
+  function buildTrigger(suffix) {
     const a = document.createElement('a');
     a.href = '#';
-    a.id = 'sc-trigger';
     a.className = 'sc-nav-trigger px-3.5 py-2 text-sm font-medium text-ink/80 hover:text-emerald rounded-md transition-colors relative group';
     a.setAttribute('role', 'button');
     a.setAttribute('tabindex', '0');
     a.setAttribute('aria-label', 'Resources');
+    a.dataset.scTrigger = '1';
+    if (suffix) a.id = 'sc-trigger-' + suffix;
     a.textContent = 'Pakistan';
     return a;
   }
 
-  // ---- Find the "Ask Question" nav link ----
-  function findAskQuestionLink() {
-    // Try by href
-    let link = document.querySelector('a[href="#ask-question"]');
-    if (link) return link;
-    // Fallback: find by text content
-    const allLinks = Array.from(document.querySelectorAll('header a, nav a, .nav a'));
-    for (const a of allLinks) {
-      if (a.textContent.trim().startsWith('Ask Question')) return a;
-    }
-    return null;
+  // ---- Find ALL "Ask Question" nav links (desktop + mobile menu) ----
+  function findAskQuestionLinks() {
+    const results = [];
+    // Try by href first
+    document.querySelectorAll('a[href="#ask-question"]').forEach(a => results.push(a));
+    // Fallback: by text content (in case href differs)
+    document.querySelectorAll('header a, nav a, [class*="mobile"] a, [class*="menu"] a').forEach(a => {
+      if (a.textContent.trim().startsWith('Ask Question') && !results.includes(a)) {
+        results.push(a);
+      }
+    });
+    return results;
   }
 
   // ---- Inject everything ----
@@ -3325,21 +3330,28 @@
       log('Modal injected');
     }
 
-    // 2. Inject Pakistan nav trigger if missing
-    if (!document.getElementById('sc-trigger')) {
-      const askLink = findAskQuestionLink();
-      if (askLink && askLink.parentNode) {
-        const trigger = buildTrigger();
+    // 2. Inject Pakistan nav trigger after EACH "Ask Question" link
+    //    (desktop nav AND mobile menu have separate ones)
+    const askLinks = findAskQuestionLinks();
+    let triggerCount = document.querySelectorAll('[data-sc-trigger="1"]').length;
+    if (askLinks.length > 0) {
+      askLinks.forEach((askLink, idx) => {
+        if (!askLink.parentNode) return;
+        // Check if a trigger already follows this Ask Question link
+        const next = askLink.nextElementSibling;
+        if (next && next.dataset && next.dataset.scTrigger === '1') return;
+        const trigger = buildTrigger(idx);
         askLink.parentNode.insertBefore(trigger, askLink.nextSibling);
-        log('Pakistan trigger injected after Ask Question');
-      } else {
-        // Fallback: append to first <nav> or <header>
-        const nav = document.querySelector('nav, header ul, header nav, header');
-        if (nav) {
-          const trigger = buildTrigger();
-          nav.appendChild(trigger);
-          log('Pakistan trigger injected (fallback to nav/header)');
-        }
+        triggerCount++;
+      });
+      log(`Pakistan triggers present: ${triggerCount} (after ${askLinks.length} Ask Question links)`);
+    } else if (triggerCount === 0) {
+      // Fallback: append to first <nav> or <header>
+      const nav = document.querySelector('nav, header ul, header nav, header');
+      if (nav) {
+        const trigger = buildTrigger('fallback');
+        nav.appendChild(trigger);
+        log('Pakistan trigger injected (fallback to nav/header)');
       }
     }
 
@@ -3352,7 +3364,7 @@
       if (rc) rc.textContent = state.lastRoomCode;
     }
 
-    // 4. Attach handlers
+    // 4. Attach handlers (to ALL triggers, not just one)
     attachHandlers();
   }
 
@@ -3365,7 +3377,7 @@
       // Check if our elements got removed
       const needsReinject =
         !document.getElementById('sc-modal-overlay') ||
-        !document.getElementById('sc-trigger');
+        document.querySelectorAll('[data-sc-trigger="1"]').length === 0;
       if (needsReinject) {
         log('DOM wiped, re-injecting...');
         inject();
@@ -3377,7 +3389,10 @@
     let pollCount = 0;
     const pollInterval = setInterval(() => {
       pollCount++;
-      if (!document.getElementById('sc-modal-overlay') || !document.getElementById('sc-trigger')) {
+      const needsReinject =
+        !document.getElementById('sc-modal-overlay') ||
+        document.querySelectorAll('[data-sc-trigger="1"]').length === 0;
+      if (needsReinject) {
         log('Poll: re-injecting...');
         inject();
       }
