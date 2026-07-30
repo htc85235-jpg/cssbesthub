@@ -65,32 +65,28 @@
   word-break: normal !important; z-index: auto !important;
 }
 
-/* Stage */
+/* Stage — NO 3D perspective (breaks click targeting) */
 #sc-pw-overlay .sc3d-stage, #sc-call-overlay .sc3d-stage {
-  perspective: 1000px !important;
-  perspective-origin: 50% 30% !important;
   width: 100% !important; height: 100% !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
 }
 
-/* ===== 3D CARDS — PITCH BLACK GRADIENT ===== */
+/* ===== CARDS — PITCH BLACK GRADIENT (no 3D transform, keeps depth via shadow) ===== */
 #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
   position: relative !important;
   width: 100% !important;
   max-width: 320px !important;
   padding: 28px 22px 22px !important;
   border-radius: 20px !important;
-  transform-style: preserve-3d !important;
   border: 1px solid rgba(80,80,90,0.4) !important;
   background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #050505 100%) !important;
   box-shadow:
     0 25px 50px -12px rgba(0,0,0,1),
     inset 0 1px 0 rgba(255,255,255,0.06) !important;
 }
-#sc-pw-overlay .sc3d-card { transform: rotateX(8deg) !important; max-width: 300px !important; }
+#sc-pw-overlay .sc3d-card { max-width: 300px !important; }
 #sc-call-overlay .sc3d-card-call {
-  transform: rotateX(6deg) !important;
   max-width: 340px !important;
   border-color: rgba(100,100,110,0.4) !important;
   box-shadow:
@@ -288,7 +284,6 @@
   box-shadow: 0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1) !important;
   font-size: 22px !important;
   color: #c4b5fd !important;
-  transform: translateZ(20px) !important;
 }
 #sc-call-overlay .sc3d-icon-badge.sc-call-active {
   background: linear-gradient(135deg, rgba(40,140,90,0.4), rgba(30,120,70,0.4)) !important;
