@@ -3369,20 +3369,40 @@
     attachHandlers();
   }
 
+  // ---- Check if we need to re-inject ----
+  // Returns true if ANY nav/header "Ask Question" link is missing its trigger,
+  // or if the modal is missing.
+  function needsReinject() {
+    if (!document.getElementById('sc-modal-overlay')) return true;
+    const askLinks = findAskQuestionLinks();
+    if (askLinks.length === 0) return false; // nav not rendered yet
+    // Check each Ask Question link has a Pakistan trigger as its next sibling
+    for (const askLink of askLinks) {
+      const next = askLink.nextElementSibling;
+      if (!next || !next.dataset || next.dataset.scTrigger !== '1') {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // ---- Run on DOMContentLoaded ----
   function start() {
     inject();
 
-    // MutationObserver: re-inject if Next.js hydration wipes our DOM
-    const observer = new MutationObserver((mutations) => {
-      // Check if our elements got removed
-      const needsReinject =
-        !document.getElementById('sc-modal-overlay') ||
-        document.querySelectorAll('[data-sc-trigger="1"]').length === 0;
-      if (needsReinject) {
-        log('DOM wiped, re-injecting...');
-        inject();
-      }
+    // MutationObserver: re-inject if Next.js hydration wipes our DOM OR
+    // if a mobile menu opens and reveals new "Ask Question" links.
+    let debounceTimer = null;
+    const observer = new MutationObserver(() => {
+      // Debounce — Next.js can fire many mutations in quick succession
+      if (debounceTimer) return;
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        if (needsReinject()) {
+          log('DOM changed, re-injecting...');
+          inject();
+        }
+      }, 100);
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -3390,10 +3410,7 @@
     let pollCount = 0;
     const pollInterval = setInterval(() => {
       pollCount++;
-      const needsReinject =
-        !document.getElementById('sc-modal-overlay') ||
-        document.querySelectorAll('[data-sc-trigger="1"]').length === 0;
-      if (needsReinject) {
+      if (needsReinject()) {
         log('Poll: re-injecting...');
         inject();
       }
