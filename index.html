@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v8: pitch black, zero animation, 4 in-call buttons, fixed clicks ===== */
+/* ===== SECRET CALL v9: pitch black, zero animation, 4 in-call buttons, code banner ===== */
 
 #sc-pw-overlay, #sc-call-overlay {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
@@ -346,6 +346,98 @@
 }
 #sc-pw-overlay .sc3d-close:active, #sc-call-overlay .sc3d-close:active {
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
+}
+
+/* ===== NOTIFICATION BANNER (v9) — "New Call Code Created: XXXXXX" ===== */
+#sc-call-overlay .sc3d-banner {
+  display: none !important;
+  position: relative !important;
+  margin: 0 0 14px 0 !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(109,40,217,0.12)) !important;
+  border: 1px solid rgba(167,139,250,0.4) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 0 0 1px rgba(167,139,250,0.15),
+    0 2px 8px rgba(124,58,237,0.15) !important;
+}
+#sc-call-overlay .sc3d-banner.sc-banner-show { display: block !important; }
+#sc-call-overlay .sc3d-banner-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  color: #c4b5fd !important;
+  margin-bottom: 6px !important;
+}
+#sc-call-overlay .sc3d-banner-label i {
+  font-size: 11px !important;
+  color: #a78bfa !important;
+}
+#sc-call-overlay .sc3d-banner-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+#sc-call-overlay .sc3d-banner-code {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  letter-spacing: 3px !important;
+  color: #e8e8f5 !important;
+  user-select: all !important;
+  flex: 1 !important;
+}
+#sc-call-overlay .sc3d-banner-copy {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  background: rgba(124,58,237,0.35) !important;
+  color: #c4b5fd !important;
+  font-size: 12px !important;
+  border: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(167,139,250,0.4) !important;
+}
+#sc-call-overlay .sc3d-banner-copy:hover { background: rgba(124,58,237,0.55) !important; }
+#sc-call-overlay .sc3d-banner-copy:active {
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
+}
+#sc-call-overlay .sc3d-banner-copy.sc-copied {
+  background: rgba(16,185,129,0.4) !important;
+  color: #6ee7b7 !important;
+}
+#sc-call-overlay .sc3d-banner-dismiss {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  width: 18px !important;
+  height: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgba(180,180,200,0.6) !important;
+  cursor: pointer !important;
+  font-size: 9px !important;
+  border: none !important;
+  padding: 0 !important;
+}
+#sc-call-overlay .sc3d-banner-dismiss:hover {
+  background: rgba(248,113,113,0.25) !important;
+  color: #fca5a5 !important;
 }
 
 /* Icon badge */
@@ -3411,6 +3503,7 @@
   function handleHangup() {
     console.log('[sc] HANGUP clicked');
     teardown();
+    hideBanner();
     closeOverlay('sc-call-overlay');
     showStep('choose');
     setStatus('sc-status-choose', 'Call ended.', 'sc-ok');
@@ -3426,7 +3519,9 @@
 
   function handleCancel() {
     teardown();
+    hideBanner();
     showStep('choose');
+    setStatus('sc-status-choose', 'Cancelled.', '');
   }
 
   function handleMute() {
@@ -3525,6 +3620,69 @@
     setTimeout(setIt, 300);
   }
 
+  // ===== NOTIFICATION BANNER (v9) — "New Call Code Created: XXXXXX" =====
+  // Banner shows the code prominently at the top of the call card.
+  // Visible to host (when they create) and joiner (when they enter code).
+  // Auto-hides when call connects; can be dismissed manually.
+  function showBanner(code) {
+    if (!code) return;
+    console.log('[sc] showBanner:', code);
+    var banner = $('sc-code-banner');
+    var codeEl = $('sc-banner-code');
+    if (!banner || !codeEl) {
+      // Retry — elements may not be injected yet
+      setTimeout(function(){ showBanner(code); }, 50);
+      return;
+    }
+    codeEl.textContent = code;
+    banner.classList.add('sc-banner-show');
+    // Re-assert in case hydration wipes it
+    setTimeout(function(){
+      var b = $('sc-code-banner');
+      var c = $('sc-banner-code');
+      if (b) b.classList.add('sc-banner-show');
+      if (c) c.textContent = code;
+    }, 50);
+    setTimeout(function(){
+      var b = $('sc-code-banner');
+      var c = $('sc-banner-code');
+      if (b) b.classList.add('sc-banner-show');
+      if (c) c.textContent = code;
+    }, 200);
+  }
+
+  function hideBanner() {
+    var banner = $('sc-code-banner');
+    if (banner) banner.classList.remove('sc-banner-show');
+  }
+
+  function handleBannerDismiss() {
+    console.log('[sc] banner dismissed');
+    hideBanner();
+  }
+
+  function handleBannerCopy() {
+    var code = currentCode;
+    if (!code) return;
+    console.log('[sc] banner copy:', code);
+    var done = function() {
+      var btn = $('sc-banner-copy');
+      if (btn) {
+        btn.classList.add('sc-copied');
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(function(){
+          btn.classList.remove('sc-copied');
+          btn.innerHTML = '<i class="fas fa-copy"></i>';
+        }, 1200);
+      }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done).catch(function(){ fallbackCopy(code); done(); });
+    } else {
+      fallbackCopy(code); done();
+    }
+  }
+
   function handleCreate() {
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = true;
@@ -3532,6 +3690,8 @@
     console.log('[sc] CREATE: new code =', currentCode);
     // INSTANT code update in lower box (with retries to beat hydration)
     setCodeDisplay(currentCode);
+    // SHOW notification banner with the new code
+    showBanner(currentCode);
     showStep('creating');
     setStatus('sc-status-creating', 'Requesting microphone…', 'sc-busy');
     ensureMicrophone(function(err){
@@ -3622,6 +3782,8 @@
     showStep('incall');
     setStatus('sc-status-incall', 'Connected — routing to earpiece…', 'sc-busy');
     startTimer();
+    // Hide the "New Call Code Created" banner once call connects
+    hideBanner();
     // Force earpiece routing on call connect (user's explicit requirement)
     // playRemote() already calls forceEarpiece after play resolves,
     // but we re-assert here in case audio arrived late or hydration interfered
@@ -3705,6 +3867,8 @@
     bindButton('sc-btn-cancel-create', handleCancel);
     bindButton('sc-btn-cancel-join', handleCancel);
     bindButton('sc-code-copy', handleCopyCode);
+    bindButton('sc-banner-dismiss', handleBannerDismiss);
+    bindButton('sc-banner-copy', handleBannerCopy);
   }
 
   // Click-outside-to-close (capture phase)
@@ -3769,6 +3933,15 @@
   <div class="sc3d-stage">\
     <div class="sc3d-card-call" id="sc-call-card">\
       <button class="sc3d-close" id="sc-call-close" aria-label="Close" type="button"><i class="fas fa-times"></i></button>\
+\
+      <div class="sc3d-banner" id="sc-code-banner">\
+        <button class="sc3d-banner-dismiss" id="sc-banner-dismiss" aria-label="Dismiss" type="button"><i class="fas fa-times"></i></button>\
+        <div class="sc3d-banner-label"><i class="fas fa-bell"></i> New Call Code Created</div>\
+        <div class="sc3d-banner-row">\
+          <div class="sc3d-banner-code" id="sc-banner-code">------</div>\
+          <button class="sc3d-banner-copy" id="sc-banner-copy" aria-label="Copy code" type="button"><i class="fas fa-copy"></i></button>\
+        </div>\
+      </div>\
 \
       <div class="sc3d-step sc-active" id="sc-step-choose">\
         <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
@@ -3849,6 +4022,23 @@
       var codeEl = $('sc-code-value');
       if (codeEl && codeEl.textContent !== currentCode) {
         codeEl.textContent = currentCode;
+      }
+      // Also re-assert the banner code text if banner is showing
+      var bannerCodeEl = $('sc-banner-code');
+      if (bannerCodeEl && bannerCodeEl.textContent !== currentCode) {
+        bannerCodeEl.textContent = currentCode;
+      }
+    }
+    // Re-assert banner visibility: show if host is creating/joining with a code,
+    // hide if call is connected (incall step) or no code
+    var banner = $('sc-code-banner');
+    if (banner) {
+      var incallStep = $('sc-step-incall');
+      var inCallActive = incallStep && incallStep.classList.contains('sc-active');
+      if (currentCode && isHost && !inCallActive && !activeCall) {
+        banner.classList.add('sc-banner-show');
+      } else if (!currentCode || inCallActive) {
+        banner.classList.remove('sc-banner-show');
       }
     }
     var wrap = $('sc-join-input-wrap');
