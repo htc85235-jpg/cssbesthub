@@ -6,17 +6,20 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v13: GLASSY 3D SILVER (modern, glowing buttons, larger boxes) ===== */
+/* ===== SECRET CALL v14: INSET 3D GLASS SILVER (press-INTO-surface buttons) ===== */
 /* User request:
-   - "Slightly increase the size of box and everything according to it"
-   - "Theme looks old style. It must be glassy, 3d silver, attractive, modern with
-      glowing effects on buttons"
-   - "Texts of buttons must be according to buttons size"
-   Theme goals: frosted-glass blur surfaces over a metallic charcoal bg, silver-chrome
-   3D bevels, colored glow auras on every interactive button, modern rounded corners,
-   larger overall sizing (cards ~200px, buttons ~10px text, controls ~7px text). */
+   - "All Buttons are looking bumpy" → redesigned as INSET 3D buttons that sit inside a
+     recessed groove and PRESS INTO the surface on :active (gradient reverses + top
+     inner shadow deepens + translateY down 1px). Membrane-keypad feel.
+   - "Change buttons colour into glass silver" → ALL action buttons use the SAME
+     frosted-glass silver gradient. Only Hangup stays red (destructive).
+   - "Buttons colour must be according to the visibility inside the buttons" → text
+     color driven by contrast: dark slate on silver, white on red hangup.
+   Theme goals: frosted-glass blur surfaces over a metallic charcoal bg, INSET 3D
+   silver buttons (membrane feel), uniform glass-silver color, larger overall sizing
+   (cards ~220px, buttons ~12px text, controls ~8px text). */
 
-/* ===== GLASSY SILVER PALETTE (v13) =====
+/* ===== GLASSY SILVER PALETTE (v14) =====
    -- Glass surface (light): rgba(245,247,250,0.55)  with backdrop-filter blur
    -- Glass surface (mid):   rgba(220,225,232,0.45)
    -- Glass surface (dark):  rgba(60,65,72,0.55)  (for code box / inputs)
@@ -234,8 +237,11 @@
 #sc-call-overlay .sc3d-status.sc-ok { color: #166534 !important; }
 #sc-call-overlay .sc3d-status.sc-err { color: #b91c1c !important; }
 
-/* ===== GLASSY SILVER BUTTONS (v13) — LARGER, GLOWING ===== */
-/* Frosted silver glass + colored glow aura + 3D bevel. Text sized to match buttons. */
+/* ===== INSET 3D GLASS SILVER BUTTONS (v14) — UNIFORM COLOR, PRESS-INTO-SURFACE ===== */
+/* All action buttons use the SAME frosted-glass silver gradient. They sit INSIDE a
+   recessed groove in the card surface. On :active, the gradient REVERSES and a heavy
+   TOP inner shadow appears — the button looks pushed INTO the card (membrane-keypad
+   feel). Text is dark slate for maximum contrast on silver (visibility-driven). */
 #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
@@ -245,9 +251,9 @@
   font-size: 12px !important; font-weight: 700 !important;
   font-family: 'Space Grotesk', sans-serif !important;
   letter-spacing: 0.4px !important;
-  color: #1a1a1f !important;
-  border: 1px solid rgba(120,128,140,0.55) !important;
-  border-radius: 12px !important;
+  color: #1a1a1f !important;  /* dark text on silver — max visibility */
+  border: 1px solid rgba(110,118,130,0.65) !important;
+  border-radius: 11px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
@@ -257,208 +263,88 @@
   transition: none !important;
   animation: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;  /* crisp glyph on silver */
   -webkit-backdrop-filter: blur(12px) saturate(150%);
   backdrop-filter: blur(12px) saturate(150%);
+  /* Default state: button sits IN a recessed groove (slightly inset look).
+     - top inner highlight (1px) = catches light at top edge of recess
+     - bottom inner shadow (2px) = depth at bottom of recess
+     - outer dark ring (0 1px 0) = the lip of the groove in the card surface
+     - subtle cyan ambient glow (very low — for modern feel, not bumpiness) */
   background: linear-gradient(180deg,
-    rgba(252,254,255,0.92) 0%,
-    rgba(232,238,246,0.88) 25%,
-    rgba(208,216,228,0.85) 55%,
-    rgba(180,190,204,0.85) 85%,
-    rgba(150,160,174,0.90) 100%) !important;
+    rgba(244,247,251,0.94) 0%,
+    rgba(220,226,236,0.90) 35%,
+    rgba(192,200,214,0.88) 70%,
+    rgba(160,170,184,0.92) 100%) !important;
   box-shadow:
-    /* Outer drop shadow + cyan ambient glow */
-    0 4px 8px rgba(0,0,0,0.55),
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 14px -2px rgba(103,232,249,0.35),
-    /* Top highlight */
-    inset 0 2px 1px rgba(255,255,255,1),
-    inset 0 1px 0 rgba(255,255,255,1),
-    /* Bottom shadow */
-    inset 0 -3px 2px rgba(0,0,0,0.30),
-    /* Side bevels */
-    inset 1px 0 1px rgba(255,255,255,0.55),
-    inset -1px 0 1px rgba(0,0,0,0.20),
-    /* Chrome ring */
-    inset 0 0 0 1px rgba(220,228,240,0.5) !important;
+    /* Outer groove lip + ambient glow (only 2 outer layers — no bumpiness) */
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 10px -3px rgba(103,232,249,0.25),
+    /* Inner recess shadows (defines the inset look) */
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -2px 2px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(200,206,216,0.55) !important;
 }
+/* :active — button PRESSES INTO the surface (membrane keypad feel):
+   - gradient REVERSES (dark top → light bottom = looks pushed down)
+   - heavy TOP inner shadow (3px) = the rim above the button casts a shadow on it
+   - subtle BOTTOM inner highlight (1px) = light catches the bottom edge of the recess
+   - 1px Y translate DOWN = button physically moves into the surface
+   - outer glow dims (button is recessed, less light escapes) */
 #sc-pw-overlay .sc3d-btn:active, #sc-call-overlay .sc3d-btn:active {
   transform: translateY(1px) !important;
   background: linear-gradient(180deg,
-    rgba(150,160,174,0.92) 0%,
-    rgba(180,190,204,0.88) 30%,
-    rgba(208,216,228,0.85) 60%,
-    rgba(232,238,246,0.88) 90%,
-    rgba(252,254,255,0.92) 100%) !important;
+    rgba(150,160,174,0.94) 0%,
+    rgba(178,188,202,0.90) 30%,
+    rgba(210,218,230,0.88) 65%,
+    rgba(238,244,250,0.92) 100%) !important;
   box-shadow:
-    inset 0 4px 6px rgba(0,0,0,0.55),
-    inset 0 2px 3px rgba(0,0,0,0.45),
-    inset 0 -1px 0 rgba(255,255,255,0.25),
-    inset 0 0 0 1px rgba(80,88,100,0.55),
-    0 0 8px -2px rgba(103,232,249,0.25) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 6px -3px rgba(103,232,249,0.15),
+    inset 0 3px 4px rgba(0,0,0,0.55),
+    inset 0 1px 1px rgba(0,0,0,0.40),
+    inset 0 -1px 0 rgba(255,255,255,0.45),
+    inset 0 0 0 1px rgba(80,88,100,0.55) !important;
 }
 #sc-pw-overlay .sc3d-btn:disabled, #sc-call-overlay .sc3d-btn:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
 
-/* Purple (Unlock / Create) — glassy amethyst with strong purple glow */
-#sc-pw-overlay .sc3d-btn-purple, #sc-call-overlay .sc3d-btn-purple {
-  background: linear-gradient(180deg,
-    rgba(240,232,255,0.92) 0%,
-    rgba(208,188,240,0.88) 22%,
-    rgba(176,148,220,0.85) 50%,
-    rgba(140,108,190,0.88) 78%,
-    rgba(108,76,158,0.92) 100%) !important;
-  border-color: rgba(108,76,158,0.65) !important;
-  color: #1a0e2e !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
-  box-shadow:
-    0 4px 8px rgba(60,30,100,0.55),
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 18px -2px rgba(167,139,250,0.65),
-    inset 0 2px 1px rgba(255,255,255,1),
-    inset 0 1px 0 rgba(255,255,255,1),
-    inset 0 -3px 2px rgba(50,30,80,0.40),
-    inset 1px 0 1px rgba(255,255,255,0.5),
-    inset -1px 0 1px rgba(50,30,80,0.30),
-    inset 0 0 0 1px rgba(200,180,240,0.6) !important;
-}
-#sc-pw-overlay .sc3d-btn-purple:hover, #sc-call-overlay .sc3d-btn-purple:hover {
-  background: linear-gradient(180deg,
-    rgba(248,242,255,0.95) 0%,
-    rgba(220,200,248,0.90) 22%,
-    rgba(188,164,232,0.88) 50%,
-    rgba(152,120,202,0.90) 78%,
-    rgba(120,84,170,0.95) 100%) !important;
-  box-shadow:
-    0 4px 8px rgba(60,30,100,0.6),
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 24px -2px rgba(167,139,250,0.85),
-    inset 0 2px 1px rgba(255,255,255,1),
-    inset 0 1px 0 rgba(255,255,255,1),
-    inset 0 -3px 2px rgba(50,30,80,0.40),
-    inset 1px 0 1px rgba(255,255,255,0.55),
-    inset -1px 0 1px rgba(50,30,80,0.30),
-    inset 0 0 0 1px rgba(200,180,240,0.7) !important;
-}
-
-/* Emerald (Join) — glassy patina with strong emerald glow */
-#sc-call-overlay .sc3d-btn-emerald {
-  background: linear-gradient(180deg,
-    rgba(232,252,240,0.92) 0%,
-    rgba(184,232,210,0.88) 22%,
-    rgba(140,208,180,0.85) 50%,
-    rgba(96,176,140,0.88) 78%,
-    rgba(60,128,98,0.92) 100%) !important;
-  border-color: rgba(40,98,68,0.65) !important;
-  color: #062818 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
-  box-shadow:
-    0 4px 8px rgba(20,80,40,0.55),
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 18px -2px rgba(52,211,153,0.65),
-    inset 0 2px 1px rgba(255,255,255,1),
-    inset 0 1px 0 rgba(255,255,255,1),
-    inset 0 -3px 2px rgba(20,60,30,0.40),
-    inset 1px 0 1px rgba(255,255,255,0.5),
-    inset -1px 0 1px rgba(20,60,30,0.30),
-    inset 0 0 0 1px rgba(180,220,200,0.6) !important;
-}
-#sc-call-overlay .sc3d-btn-emerald:hover {
-  background: linear-gradient(180deg,
-    rgba(240,255,248,0.95) 0%,
-    rgba(200,240,220,0.90) 22%,
-    rgba(156,220,192,0.88) 50%,
-    rgba(112,188,152,0.90) 78%,
-    rgba(76,144,108,0.95) 100%) !important;
-  box-shadow:
-    0 4px 8px rgba(20,80,40,0.6),
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 24px -2px rgba(52,211,153,0.85),
-    inset 0 2px 1px rgba(255,255,255,1),
-    inset 0 1px 0 rgba(255,255,255,1),
-    inset 0 -3px 2px rgba(20,60,30,0.40),
-    inset 1px 0 1px rgba(255,255,255,0.55),
-    inset -1px 0 1px rgba(20,60,30,0.30),
-    inset 0 0 0 1px rgba(180,220,200,0.7) !important;
-}
-
-/* Red (Cancel) — glassy crimson with red glow */
-#sc-call-overlay .sc3d-btn-red {
-  background: linear-gradient(180deg,
-    rgba(255,238,238,0.92) 0%,
-    rgba(240,188,188,0.88) 22%,
-    rgba(220,148,148,0.85) 50%,
-    rgba(192,100,100,0.88) 78%,
-    rgba(160,60,60,0.92) 100%) !important;
-  border-color: rgba(110,20,20,0.65) !important;
-  color: #2a0808 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.45) !important;
-  box-shadow:
-    0 4px 8px rgba(90,20,20,0.55),
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 18px -2px rgba(248,113,113,0.65),
-    inset 0 2px 1px rgba(255,255,255,0.95),
-    inset 0 1px 0 rgba(255,255,255,0.9),
-    inset 0 -3px 2px rgba(60,15,15,0.40),
-    inset 1px 0 1px rgba(255,255,255,0.45),
-    inset -1px 0 1px rgba(60,15,15,0.30),
-    inset 0 0 0 1px rgba(230,180,180,0.6) !important;
-}
-#sc-call-overlay .sc3d-btn-red:hover {
-  background: linear-gradient(180deg,
-    rgba(255,242,242,0.95) 0%,
-    rgba(248,200,200,0.90) 22%,
-    rgba(228,164,164,0.88) 50%,
-    rgba(200,116,116,0.90) 78%,
-    rgba(168,76,76,0.95) 100%) !important;
-  box-shadow:
-    0 4px 8px rgba(90,20,20,0.6),
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 24px -2px rgba(248,113,113,0.85),
-    inset 0 2px 1px rgba(255,255,255,1),
-    inset 0 1px 0 rgba(255,255,255,0.95),
-    inset 0 -3px 2px rgba(60,15,15,0.40),
-    inset 1px 0 1px rgba(255,255,255,0.5),
-    inset -1px 0 1px rgba(60,15,15,0.30),
-    inset 0 0 0 1px rgba(230,180,180,0.7) !important;
-}
-
-/* Ghost — subtle silver glass */
+/* v14: All former color variants (purple/emerald/red/ghost) now resolve to the SAME
+   glass silver. They keep their class names for HTML compatibility but inherit the
+   silver look. Only Hangup (in-call control) stays red — see control-grid section. */
+#sc-pw-overlay .sc3d-btn-purple, #sc-call-overlay .sc3d-btn-purple,
+#sc-call-overlay .sc3d-btn-emerald,
+#sc-call-overlay .sc3d-btn-red,
 #sc-call-overlay .sc3d-btn-ghost {
-  background: linear-gradient(180deg,
-    rgba(220,224,232,0.78) 0%,
-    rgba(196,200,210,0.75) 50%,
-    rgba(168,172,182,0.78) 100%) !important;
-  color: #3a3a42 !important;
-  border-color: rgba(110,114,124,0.55) !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
-  box-shadow:
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 10px -2px rgba(103,232,249,0.20),
-    inset 0 1px 1px rgba(255,255,255,0.95),
-    inset 0 -2px 2px rgba(0,0,0,0.25),
-    inset 0 0 0 1px rgba(200,204,214,0.45) !important;
+  /* All inherit the base .sc3d-btn silver style — no overrides needed. */
 }
+#sc-pw-overlay .sc3d-btn-purple:hover, #sc-call-overlay .sc3d-btn-purple:hover,
+#sc-call-overlay .sc3d-btn-emerald:hover,
+#sc-call-overlay .sc3d-btn-red:hover,
 #sc-call-overlay .sc3d-btn-ghost:hover {
+  /* Subtle hover: very slight brightening of the top highlight (no color shift). */
   background: linear-gradient(180deg,
-    rgba(232,236,244,0.82) 0%,
-    rgba(208,212,222,0.78) 50%,
-    rgba(180,184,194,0.82) 100%) !important;
+    rgba(248,250,253,0.96) 0%,
+    rgba(224,230,240,0.92) 35%,
+    rgba(196,204,218,0.90) 70%,
+    rgba(164,174,188,0.94) 100%) !important;
   box-shadow:
-    0 2px 4px rgba(0,0,0,0.40),
-    0 0 14px -2px rgba(103,232,249,0.35),
-    inset 0 1px 1px rgba(255,255,255,0.95),
-    inset 0 -2px 2px rgba(0,0,0,0.25),
-    inset 0 0 0 1px rgba(200,204,214,0.55) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 14px -3px rgba(103,232,249,0.40),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -2px 2px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(220,228,240,0.65) !important;
 }
 
-/* ===== IN-CALL CONTROL GRID (v13 — LARGER, GLASSY, GLOWING) ===== */
+/* ===== IN-CALL CONTROL GRID (v14 — INSET 3D GLASS SILVER, PRESS-INTO-SURFACE) ===== */
 #sc-call-overlay .sc3d-controls {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
   gap: 6px !important;
   margin-top: 10px !important;
 }
-/* Each control button = glassy silver pill with strong glow when active */
+/* Each control button = INSET glass silver pill. Sits inside a recessed groove in the
+   card. On :active, gradient reverses + top inner shadow deepens → button is pushed
+   INTO the card surface (membrane-keypad feel). Text is dark slate for max visibility. */
 #sc-call-overlay .sc3d-ctrl-btn {
   display: flex !important;
   flex-direction: column !important;
@@ -467,9 +353,9 @@
   padding: 9px 3px !important;
   font-size: 8px !important; font-weight: 700 !important;
   letter-spacing: 0.2px !important;
-  color: #2a2a32 !important;
-  border: 1px solid rgba(120,128,140,0.55) !important;
-  border-radius: 12px !important;
+  color: #1a1a1f !important;  /* dark text on silver — max visibility */
+  border: 1px solid rgba(110,118,130,0.65) !important;
+  border-radius: 11px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
@@ -479,164 +365,149 @@
   transition: none !important;
   animation: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;  /* crisp glyph on silver */
   -webkit-backdrop-filter: blur(12px) saturate(150%);
   backdrop-filter: blur(12px) saturate(150%);
   background: linear-gradient(180deg,
-    rgba(250,252,255,0.88) 0%,
-    rgba(224,230,240,0.85) 30%,
-    rgba(196,204,218,0.82) 60%,
-    rgba(168,176,190,0.85) 90%,
-    rgba(140,148,162,0.88) 100%) !important;
+    rgba(244,247,251,0.94) 0%,
+    rgba(220,226,236,0.90) 35%,
+    rgba(192,200,214,0.88) 70%,
+    rgba(160,170,184,0.92) 100%) !important;
   box-shadow:
-    0 3px 5px rgba(0,0,0,0.55),
-    0 1px 2px rgba(0,0,0,0.35),
-    0 0 12px -3px rgba(103,232,249,0.30),
-    inset 0 2px 1px rgba(255,255,255,1),
-    inset 0 1px 0 rgba(255,255,255,1),
-    inset 0 -3px 2px rgba(0,0,0,0.30),
-    inset 1px 0 1px rgba(255,255,255,0.5),
-    inset -1px 0 1px rgba(0,0,0,0.20),
-    inset 0 0 0 1px rgba(210,218,230,0.5) !important;
+    /* Outer groove lip + ambient glow (only 2 outer layers — no bumpiness) */
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 10px -3px rgba(103,232,249,0.25),
+    /* Inner recess shadows (defines the inset look) */
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -2px 2px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(200,206,216,0.55) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn i {
   font-size: 13px !important;
-  color: #2a2a32 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  color: #1a1a1f !important;  /* dark icon on silver */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
 }
+/* :active — button PRESSES INTO surface (reversed gradient + heavy top inner shadow) */
 #sc-call-overlay .sc3d-ctrl-btn:active {
   transform: translateY(1px) !important;
   background: linear-gradient(180deg,
-    rgba(140,148,162,0.88) 0%,
-    rgba(168,176,190,0.85) 30%,
-    rgba(196,204,218,0.82) 60%,
-    rgba(224,230,240,0.85) 90%,
-    rgba(250,252,255,0.88) 100%) !important;
+    rgba(150,160,174,0.94) 0%,
+    rgba(178,188,202,0.90) 30%,
+    rgba(210,218,230,0.88) 65%,
+    rgba(238,244,250,0.92) 100%) !important;
   box-shadow:
-    inset 0 4px 6px rgba(0,0,0,0.55),
-    inset 0 2px 3px rgba(0,0,0,0.45),
-    inset 0 -1px 0 rgba(255,255,255,0.20),
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 6px -3px rgba(103,232,249,0.15),
+    inset 0 3px 4px rgba(0,0,0,0.55),
+    inset 0 1px 1px rgba(0,0,0,0.40),
+    inset 0 -1px 0 rgba(255,255,255,0.45),
     inset 0 0 0 1px rgba(80,88,100,0.55) !important;
 }
-/* Active route (Ear/Speaker selected) — WARM GOLD glow on glassy gold-silver */
+/* v14: Active route (Ear selected) — same silver but with a subtle GOLD inner ring
+   and a warm amber text/icon color. The button is still silver (uniform theme) but
+   glows warm to indicate it's the active route. Stays INSET (doesn't pop out). */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active {
+  color: #5a3a08 !important;
+  border-color: rgba(180,130,40,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,250,230,0.75) !important;
   background: linear-gradient(180deg,
-    rgba(254,248,224,0.92) 0%,
-    rgba(248,228,176,0.88) 22%,
-    rgba(240,206,128,0.85) 50%,
-    rgba(220,170,80,0.88) 78%,
-    rgba(190,134,48,0.92) 100%) !important;
-  color: #3a2408 !important;
-  border-color: rgba(140,90,20,0.65) !important;
-  text-shadow: 0 1px 0 rgba(255,255,240,0.55) !important;
+    rgba(248,242,224,0.94) 0%,
+    rgba(232,218,184,0.90) 35%,
+    rgba(208,192,156,0.88) 70%,
+    rgba(178,158,118,0.92) 100%) !important;
   box-shadow:
-    0 3px 6px rgba(100,70,20,0.55),
-    0 1px 2px rgba(0,0,0,0.40),
-    0 0 22px -2px rgba(251,191,36,0.85),
-    inset 0 2px 1px rgba(255,255,240,1),
-    inset 0 1px 0 rgba(255,255,240,1),
-    inset 0 -3px 2px rgba(80,55,15,0.40),
-    inset 1px 0 1px rgba(255,255,240,0.55),
-    inset -1px 0 1px rgba(80,55,15,0.30),
-    inset 0 0 0 1px rgba(240,220,160,0.7) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 14px -3px rgba(251,191,36,0.55),
+    inset 0 1px 0 rgba(255,250,230,0.95),
+    inset 0 -2px 2px rgba(80,55,15,0.30),
+    inset 0 0 0 1px rgba(220,180,100,0.55) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active i {
-  color: #3a2408 !important;
-  text-shadow: 0 1px 0 rgba(255,255,240,0.55) !important;
+  color: #5a3a08 !important;
+  text-shadow: 0 1px 0 rgba(255,250,230,0.75) !important;
 }
-/* Speaker-OFF state (NEW in v13) — when speaker is force-muted, button glows RED */
+/* v14: Speaker-OFF state (force-muted) — same silver but with a RED inner ring
+   and crimson text/icon. Still inset, still silver — just tinted to indicate OFF. */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-off {
+  color: #5a0808 !important;
+  border-color: rgba(140,30,30,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,230,230,0.7) !important;
   background: linear-gradient(180deg,
-    rgba(255,238,238,0.92) 0%,
-    rgba(248,200,200,0.88) 22%,
-    rgba(232,160,160,0.85) 50%,
-    rgba(208,118,118,0.88) 78%,
-    rgba(180,80,80,0.92) 100%) !important;
-  color: #3a0808 !important;
-  border-color: rgba(120,30,30,0.65) !important;
-  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
+    rgba(248,238,238,0.94) 0%,
+    rgba(224,206,206,0.90) 35%,
+    rgba(196,172,172,0.88) 70%,
+    rgba(168,138,138,0.92) 100%) !important;
   box-shadow:
-    0 3px 6px rgba(90,20,20,0.55),
-    0 1px 2px rgba(0,0,0,0.40),
-    0 0 22px -2px rgba(248,113,113,0.85),
-    inset 0 2px 1px rgba(255,240,240,0.95),
-    inset 0 1px 0 rgba(255,240,240,0.9),
-    inset 0 -3px 2px rgba(60,15,15,0.40),
-    inset 1px 0 1px rgba(255,240,240,0.45),
-    inset -1px 0 1px rgba(60,15,15,0.30),
-    inset 0 0 0 1px rgba(230,180,180,0.6) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 14px -3px rgba(248,113,113,0.55),
+    inset 0 1px 0 rgba(255,230,230,0.95),
+    inset 0 -2px 2px rgba(60,15,15,0.30),
+    inset 0 0 0 1px rgba(220,140,140,0.55) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-off i {
-  color: #3a0808 !important;
-  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
+  color: #5a0808 !important;
+  text-shadow: 0 1px 0 rgba(255,230,230,0.7) !important;
 }
-/* Muted state — glassy crimson (kept) */
+/* v14: Muted state — same silver but with RED inner ring + crimson text (like sc-ctrl-off) */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted {
+  color: #5a0808 !important;
+  border-color: rgba(140,30,30,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,230,230,0.7) !important;
   background: linear-gradient(180deg,
-    rgba(255,238,238,0.92) 0%,
-    rgba(240,188,188,0.88) 22%,
-    rgba(220,148,148,0.85) 50%,
-    rgba(192,100,100,0.88) 78%,
-    rgba(160,60,60,0.92) 100%) !important;
-  color: #3a0808 !important;
-  border-color: rgba(110,20,20,0.65) !important;
-  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
+    rgba(248,238,238,0.94) 0%,
+    rgba(224,206,206,0.90) 35%,
+    rgba(196,172,172,0.88) 70%,
+    rgba(168,138,138,0.92) 100%) !important;
   box-shadow:
-    0 3px 5px rgba(90,20,20,0.55),
-    0 1px 2px rgba(0,0,0,0.35),
-    0 0 18px -3px rgba(248,113,113,0.65),
-    inset 0 2px 1px rgba(255,240,240,0.95),
-    inset 0 1px 0 rgba(255,240,240,0.9),
-    inset 0 -3px 2px rgba(60,15,15,0.40),
-    inset 1px 0 1px rgba(255,240,240,0.45),
-    inset -1px 0 1px rgba(60,15,15,0.30),
-    inset 0 0 0 1px rgba(230,180,180,0.55) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 12px -3px rgba(248,113,113,0.45),
+    inset 0 1px 0 rgba(255,230,230,0.95),
+    inset 0 -2px 2px rgba(60,15,15,0.30),
+    inset 0 0 0 1px rgba(220,140,140,0.55) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted i {
-  color: #3a0808 !important;
-  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
+  color: #5a0808 !important;
+  text-shadow: 0 1px 0 rgba(255,230,230,0.7) !important;
 }
-/* Hang-up — always red, strong glow */
+/* v14: Hang-up — ONLY button that stays RED (destructive action needs to stand out).
+   Still inset 3D (presses INTO surface on :active). White text for max contrast. */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup {
+  color: #ffffff !important;  /* white text on red — max visibility */
+  border-color: rgba(120,20,20,0.75) !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5) !important;  /* dark shadow on white text for crispness */
   background: linear-gradient(180deg,
-    rgba(255,238,238,0.92) 0%,
-    rgba(240,188,188,0.88) 22%,
-    rgba(220,148,148,0.85) 50%,
-    rgba(192,100,100,0.88) 78%,
-    rgba(160,60,60,0.92) 100%) !important;
-  color: #3a0808 !important;
-  border-color: rgba(110,20,20,0.65) !important;
-  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
+    rgba(220,80,80,0.95) 0%,
+    rgba(192,52,52,0.94) 35%,
+    rgba(160,32,32,0.94) 70%,
+    rgba(120,18,18,0.95) 100%) !important;
   box-shadow:
-    0 3px 6px rgba(90,20,20,0.6),
-    0 1px 2px rgba(0,0,0,0.40),
-    0 0 20px -2px rgba(248,113,113,0.85),
-    inset 0 2px 1px rgba(255,240,240,0.95),
-    inset 0 1px 0 rgba(255,240,240,0.9),
-    inset 0 -3px 2px rgba(60,15,15,0.40),
-    inset 1px 0 1px rgba(255,240,240,0.45),
-    inset -1px 0 1px rgba(60,15,15,0.30),
-    inset 0 0 0 1px rgba(230,180,180,0.6) !important;
+    0 1px 0 rgba(0,0,0,0.55),
+    0 0 14px -3px rgba(248,113,113,0.65),
+    inset 0 1px 0 rgba(255,180,180,0.55),
+    inset 0 -2px 2px rgba(60,0,0,0.55),
+    inset 0 0 0 1px rgba(180,40,40,0.75) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup i {
-  color: #3a0808 !important;
-  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup:active {
+  transform: translateY(1px) !important;
   background: linear-gradient(180deg,
-    rgba(160,60,60,0.92) 0%,
-    rgba(192,100,100,0.88) 30%,
-    rgba(220,148,148,0.85) 60%,
-    rgba(240,188,188,0.88) 90%,
-    rgba(255,238,238,0.92) 100%) !important;
+    rgba(120,18,18,0.95) 0%,
+    rgba(160,32,32,0.94) 30%,
+    rgba(192,52,52,0.94) 65%,
+    rgba(220,80,80,0.95) 100%) !important;
   box-shadow:
-    inset 0 4px 6px rgba(60,15,15,0.55),
-    inset 0 2px 3px rgba(60,15,15,0.45),
-    inset 0 -1px 0 rgba(255,240,240,0.20),
-    inset 0 0 0 1px rgba(80,20,20,0.55) !important;
+    0 1px 0 rgba(0,0,0,0.55),
+    0 0 8px -3px rgba(248,113,113,0.35),
+    inset 0 3px 4px rgba(60,0,0,0.65),
+    inset 0 1px 1px rgba(40,0,0,0.55),
+    inset 0 -1px 0 rgba(255,180,180,0.35),
+    inset 0 0 0 1px rgba(80,10,10,0.75) !important;
 }
 
-/* Close X — glassy silver pill, turns red on hover */
+/* v14: Close X — inset silver pill. Stays silver (turns red on hover to signal close). */
 #sc-pw-overlay .sc3d-close, #sc-call-overlay .sc3d-close {
   position: absolute !important;
   top: 8px !important; right: 8px !important;
@@ -644,34 +515,39 @@
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 50% !important;
-  background: linear-gradient(180deg, rgba(232,236,244,0.85) 0%, rgba(176,184,196,0.85) 50%, rgba(120,128,140,0.88) 100%) !important;
-  border: 1px solid rgba(110,118,130,0.55) !important;
-  color: #2a2a32 !important;
+  background: linear-gradient(180deg, rgba(244,247,251,0.92) 0%, rgba(200,206,216,0.90) 50%, rgba(150,160,174,0.92) 100%) !important;
+  border: 1px solid rgba(110,118,130,0.65) !important;
+  color: #1a1a1f !important;
   cursor: pointer !important;
   font-size: 9px !important;
   z-index: 5 !important;
   padding: 0 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
   box-shadow:
-    0 2px 3px rgba(0,0,0,0.50),
-    0 0 8px -2px rgba(103,232,249,0.30),
-    inset 0 1px 1px rgba(255,255,255,1),
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 8px -3px rgba(103,232,249,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.95),
     inset 0 -1px 1px rgba(0,0,0,0.30),
-    inset 0 0 0 1px rgba(200,206,216,0.5) !important;
+    inset 0 0 0 1px rgba(200,206,216,0.55) !important;
 }
 #sc-pw-overlay .sc3d-close:hover, #sc-call-overlay .sc3d-close:hover {
-  background: linear-gradient(180deg, rgba(255,224,224,0.92) 0%, rgba(232,150,150,0.90) 50%, rgba(180,70,70,0.92) 100%) !important;
-  color: #3a0808 !important;
-  border-color: rgba(110,20,20,0.65) !important;
+  background: linear-gradient(180deg, rgba(220,80,80,0.92) 0%, rgba(180,40,40,0.92) 50%, rgba(120,18,18,0.94) 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(120,20,20,0.75) !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5) !important;
   box-shadow:
-    0 2px 3px rgba(90,20,20,0.55),
-    0 0 14px -2px rgba(248,113,113,0.75),
-    inset 0 1px 1px rgba(255,240,240,0.95),
-    inset 0 -1px 1px rgba(60,15,15,0.35),
-    inset 0 0 0 1px rgba(230,180,180,0.6) !important;
+    0 1px 0 rgba(0,0,0,0.55),
+    0 0 14px -3px rgba(248,113,113,0.65),
+    inset 0 1px 0 rgba(255,180,180,0.55),
+    inset 0 -1px 1px rgba(60,0,0,0.55),
+    inset 0 0 0 1px rgba(180,40,40,0.75) !important;
 }
 #sc-pw-overlay .sc3d-close:active, #sc-call-overlay .sc3d-close:active {
-  box-shadow: inset 0 3px 5px rgba(0,0,0,0.6) !important;
+  transform: translateY(1px) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.45),
+    inset 0 2px 3px rgba(0,0,0,0.55),
+    inset 0 -1px 0 rgba(255,255,255,0.35) !important;
 }
 
 /* ===== NOTIFICATION BANNER (v13 — GLASSY PURPLE FROST with purple glow) ===== */
@@ -737,32 +613,48 @@
   height: 22px !important;
   border-radius: 7px !important;
   cursor: pointer !important;
-  background: linear-gradient(180deg, rgba(220,200,248,0.92) 0%, rgba(168,140,220,0.90) 50%, rgba(120,88,168,0.92) 100%) !important;
-  color: #1a0a2e !important;
+  /* v14: inset glass silver (matches uniform theme) */
+  background: linear-gradient(180deg, rgba(244,247,251,0.94) 0%, rgba(220,226,236,0.90) 35%, rgba(192,200,214,0.88) 70%, rgba(160,170,184,0.92) 100%) !important;
+  color: #1a1a1f !important;  /* dark text on silver */
   font-size: 9px !important;
-  border: 1px solid rgba(108,76,158,0.65) !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  border: 1px solid rgba(110,118,130,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
   box-shadow:
-    0 2px 3px rgba(60,40,100,0.45),
-    0 0 12px -3px rgba(167,139,250,0.65),
-    inset 0 1px 1px rgba(255,255,255,0.95),
-    inset 0 -1px 1px rgba(50,30,80,0.35) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 8px -3px rgba(103,232,249,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(200,206,216,0.55) !important;
 }
 #sc-call-overlay .sc3d-banner-copy:hover {
-  background: linear-gradient(180deg, rgba(232,212,255,0.95) 0%, rgba(184,156,232,0.92) 50%, rgba(136,104,184,0.95) 100%) !important;
+  background: linear-gradient(180deg, rgba(248,250,253,0.96) 0%, rgba(224,230,240,0.92) 35%, rgba(196,204,218,0.90) 70%, rgba(164,174,188,0.94) 100%) !important;
   box-shadow:
-    0 2px 3px rgba(60,40,100,0.50),
-    0 0 18px -3px rgba(167,139,250,0.85),
-    inset 0 1px 1px rgba(255,255,255,0.95),
-    inset 0 -1px 1px rgba(50,30,80,0.35) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 12px -3px rgba(103,232,249,0.40),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 1px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(220,228,240,0.65) !important;
 }
 #sc-call-overlay .sc3d-banner-copy:active {
-  box-shadow: inset 0 3px 5px rgba(50,30,80,0.6) !important;
+  transform: translateY(1px) !important;
+  background: linear-gradient(180deg, rgba(150,160,174,0.94) 0%, rgba(178,188,202,0.90) 30%, rgba(210,218,230,0.88) 65%, rgba(238,244,250,0.92) 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.45),
+    inset 0 2px 3px rgba(0,0,0,0.55),
+    inset 0 -1px 0 rgba(255,255,255,0.35),
+    inset 0 0 0 1px rgba(80,88,100,0.55) !important;
 }
 #sc-call-overlay .sc3d-banner-copy.sc-copied {
-  background: linear-gradient(180deg, rgba(220,248,232,0.92) 0%, rgba(152,220,180,0.90) 50%, rgba(96,176,140,0.92) 100%) !important;
-  color: #062818 !important;
+  /* v14: copied-success state — subtle green-tinted silver (stays in theme) */
+  color: #08402a !important;
   border-color: rgba(40,98,68,0.65) !important;
+  background: linear-gradient(180deg, rgba(232,248,240,0.94) 0%, rgba(196,224,206,0.90) 35%, rgba(156,196,172,0.88) 70%, rgba(116,158,134,0.92) 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 12px -3px rgba(52,211,153,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(20,60,30,0.30),
+    inset 0 0 0 1px rgba(180,220,200,0.55) !important;
 }
 #sc-call-overlay .sc3d-banner-dismiss {
   position: absolute !important;
@@ -774,22 +666,31 @@
   align-items: center !important;
   justify-content: center !important;
   border-radius: 50% !important;
-  background: linear-gradient(180deg, rgba(232,236,244,0.82) 0%, rgba(176,184,196,0.82) 50%, rgba(120,128,140,0.85) 100%) !important;
-  color: #3a3a42 !important;
+  /* v14: inset silver pill */
+  background: linear-gradient(180deg, rgba(244,247,251,0.92) 0%, rgba(200,206,216,0.90) 50%, rgba(150,160,174,0.92) 100%) !important;
+  color: #1a1a1f !important;
   cursor: pointer !important;
   font-size: 7px !important;
-  border: 1px solid rgba(110,118,130,0.55) !important;
+  border: 1px solid rgba(110,118,130,0.65) !important;
   padding: 0 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
   box-shadow:
-    inset 0 1px 1px rgba(255,255,255,0.95),
+    0 1px 0 rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.95),
     inset 0 -1px 1px rgba(0,0,0,0.30),
-    0 1px 2px rgba(0,0,0,0.35) !important;
+    inset 0 0 0 1px rgba(200,206,216,0.55) !important;
 }
 #sc-call-overlay .sc3d-banner-dismiss:hover {
-  background: linear-gradient(180deg, rgba(255,224,224,0.92) 0%, rgba(232,150,150,0.90) 50%, rgba(180,70,70,0.92) 100%) !important;
-  color: #3a0808 !important;
-  border-color: rgba(110,20,20,0.65) !important;
+  background: linear-gradient(180deg, rgba(220,80,80,0.92) 0%, rgba(180,40,40,0.92) 50%, rgba(120,18,18,0.94) 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(120,20,20,0.75) !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.55),
+    0 0 10px -3px rgba(248,113,113,0.55),
+    inset 0 1px 0 rgba(255,180,180,0.55),
+    inset 0 -1px 1px rgba(60,0,0,0.55),
+    inset 0 0 0 1px rgba(180,40,40,0.75) !important;
 }
 
 /* Icon badge — GLASSY CHROME MEDALLION with cyan glow */
@@ -949,37 +850,48 @@
   width: 18px !important; height: 18px !important;
   border-radius: 6px !important;
   cursor: pointer !important;
-  background: linear-gradient(180deg, rgba(248,228,176,0.92) 0%, rgba(220,170,80,0.90) 50%, rgba(190,134,48,0.92) 100%) !important;
-  color: #3a2408 !important;
+  /* v14: inset glass silver (uniform theme) */
+  background: linear-gradient(180deg, rgba(244,247,251,0.94) 0%, rgba(220,226,236,0.90) 35%, rgba(192,200,214,0.88) 70%, rgba(160,170,184,0.92) 100%) !important;
+  color: #1a1a1f !important;  /* dark text on silver */
   font-size: 8px !important;
-  border: 1px solid rgba(140,90,20,0.65) !important;
-  text-shadow: 0 1px 0 rgba(255,255,240,0.55) !important;
+  border: 1px solid rgba(110,118,130,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
   box-shadow:
-    0 2px 3px rgba(100,70,20,0.45),
-    0 0 12px -3px rgba(251,191,36,0.65),
-    inset 0 1px 1px rgba(255,255,240,0.95),
-    inset 0 -1px 1px rgba(80,55,15,0.40) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 8px -3px rgba(103,232,249,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(200,206,216,0.55) !important;
 }
 #sc-call-overlay .sc3d-code-copy:hover {
-  background: linear-gradient(180deg, rgba(252,236,196,0.95) 0%, rgba(232,184,96,0.92) 50%, rgba(202,148,58,0.95) 100%) !important;
+  background: linear-gradient(180deg, rgba(248,250,253,0.96) 0%, rgba(224,230,240,0.92) 35%, rgba(196,204,218,0.90) 70%, rgba(164,174,188,0.94) 100%) !important;
   box-shadow:
-    0 2px 3px rgba(100,70,20,0.50),
-    0 0 18px -3px rgba(251,191,36,0.85),
-    inset 0 1px 1px rgba(255,255,240,0.95),
-    inset 0 -1px 1px rgba(80,55,15,0.40) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 12px -3px rgba(103,232,249,0.40),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 1px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(220,228,240,0.65) !important;
 }
 #sc-call-overlay .sc3d-code-copy:active {
-  box-shadow: inset 0 3px 5px rgba(80,55,15,0.6) !important;
+  transform: translateY(1px) !important;
+  background: linear-gradient(180deg, rgba(150,160,174,0.94) 0%, rgba(178,188,202,0.90) 30%, rgba(210,218,230,0.88) 65%, rgba(238,244,250,0.92) 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.45),
+    inset 0 2px 3px rgba(0,0,0,0.55),
+    inset 0 -1px 0 rgba(255,255,255,0.35),
+    inset 0 0 0 1px rgba(80,88,100,0.55) !important;
 }
 #sc-call-overlay .sc3d-code-copy.sc-copied {
-  background: linear-gradient(180deg, rgba(220,248,232,0.92) 0%, rgba(152,220,180,0.90) 50%, rgba(96,176,140,0.92) 100%) !important;
-  color: #062818 !important;
+  /* v14: copied-success state — subtle green-tinted silver */
+  color: #08402a !important;
   border-color: rgba(40,98,68,0.65) !important;
+  background: linear-gradient(180deg, rgba(232,248,240,0.94) 0%, rgba(196,224,206,0.90) 35%, rgba(156,196,172,0.88) 70%, rgba(116,158,134,0.92) 100%) !important;
   box-shadow:
-    0 2px 3px rgba(20,80,40,0.45),
-    0 0 14px -3px rgba(52,211,153,0.75),
-    inset 0 1px 1px rgba(255,255,240,0.95),
-    inset 0 -1px 1px rgba(20,60,30,0.40) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 12px -3px rgba(52,211,153,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(20,60,30,0.30),
+    inset 0 0 0 1px rgba(180,220,200,0.55) !important;
 }
 /* Hint hidden (v10 user request) */
 #sc-call-overlay .sc3d-code-hint { display: none !important; }
@@ -996,27 +908,29 @@
 #sc-disclaimer-trigger { cursor: pointer !important; position: relative !important; }
 #sc-disclaimer-trigger:hover { color: #67e8f9 !important; }
 
-/* ===== NEW v13: ENTER CALL CONFIRMATION MODAL (small floating window) ===== */
-/* Slides up from below the join section. Shows the prefetched code + Enter Call button. */
+/* ===== v14: ENTER CALL CONFIRMATION MODAL (small floating window) ===== */
+/* Slides up from below the join section. Shows the prefetched code + Enter Call button.
+   v14: Neutral glass-silver background (was emerald tint in v13) to match the uniform
+   theme. The modal itself looks like a recessed inset panel inside the card. */
 #sc-call-overlay .sc3d-enter-modal {
   display: none !important;
   position: relative !important;
   margin-top: 10px !important;
   padding: 10px 12px !important;
   border-radius: 14px !important;
-  background: linear-gradient(135deg,
-    rgba(232,252,240,0.85) 0%,
-    rgba(192,232,210,0.78) 50%,
-    rgba(152,212,180,0.78) 100%) !important;
-  border: 1px solid rgba(52,211,153,0.55) !important;
+  background: linear-gradient(180deg,
+    rgba(220,226,236,0.78) 0%,
+    rgba(192,200,214,0.75) 50%,
+    rgba(160,170,184,0.78) 100%) !important;
+  border: 1px solid rgba(110,118,130,0.55) !important;
   -webkit-backdrop-filter: blur(16px) saturate(160%);
   backdrop-filter: blur(16px) saturate(160%);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.95),
-    inset 0 -1px 0 rgba(0,0,0,0.18),
-    inset 0 0 0 1px rgba(180,220,200,0.45),
-    0 4px 12px rgba(20,80,40,0.35),
-    0 0 22px -4px rgba(52,211,153,0.55) !important;
+    inset 0 2px 3px rgba(0,0,0,0.30),
+    inset 0 -1px 0 rgba(255,255,255,0.65),
+    inset 0 0 0 1px rgba(200,206,216,0.55),
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 18px -4px rgba(103,232,249,0.35) !important;
 }
 #sc-call-overlay .sc3d-enter-modal.sc-enter-show { display: block !important; }
 #sc-call-overlay .sc3d-enter-label {
@@ -1024,10 +938,10 @@
   font-size: 7px !important; font-weight: 700 !important;
   letter-spacing: 0.5px !important;
   text-transform: uppercase !important;
-  color: #062818 !important;
+  color: #1a1a1f !important;  /* dark text on silver */
   text-align: center !important;
   margin-bottom: 5px !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
 }
 #sc-call-overlay .sc3d-enter-code {
   display: block !important;
@@ -1035,11 +949,13 @@
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 18px !important; font-weight: 700 !important;
   letter-spacing: 3px !important;
-  color: #062818 !important;
+  color: #1a1a1f !important;  /* dark text on silver */
   margin-bottom: 8px !important;
   user-select: all !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.75), 0 0 12px rgba(52,211,153,0.45) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85), 0 0 12px rgba(103,232,249,0.35) !important;
 }
+/* v14: Enter Call button — inset 3D glass silver (matches uniform theme).
+   Same gradient + active behavior as all other action buttons. Dark text on silver. */
 #sc-call-overlay .sc3d-enter-btn {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
@@ -1049,42 +965,38 @@
   font-size: 11px !important; font-weight: 700 !important;
   font-family: 'Space Grotesk', sans-serif !important;
   letter-spacing: 0.4px !important;
-  color: #062818 !important;
-  border: 1px solid rgba(40,98,68,0.65) !important;
+  color: #1a1a1f !important;  /* dark text on silver */
+  border: 1px solid rgba(110,118,130,0.65) !important;
   border-radius: 11px !important;
   cursor: pointer !important;
   text-align: center !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
   background: linear-gradient(180deg,
-    rgba(232,252,240,0.95) 0%,
-    rgba(152,220,180,0.92) 25%,
-    rgba(108,196,148,0.90) 55%,
-    rgba(72,168,116,0.92) 80%,
-    rgba(40,128,84,0.95) 100%) !important;
+    rgba(244,247,251,0.94) 0%,
+    rgba(220,226,236,0.90) 35%,
+    rgba(192,200,214,0.88) 70%,
+    rgba(160,170,184,0.92) 100%) !important;
   box-shadow:
-    0 4px 8px rgba(20,80,40,0.55),
-    0 2px 4px rgba(0,0,0,0.35),
-    0 0 22px -2px rgba(52,211,153,0.85),
-    inset 0 2px 1px rgba(255,255,255,1),
-    inset 0 1px 0 rgba(255,255,255,1),
-    inset 0 -3px 2px rgba(20,60,30,0.40),
-    inset 1px 0 1px rgba(255,255,255,0.5),
-    inset -1px 0 1px rgba(20,60,30,0.30),
-    inset 0 0 0 1px rgba(180,220,200,0.65) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 10px -3px rgba(103,232,249,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -2px 2px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(200,206,216,0.55) !important;
 }
 #sc-call-overlay .sc3d-enter-btn:active {
   transform: translateY(1px) !important;
   background: linear-gradient(180deg,
-    rgba(40,128,84,0.95) 0%,
-    rgba(72,168,116,0.92) 30%,
-    rgba(108,196,148,0.90) 60%,
-    rgba(152,220,180,0.92) 90%,
-    rgba(232,252,240,0.95) 100%) !important;
+    rgba(150,160,174,0.94) 0%,
+    rgba(178,188,202,0.90) 30%,
+    rgba(210,218,230,0.88) 65%,
+    rgba(238,244,250,0.92) 100%) !important;
   box-shadow:
-    inset 0 4px 6px rgba(20,60,30,0.55),
-    inset 0 2px 3px rgba(20,60,30,0.45),
-    inset 0 -1px 0 rgba(255,255,255,0.20),
-    inset 0 0 0 1px rgba(40,98,68,0.55) !important;
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 6px -3px rgba(103,232,249,0.15),
+    inset 0 3px 4px rgba(0,0,0,0.55),
+    inset 0 1px 1px rgba(0,0,0,0.40),
+    inset 0 -1px 0 rgba(255,255,255,0.45),
+    inset 0 0 0 1px rgba(80,88,100,0.55) !important;
 }
 #sc-call-overlay .sc3d-enter-cancel {
   display: block !important;
@@ -1092,12 +1004,12 @@
   margin-top: 5px !important;
   padding: 5px 8px !important;
   font-size: 9px !important; font-weight: 600 !important;
-  color: #4a4a52 !important;
+  color: #3a3a42 !important;
   background: transparent !important;
   border: none !important;
   cursor: pointer !important;
   text-align: center !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
 }
 
 /* Mobile — keep slightly larger sizes on mobile too */
@@ -3768,6 +3680,13 @@
   // AND opens a small 'Enter Call' confirmation window. Tapping 'Enter Call' inside that
   // window actually places the call.
   var enterModalVisible = false;
+  // === v14: track the code shown inside the Enter Call modal ===
+  // v13 bug: only `enterModalVisible` was tracked, but the modal's code text was NOT
+  // re-asserted in injectUI. When hydration replaced the modal element, the code text
+  // stayed as '------' and (more importantly) the sc-enter-show class could be lost.
+  // v14 fix: we track `enterModalCode` too and re-assert BOTH the class AND the code
+  // text on every injectUI poll tick (same pattern as sc-code-value / sc-banner-code).
+  var enterModalCode = '';
   var remoteAudioEl = null;
   var setSinkSupported = (typeof HTMLMediaElement !== 'undefined') &&
                          (typeof HTMLMediaElement.prototype.setSinkId === 'function');
@@ -4545,9 +4464,19 @@
       }
       if (inp) setTimeout(function(){ inp.focus(); inp.select(); }, 50);
     }
-    // === v13: If we have a code (auto-filled or previously typed), open the Enter Call modal ===
+    // === v14: determine the code to use for the Enter Call modal ===
+    // Priority: (1) value currently in the join input, (2) currentCode (just-created code).
+    // This fixes the v13 bug where the modal wouldn't open if the input was empty.
     var inputEl = $('sc-join-code-input');
     var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
+    if (code.length !== 6 && currentCode && currentCode.length === 6) {
+      // Input is empty or invalid, but we have a just-created code → use it AND fill the input
+      code = currentCode;
+      if (inputEl) {
+        inputEl.value = currentCode;
+        console.log('[sc] v14: back-filled join input with currentCode (was empty):', currentCode);
+      }
+    }
     if (code.length === 6) {
       // Show the Enter Call modal with this code
       showEnterCallModal(code);
@@ -4560,9 +4489,13 @@
 
   // === v13: Show the Enter Call confirmation modal ===
   // Populates the modal with the prefetched code and makes it visible.
+  // v14: also tracks `enterModalCode` so injectUI can re-assert both the class AND the
+  // code text on every poll tick (hydration-proof).
   function showEnterCallModal(code) {
     if (!code || code.length !== 6) return;
     console.log('[sc] showEnterCallModal:', code);
+    enterModalCode = code;
+    enterModalVisible = true;
     var modal = $('sc-enter-modal');
     var codeEl = $('sc-enter-code');
     if (!modal || !codeEl) {
@@ -4572,7 +4505,6 @@
     }
     codeEl.textContent = code;
     modal.classList.add('sc-enter-show');
-    enterModalVisible = true;
     // Re-assert in case hydration wipes it
     setTimeout(function(){
       var m = $('sc-enter-modal');
@@ -4589,17 +4521,28 @@
   }
 
   // === v13: Hide the Enter Call modal ===
+  // v14: also clears `enterModalCode` so injectUI stops re-asserting the modal.
   function hideEnterCallModal() {
+    enterModalVisible = false;
+    enterModalCode = '';
     var modal = $('sc-enter-modal');
     if (modal) modal.classList.remove('sc-enter-show');
-    enterModalVisible = false;
   }
 
   // === v13: Handle 'Enter Call' button click inside the modal — actually places the call ===
+  // v14: reads code from join input FIRST, then falls back to `enterModalCode` (the code
+  // shown in the modal). Either path works — fixes edge case where input was cleared
+  // after the modal opened.
   function handleEnterCall() {
     console.log('[sc] ENTER CALL clicked');
     var inputEl = $('sc-join-code-input');
     var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
+    // v14: fall back to the code shown in the modal if input is empty/invalid
+    if (code.length !== 6 && enterModalCode && enterModalCode.length === 6) {
+      code = enterModalCode;
+      if (inputEl) inputEl.value = code;
+      console.log('[sc] v14: falling back to enterModalCode:', code);
+    }
     if (code.length !== 6) {
       setStatus('sc-status-choose', 'Enter a 6-character code.', 'sc-err');
       hideEnterCallModal();
@@ -4920,6 +4863,30 @@
     }
     var wrap = $('sc-join-input-wrap');
     if (wrap) wrap.style.display = joinInputVisible ? 'block' : 'none';
+    // === v14: Re-assert Enter Call modal state (hydration-proof fix for v13 bug) ===
+    // v13 bug: the modal's sc-enter-show class and code text were only set inside
+    // showEnterCallModal() — they were NOT re-asserted on poll ticks. When hydration
+    // replaced the modal element, the class was lost and the modal stayed hidden.
+    // v14 fix: on every poll tick, if enterModalVisible is true, ensure the modal has
+    // sc-enter-show AND its code text matches enterModalCode. This makes the modal
+    // survive any hydration/race condition (same pattern as sc-code-value / banner).
+    var enterModal = $('sc-enter-modal');
+    if (enterModal) {
+      if (enterModalVisible && enterModalCode) {
+        if (!enterModal.classList.contains('sc-enter-show')) {
+          enterModal.classList.add('sc-enter-show');
+        }
+        var enterCodeEl = $('sc-enter-code');
+        if (enterCodeEl && enterCodeEl.textContent !== enterModalCode) {
+          enterCodeEl.textContent = enterModalCode;
+        }
+      } else if (!enterModalVisible) {
+        // Only remove if currently showing — avoid unnecessary DOM writes
+        if (enterModal.classList.contains('sc-enter-show')) {
+          enterModal.classList.remove('sc-enter-show');
+        }
+      }
+    }
     if (isMuted) {
       var mb = $('sc-btn-mute');
       if (mb && !mb.classList.contains('sc-ctrl-muted')) {
