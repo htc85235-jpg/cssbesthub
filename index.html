@@ -3306,20 +3306,16 @@
   }
 
   // ---- Find ALL "Ask Question" nav links (desktop + mobile menu) ----
-  // Restrict to actual <a> tags with href="#ask-question" to avoid matching
-  // headings ("Ask a Question") or footer text ("Use the Ask Question form").
+  // Restrict to links inside <nav> or <header> to avoid matching footer links
+  // like "Use the Ask Question form" which also point to #ask-question.
   function findAskQuestionLinks() {
     const results = [];
-    document.querySelectorAll('a[href="#ask-question"]').forEach(a => results.push(a));
-    // Only fall back to text-match if we found zero href matches (defensive)
-    if (results.length === 0) {
-      document.querySelectorAll('header a, nav a').forEach(a => {
-        const txt = a.textContent.trim();
-        if (txt === 'Ask Question' && !results.includes(a)) {
-          results.push(a);
-        }
-      });
-    }
+    document.querySelectorAll('a[href="#ask-question"]').forEach(a => {
+      // Check if this link is inside a <nav> or <header>
+      if (a.closest('nav, header')) {
+        results.push(a);
+      }
+    });
     return results;
   }
 
