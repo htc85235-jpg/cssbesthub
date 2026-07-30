@@ -6,9 +6,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v4: dark 3D theme, ID-scoped + !important ===== */
+/* ===== SECRET CALL v5: dark 3D, inset buttons, zero animation ===== */
 
-#sc-pw-overlay, #sc-call-overlay, #sc-floating-pill {
+#sc-pw-overlay, #sc-call-overlay {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
 }
 
@@ -22,17 +22,17 @@
   align-items: center !important;
   justify-content: center !important;
   margin: 0 !important; padding: 16px !important;
-  background: radial-gradient(ellipse at center, rgba(8,6,20,0.96), rgba(0,0,0,0.99)) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background: radial-gradient(ellipse at center, rgba(8,6,20,0.98), rgba(0,0,0,1)) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
   color: #e8e8f5 !important;
   box-sizing: border-box !important;
   overflow: auto !important;
 }
 #sc-pw-overlay.sc-open, #sc-call-overlay.sc-open { display: flex !important; }
 
-/* Universal reset inside overlays */
-#sc-pw-overlay *, #sc-call-overlay *, #sc-floating-pill * {
+/* Universal reset inside overlays — zero animation */
+#sc-pw-overlay *, #sc-call-overlay * {
   box-sizing: border-box !important;
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
   margin: 0 !important; padding: 0 !important;
@@ -54,7 +54,9 @@
   max-width: none !important; max-height: none !important;
   opacity: 1 !important; visibility: visible !important;
   pointer-events: auto !important; cursor: auto !important;
-  transition: none !important; transform: none !important;
+  transition: none !important !important;
+  animation: none !important;
+  transform: none !important;
   filter: none !important; box-shadow: none !important;
   outline: 0 !important; border-radius: 0 !important;
   overflow: visible !important; white-space: normal !important;
@@ -63,14 +65,14 @@
 
 /* Stage */
 #sc-pw-overlay .sc3d-stage, #sc-call-overlay .sc3d-stage {
-  perspective: 1200px !important;
+  perspective: 1000px !important;
   perspective-origin: 50% 30% !important;
   width: 100% !important; height: 100% !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
 }
 
-/* ===== 3D CARDS (smaller, darker) ===== */
+/* ===== 3D CARDS (smaller, darker, no float animation) ===== */
 #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
   position: relative !important;
   width: 100% !important;
@@ -79,13 +81,11 @@
   border-radius: 20px !important;
   transform-style: preserve-3d !important;
   border: 1px solid rgba(139,92,246,0.35) !important;
-  background:
-    linear-gradient(135deg, rgba(18,12,35,0.98), rgba(6,4,18,0.98)) !important;
+  background: linear-gradient(135deg, rgba(18,12,35,0.98), rgba(6,4,18,0.98)) !important;
   box-shadow:
     0 25px 50px -12px rgba(0,0,0,0.85),
     0 0 50px rgba(139,92,246,0.18),
     inset 0 1px 0 rgba(255,255,255,0.08) !important;
-  animation: sc3d-float 6s ease-in-out infinite !important;
 }
 #sc-pw-overlay .sc3d-card { transform: rotateX(8deg) !important; max-width: 300px !important; }
 #sc-call-overlay .sc3d-card-call {
@@ -96,15 +96,6 @@
     0 30px 60px -12px rgba(0,0,0,0.9),
     0 0 60px rgba(100,160,255,0.2),
     inset 0 1px 0 rgba(255,255,255,0.1) !important;
-  animation: sc3d-float-call 7s ease-in-out infinite !important;
-}
-@keyframes sc3d-float {
-  0%, 100% { transform: rotateX(8deg) translateY(0); }
-  50% { transform: rotateX(8deg) translateY(-5px); }
-}
-@keyframes sc3d-float-call {
-  0%, 100% { transform: rotateX(6deg) translateY(0); }
-  50% { transform: rotateX(6deg) translateY(-6px); }
 }
 
 /* Title */
@@ -117,7 +108,6 @@
   background: linear-gradient(90deg, #a78bfa, #60a5fa, #f0abfc) !important;
   -webkit-background-clip: text !important; background-clip: text !important;
   -webkit-text-fill-color: transparent !important; color: transparent !important;
-  text-shadow: 0 0 24px rgba(139,92,246,0.5) !important;
 }
 #sc-pw-overlay .sc3d-subtitle, #sc-call-overlay .sc3d-subtitle {
   display: block !important; text-align: center !important;
@@ -138,14 +128,33 @@
   border-radius: 10px !important;
   outline: none !important;
   letter-spacing: 1px !important;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
 }
 #sc-pw-overlay .sc3d-input:focus {
   border-color: rgba(167,139,250,0.7) !important;
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.15), 0 0 16px rgba(139,92,246,0.25) !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
   background: rgba(10,8,25,0.85) !important;
 }
 #sc-pw-overlay .sc3d-input::placeholder { color: rgba(160,160,190,0.3) !important; letter-spacing: 0.5px !important; }
+
+/* Code input (for Join flow) */
+#sc-call-overlay .sc3d-code-input {
+  display: block !important; width: 100% !important;
+  padding: 12px 14px !important;
+  font-size: 16px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  color: #e8e8f5 !important;
+  background: rgba(5,4,15,0.7) !important;
+  border: 1px solid rgba(139,92,246,0.3) !important;
+  border-radius: 10px !important;
+  outline: none !important;
+  letter-spacing: 4px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+#sc-call-overlay .sc3d-code-input:focus {
+  border-color: rgba(167,139,250,0.7) !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
+}
 
 /* Error / status */
 #sc-pw-overlay .sc3d-error {
@@ -162,17 +171,7 @@
 #sc-call-overlay .sc3d-status.sc-ok { color: #6ee7b7 !important; }
 #sc-call-overlay .sc3d-status.sc-err { color: #fca5a5 !important; }
 
-/* Shake */
-#sc-pw-overlay .sc3d-shake { animation: sc3d-shake 0.4s !important; }
-@keyframes sc3d-shake {
-  0%,100% { transform: translateX(0) rotateX(8deg); }
-  20% { transform: translateX(-8px) rotateX(8deg); }
-  40% { transform: translateX(8px) rotateX(8deg); }
-  60% { transform: translateX(-6px) rotateX(8deg); }
-  80% { transform: translateX(6px) rotateX(8deg); }
-}
-
-/* ===== 3D BUTTONS (all buttons 3D) ===== */
+/* ===== INSET 3D BUTTONS (flush with surface, press INTO surface) ===== */
 #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
@@ -184,95 +183,73 @@
   letter-spacing: 0.4px !important;
   color: #fff !important;
   border: none !important;
-  border-radius: 11px !important;
+  border-radius: 10px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease !important;
   user-select: none !important;
-  overflow: hidden !important;
   position: relative !important;
   text-align: center !important;
-  background: #6d28d9 !important;
-  box-shadow: 0 5px 0 #4c1d95, 0 6px 14px rgba(139,92,246,0.4) !important;
+  /* INSET look: flush with surface, subtle inner rim */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(0,0,0,0.15),
+    0 1px 2px rgba(0,0,0,0.4) !important;
 }
-#sc-pw-overlay .sc3d-btn::before, #sc-call-overlay .sc3d-btn::before {
-  content: "" !important;
-  position: absolute !important;
-  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
-  background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0) 50%) !important;
-  border-radius: 11px !important;
-  pointer-events: none !important;
-  margin: 0 !important; padding: 0 !important; border: 0 !important;
-  width: auto !important; height: auto !important;
+#sc-pw-overlay .sc3d-btn:active, #sc-call-overlay .sc3d-btn:active {
+  /* Pressed INTO surface */
+  transform: translateY(1px) !important;
+  box-shadow:
+    inset 0 3px 6px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(0,0,0,0.2),
+    inset 0 0 0 1px rgba(0,0,0,0.2) !important;
 }
 #sc-pw-overlay .sc3d-btn:disabled, #sc-call-overlay .sc3d-btn:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
 
-/* Purple */
+/* Purple (inset) */
 #sc-pw-overlay .sc3d-btn-purple, #sc-call-overlay .sc3d-btn-purple {
-  background: linear-gradient(180deg, #8b5cf6, #6d28d9) !important;
-  box-shadow: 0 5px 0 #4c1d95, 0 6px 14px rgba(139,92,246,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+  background: linear-gradient(180deg, #7c3aed, #6d28d9) !important;
   color: #fff !important;
 }
-#sc-pw-overlay .sc3d-btn-purple:hover:not(:disabled), #sc-call-overlay .sc3d-btn-purple:hover:not(:disabled) {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 7px 0 #4c1d95, 0 10px 20px rgba(139,92,246,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
-  filter: brightness(1.1) !important;
-}
-#sc-pw-overlay .sc3d-btn-purple:active:not(:disabled), #sc-call-overlay .sc3d-btn-purple:active:not(:disabled) {
-  transform: translateY(3px) !important;
-  box-shadow: 0 2px 0 #4c1d95, 0 3px 6px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+#sc-pw-overlay .sc3d-btn-purple:hover, #sc-call-overlay .sc3d-btn-purple:hover {
+  background: linear-gradient(180deg, #8b5cf6, #7c3aed) !important;
 }
 
-/* Emerald */
+/* Emerald (inset) */
 #sc-call-overlay .sc3d-btn-emerald {
-  background: linear-gradient(180deg, #34d399, #059669) !important;
-  box-shadow: 0 5px 0 #065f46, 0 6px 14px rgba(52,211,153,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+  background: linear-gradient(180deg, #10b981, #059669) !important;
   color: #fff !important;
 }
-#sc-call-overlay .sc3d-btn-emerald:hover:not(:disabled) {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 7px 0 #065f46, 0 10px 20px rgba(52,211,153,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
-  filter: brightness(1.1) !important;
-}
-#sc-call-overlay .sc3d-btn-emerald:active:not(:disabled) {
-  transform: translateY(3px) !important;
-  box-shadow: 0 2px 0 #065f46, 0 3px 6px rgba(52,211,153,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+#sc-call-overlay .sc3d-btn-emerald:hover {
+  background: linear-gradient(180deg, #34d399, #10b981) !important;
 }
 
-/* Red */
+/* Red (inset) */
 #sc-call-overlay .sc3d-btn-red {
-  background: linear-gradient(180deg, #f87171, #dc2626) !important;
-  box-shadow: 0 5px 0 #991b1b, 0 6px 14px rgba(248,113,113,0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+  background: linear-gradient(180deg, #ef4444, #dc2626) !important;
   color: #fff !important;
 }
-#sc-call-overlay .sc3d-btn-red:hover:not(:disabled) {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 7px 0 #991b1b, 0 10px 20px rgba(248,113,113,0.55), inset 0 1px 0 rgba(255,255,255,0.3) !important;
-  filter: brightness(1.1) !important;
-}
-#sc-call-overlay .sc3d-btn-red:active:not(:disabled) {
-  transform: translateY(3px) !important;
-  box-shadow: 0 2px 0 #991b1b, 0 3px 6px rgba(248,113,113,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+#sc-call-overlay .sc3d-btn-red:hover {
+  background: linear-gradient(180deg, #f87171, #ef4444) !important;
 }
 
-/* Ghost */
+/* Ghost (inset, subtle) */
 #sc-call-overlay .sc3d-btn-ghost {
-  background: rgba(255,255,255,0.05) !important;
+  background: rgba(255,255,255,0.06) !important;
   color: rgba(220,220,240,0.85) !important;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(255,255,255,0.05) !important;
 }
-#sc-call-overlay .sc3d-btn-ghost:hover:not(:disabled) {
-  transform: translateY(-2px) !important;
-  background: rgba(255,255,255,0.1) !important;
-  box-shadow: 0 6px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12) !important;
-}
-#sc-call-overlay .sc3d-btn-ghost:active:not(:disabled) {
-  transform: translateY(2px) !important;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+#sc-call-overlay .sc3d-btn-ghost:hover { background: rgba(255,255,255,0.1) !important; }
+#sc-call-overlay .sc3d-btn-ghost:active {
+  box-shadow:
+    inset 0 3px 6px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(0,0,0,0.2) !important;
 }
 
-/* Close X (3D circular) */
+/* Close X (inset circular) */
 #sc-pw-overlay .sc3d-close, #sc-call-overlay .sc3d-close {
   position: absolute !important;
   top: 10px !important; right: 10px !important;
@@ -280,29 +257,26 @@
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 50% !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
   background: rgba(40,30,60,0.6) !important;
   color: rgba(220,220,240,0.7) !important;
   cursor: pointer !important;
   font-size: 12px !important;
-  transition: all 0.15s !important;
   z-index: 5 !important;
   padding: 0 !important;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(0,0,0,0.2) !important;
 }
 #sc-pw-overlay .sc3d-close:hover, #sc-call-overlay .sc3d-close:hover {
-  background: rgba(248,113,113,0.25) !important;
+  background: rgba(248,113,113,0.3) !important;
   color: #fca5a5 !important;
-  border-color: rgba(248,113,113,0.4) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12) !important;
 }
 #sc-pw-overlay .sc3d-close:active, #sc-call-overlay .sc3d-close:active {
-  transform: translateY(2px) !important;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.5) !important;
 }
 
-/* Icon badge (smaller) */
+/* Icon badge (smaller, no pulse) */
 #sc-pw-overlay .sc3d-icon-badge, #sc-call-overlay .sc3d-icon-badge {
   width: 52px !important; height: 52px !important;
   margin: 0 auto 12px !important;
@@ -321,17 +295,11 @@
   border-color: rgba(110,231,183,0.5) !important;
   color: #6ee7b7 !important;
   box-shadow: 0 6px 16px rgba(52,211,153,0.35), inset 0 1px 0 rgba(255,255,255,0.15) !important;
-  animation: sc3d-pulse 2s ease-in-out infinite !important;
-}
-@keyframes sc3d-pulse {
-  0%,100% { box-shadow: 0 6px 16px rgba(52,211,153,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
-  50% { box-shadow: 0 6px 26px rgba(52,211,153,0.65), inset 0 1px 0 rgba(255,255,255,0.2); }
 }
 
 /* FontAwesome icons */
 #sc-pw-overlay i.fa, #sc-pw-overlay i.fas, #sc-pw-overlay i.far, #sc-pw-overlay i.fab,
-#sc-call-overlay i.fa, #sc-call-overlay i.fas, #sc-call-overlay i.far, #sc-call-overlay i.fab,
-#sc-floating-pill i.fa, #sc-floating-pill i.fas {
+#sc-call-overlay i.fa, #sc-call-overlay i.fas, #sc-call-overlay i.far, #sc-call-overlay i.fab {
   display: inline-block !important;
   font-style: normal !important; font-variant: normal !important;
   text-rendering: auto !important;
@@ -358,78 +326,83 @@
   color: #e8e8f5 !important;
   letter-spacing: 2px !important;
   margin: 6px 0 2px !important;
-  text-shadow: 0 0 18px rgba(110,231,183,0.45) !important;
 }
 
-/* Avatar (smaller) */
+/* Avatar (smaller, no ring animation) */
 #sc-call-overlay .sc3d-avatar {
-  width: 64px !important; height: 64px !important;
-  margin: 6px auto 10px !important;
+  width: 56px !important; height: 56px !important;
+  margin: 6px auto 8px !important;
   border-radius: 50% !important;
   background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
-  font-size: 26px !important;
+  font-size: 22px !important;
   color: #fff !important;
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 0 24px rgba(139,92,246,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 0 20px rgba(139,92,246,0.4) !important;
   position: relative !important;
 }
-#sc-call-overlay .sc3d-avatar.sc-live::before,
-#sc-call-overlay .sc3d-avatar.sc-live::after {
-  content: "" !important;
-  position: absolute !important;
-  top: -6px !important; left: -6px !important; right: -6px !important; bottom: -6px !important;
-  border-radius: 50% !important;
-  border: 2px solid rgba(110,231,183,0.5) !important;
-  animation: sc3d-ring 2s ease-out infinite !important;
-  background: transparent !important;
-  width: auto !important; height: auto !important;
-  margin: 0 !important; padding: 0 !important;
-}
-#sc-call-overlay .sc3d-avatar.sc-live::after { animation-delay: 1s !important; border-color: rgba(110,231,183,0.3) !important; }
-@keyframes sc3d-ring {
-  0% { transform: scale(0.95); opacity: 1; }
-  100% { transform: scale(1.4); opacity: 0; }
-}
 
-/* Code section at bottom (smaller) */
+/* ===== CODE DISPLAY (smaller — half size, with copy button) ===== */
 #sc-call-overlay .sc3d-code-section {
   display: block !important;
-  margin-top: 16px !important;
-  padding: 10px 12px 8px !important;
-  border-radius: 11px !important;
+  margin-top: 14px !important;
+  padding: 8px 10px !important;
+  border-radius: 9px !important;
   background: linear-gradient(135deg, rgba(10,8,22,0.8), rgba(5,4,15,0.8)) !important;
   border: 1px solid rgba(139,92,246,0.25) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 0 16px rgba(139,92,246,0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05) !important;
 }
 #sc-call-overlay .sc3d-code-label {
   display: block !important;
-  font-size: 9px !important; font-weight: 600 !important;
+  font-size: 8px !important; font-weight: 600 !important;
   letter-spacing: 1.5px !important;
   color: rgba(167,139,250,0.55) !important;
   text-transform: uppercase !important;
-  margin-bottom: 4px !important; text-align: center !important;
+  margin-bottom: 3px !important; text-align: center !important;
+}
+#sc-call-overlay .sc3d-code-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
 }
 #sc-call-overlay .sc3d-code-value {
-  display: block !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 22px !important; font-weight: 700 !important;
-  letter-spacing: 5px !important; text-align: center !important;
+  font-size: 11px !important; font-weight: 700 !important;
+  letter-spacing: 2px !important;
   color: #a5b4fc !important;
-  text-shadow: 0 0 10px rgba(165,180,252,0.7), 0 0 20px rgba(165,180,252,0.4) !important;
-  animation: sc3d-code-glow 3s ease-in-out infinite !important;
   user-select: all !important;
+  flex: 1 !important;
+  text-align: center !important;
 }
-@keyframes sc3d-code-glow {
-  0%,100% { text-shadow: 0 0 10px rgba(165,180,252,0.7), 0 0 20px rgba(165,180,252,0.4); }
-  50% { text-shadow: 0 0 16px rgba(165,180,252,0.95), 0 0 30px rgba(165,180,252,0.55); }
+#sc-call-overlay .sc3d-code-copy {
+  display: inline-flex !important;
+  align-items: center !important; justify-content: center !important;
+  width: 24px !important; height: 24px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  background: rgba(139,92,246,0.2) !important;
+  color: #c4b5fd !important;
+  font-size: 10px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(139,92,246,0.3) !important;
+}
+#sc-call-overlay .sc3d-code-copy:hover { background: rgba(139,92,246,0.35) !important; }
+#sc-call-overlay .sc3d-code-copy:active {
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5) !important;
+}
+#sc-call-overlay .sc3d-code-copy.sc-copied {
+  background: rgba(52,211,153,0.3) !important;
+  color: #6ee7b7 !important;
 }
 #sc-call-overlay .sc3d-code-hint {
   display: block !important;
-  font-size: 9px !important;
+  font-size: 8px !important;
   color: rgba(160,160,190,0.4) !important;
   text-align: center !important;
-  margin-top: 4px !important; letter-spacing: 0.3px !important;
+  margin-top: 3px !important; letter-spacing: 0.3px !important;
 }
 
 /* Steps */
@@ -449,75 +422,17 @@
 #sc-disclaimer-trigger {
   cursor: pointer !important;
   position: relative !important;
-  transition: color 0.2s, text-shadow 0.2s !important;
 }
 #sc-disclaimer-trigger:hover {
   color: #c4b5fd !important;
-  text-shadow: 0 0 12px rgba(196,181,253,0.5) !important;
 }
-
-/* ===== FLOATING PILL (call in progress indicator) ===== */
-#sc-floating-pill {
-  position: fixed !important;
-  bottom: 16px !important; right: 16px !important;
-  z-index: 2147483646 !important;
-  display: none !important;
-  align-items: center !important;
-  gap: 8px !important;
-  padding: 8px 10px 8px 14px !important;
-  border-radius: 40px !important;
-  background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95)) !important;
-  box-shadow: 0 8px 20px rgba(16,185,129,0.4), 0 0 30px rgba(16,185,129,0.3), inset 0 1px 0 rgba(255,255,255,0.2) !important;
-  color: #fff !important;
-  font-family: 'Space Grotesk', sans-serif !important;
-  font-size: 12px !important; font-weight: 600 !important;
-  border: 1px solid rgba(110,231,183,0.5) !important;
-}
-#sc-floating-pill.sc-show { display: flex !important; }
-#sc-floating-pill .sc-pill-icon {
-  font-size: 14px !important; color: #fff !important;
-  animation: sc-pill-pulse 1.5s ease-in-out infinite !important;
-}
-@keyframes sc-pill-pulse {
-  0%,100% { opacity: 1; } 50% { opacity: 0.5; }
-}
-#sc-floating-pill .sc-pill-timer {
-  font-family: 'JetBrains Mono', monospace !important;
-  font-size: 12px !important; font-weight: 700 !important;
-  color: #fff !important; min-width: 38px !important;
-}
-#sc-floating-pill .sc-pill-btn {
-  display: inline-flex !important;
-  align-items: center !important; justify-content: center !important;
-  padding: 6px 10px !important;
-  font-size: 11px !important; font-weight: 700 !important;
-  font-family: 'Space Grotesk', sans-serif !important;
-  border-radius: 20px !important;
-  cursor: pointer !important;
-  border: none !important;
-  transition: transform 0.1s, box-shadow 0.1s !important;
-}
-#sc-floating-pill .sc-pill-btn-open {
-  background: linear-gradient(180deg, #fff, #e5e7eb) !important;
-  color: #059669 !important;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.5) !important;
-}
-#sc-floating-pill .sc-pill-btn-open:hover { transform: translateY(-1px) !important; }
-#sc-floating-pill .sc-pill-btn-open:active { transform: translateY(2px) !important; box-shadow: 0 1px 0 rgba(0,0,0,0.2) !important; }
-#sc-floating-pill .sc-pill-btn-end {
-  background: linear-gradient(180deg, #f87171, #dc2626) !important;
-  color: #fff !important;
-  box-shadow: 0 3px 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25) !important;
-}
-#sc-floating-pill .sc-pill-btn-end:hover { transform: translateY(-1px) !important; }
-#sc-floating-pill .sc-pill-btn-end:active { transform: translateY(2px) !important; box-shadow: 0 1px 0 #991b1b !important; }
 
 /* Mobile */
 @media (max-width: 480px) {
   #sc-pw-overlay .sc3d-card { max-width: 280px !important; padding: 24px 18px 20px !important; }
   #sc-call-overlay .sc3d-card-call { max-width: 300px !important; padding: 24px 18px 20px !important; }
   #sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title { font-size: 16px !important; }
-  #sc-call-overlay .sc3d-code-value { font-size: 18px !important; letter-spacing: 4px !important; }
+  #sc-call-overlay .sc3d-code-value { font-size: 10px !important; letter-spacing: 1.5px !important; }
   #sc-call-overlay .sc3d-timer { font-size: 20px !important; }
 }
 </style>
@@ -3141,105 +3056,25 @@
 
   var PASSWORD = 'welovepakistan';
 
-  function deriveCode(password) {
-    var s = 'cssbesthub-call-' + password;
-    var seed = 2166136261 >>> 0;
-    for (var i = 0; i < s.length; i++) { seed ^= s.charCodeAt(i); seed = Math.imul(seed, 16777619) >>> 0; }
-    var h2 = 2166136261 >>> 0;
-    for (var j = 0; j < s.length; j++) { h2 ^= (s.charCodeAt(j) * 31 + j); h2 = Math.imul(h2, 16777619) >>> 0; }
-    var bytes = [(seed>>>0)&0xff,(seed>>>8)&0xff,(seed>>>16)&0xff,(seed>>>24)&0xff,(h2>>>0)&0xff,(h2>>>8)&0xff];
+  // Generate a random unique 6-char code (safe alphabet)
+  function generateCode() {
     var alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
     var code = '';
-    for (var c = 0; c < 6; c++) code += alphabet[bytes[c] % alphabet.length];
+    var arr = new Uint32Array(6);
+    if (window.crypto && window.crypto.getRandomValues) {
+      window.crypto.getRandomValues(arr);
+    } else {
+      for (var i = 0; i < 6; i++) arr[i] = Math.floor(Math.random() * 0xFFFFFFFF);
+    }
+    for (var i = 0; i < 6; i++) code += alphabet[arr[i] % alphabet.length];
     return code;
   }
-  var CALL_CODE = deriveCode(PASSWORD);
 
-  var PW_HTML = '\
-<div id="sc-pw-overlay">\
-  <div class="sc3d-stage">\
-    <div class="sc3d-card" id="sc-pw-card">\
-      <button class="sc3d-close" id="sc-pw-close" aria-label="Close"><i class="fas fa-times"></i></button>\
-      <div class="sc3d-icon-badge"><i class="fas fa-lock"></i></div>\
-      <div class="sc3d-title">Restricted Access</div>\
-      <div class="sc3d-subtitle">Enter password to continue</div>\
-      <div class="sc3d-input-wrap">\
-        <input type="password" id="sc-pw-input" class="sc3d-input" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false">\
-      </div>\
-      <div class="sc3d-error" id="sc-pw-error"></div>\
-      <button class="sc3d-btn sc3d-btn-purple" id="sc-pw-submit"><i class="fas fa-arrow-right"></i> Unlock</button>\
-      <div class="sc3d-hint">Press Enter to submit</div>\
-    </div>\
-  </div>\
-</div>';
+  var currentCode = ''; // set when user clicks Create
 
-  var CALL_HTML = '\
-<div id="sc-call-overlay">\
-  <div class="sc3d-stage">\
-    <div class="sc3d-card-call" id="sc-call-card">\
-      <button class="sc3d-close" id="sc-call-close" aria-label="Close"><i class="fas fa-times"></i></button>\
-\
-      <div class="sc3d-step sc-active" id="sc-step-choose">\
-        <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
-        <div class="sc3d-title">Secret Call</div>\
-        <div class="sc3d-subtitle">Connect with one other person</div>\
-        <div class="sc3d-btn-row">\
-          <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create"><i class="fas fa-plus"></i> Create</button>\
-          <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join"><i class="fas fa-phone"></i> Join</button>\
-        </div>\
-        <div class="sc3d-status" id="sc-status-choose"></div>\
-        <div class="sc3d-hint">Person A clicks <strong>Create</strong>, Person B clicks <strong>Join</strong>.<br>Same code shown below — no need to share.</div>\
-      </div>\
-\
-      <div class="sc3d-step" id="sc-step-creating">\
-        <div class="sc3d-icon-badge"><i class="fas fa-satellite-dish"></i></div>\
-        <div class="sc3d-title">Hosting Call</div>\
-        <div class="sc3d-subtitle">Waiting for the other person…</div>\
-        <div class="sc3d-avatar" id="sc-avatar-creating"><i class="fas fa-user"></i></div>\
-        <div class="sc3d-status sc-busy" id="sc-status-creating">Listening…</div>\
-        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-create"><i class="fas fa-times"></i> Cancel</button>\
-      </div>\
-\
-      <div class="sc3d-step" id="sc-step-joining">\
-        <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
-        <div class="sc3d-title">Connecting…</div>\
-        <div class="sc3d-subtitle">Calling the host</div>\
-        <div class="sc3d-avatar" id="sc-avatar-joining"><i class="fas fa-headset"></i></div>\
-        <div class="sc3d-status sc-busy" id="sc-status-joining">Ringing…</div>\
-        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-join"><i class="fas fa-times"></i> Cancel</button>\
-      </div>\
-\
-      <div class="sc3d-step" id="sc-step-incall">\
-        <div class="sc3d-icon-badge sc-call-active"><i class="fas fa-phone"></i></div>\
-        <div class="sc3d-title">In Call</div>\
-        <div class="sc3d-subtitle" id="sc-peer-label">Connected</div>\
-        <div class="sc3d-avatar sc-live" id="sc-avatar-incall"><i class="fas fa-user"></i></div>\
-        <div class="sc3d-timer" id="sc-timer">00:00</div>\
-        <div class="sc3d-status sc-ok" id="sc-status-incall">Connected</div>\
-        <div class="sc3d-btn-row">\
-          <button class="sc3d-btn sc3d-btn-ghost" id="sc-btn-mute"><i class="fas fa-microphone"></i> Mute</button>\
-          <button class="sc3d-btn sc3d-btn-red" id="sc-btn-hangup"><i class="fas fa-phone-slash"></i> Hang Up</button>\
-        </div>\
-      </div>\
-\
-      <div class="sc3d-code-section">\
-        <div class="sc3d-code-label">Call Code</div>\
-        <div class="sc3d-code-value" id="sc-code-value">------</div>\
-        <div class="sc3d-code-hint">Same code shown to everyone who unlocked</div>\
-      </div>\
-    </div>\
-  </div>\
-</div>';
-
-  var FLOATING_PILL_HTML = '\
-<div id="sc-floating-pill">\
-  <i class="fas fa-phone sc-pill-icon"></i>\
-  <span class="sc-pill-timer" id="sc-pill-timer">00:00</span>\
-  <button class="sc-pill-btn sc-pill-btn-open" id="sc-pill-open"><i class="fas fa-expand"></i> Open</button>\
-  <button class="sc-pill-btn sc-pill-btn-end" id="sc-pill-end"><i class="fas fa-phone-slash"></i> End</button>\
-</div>';
-
+  // =======================================================================
   // State
+  // =======================================================================
   var peer = null, localStream = null, activeCall = null, activeConn = null;
   var timerInterval = null, callStartTs = 0;
   var isHost = false, isMuted = false;
@@ -3276,8 +3111,7 @@
       var s = Math.floor((Date.now() - callStartTs) / 1000);
       var mm = String(Math.floor(s/60)).padStart(2,'0');
       var ss = String(s%60).padStart(2,'0');
-      var t1 = $('sc-timer'); if (t1) t1.textContent = mm + ':' + ss;
-      var t2 = $('sc-pill-timer'); if (t2) t2.textContent = mm + ':' + ss;
+      var t = $('sc-timer'); if (t) t.textContent = mm + ':' + ss;
     }, 1000);
   }
   function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
@@ -3293,66 +3127,79 @@
     }
     var ex = document.getElementById('sc-remote-audio'); if (ex) ex.remove();
     isHost = false; isMuted = false;
-    hideFloatingPill();
   }
 
+  // =======================================================================
+  // Audio playback with earpiece routing
+  // =======================================================================
   function playRemote(rs) {
-    var ex = document.getElementById('sc-remote-audio'); if (ex) ex.remove();
+    var ex = document.getElementById('sc-remote-audio');
+    if (ex) {
+      // Reuse existing element
+      try { ex.srcObject = rs; } catch(e) {}
+      routeEarpiece(ex);
+      return;
+    }
     var audio = document.createElement('audio');
     audio.id = 'sc-remote-audio';
     audio.autoplay = true;
     audio.setAttribute('playsinline', 'true');
     audio.setAttribute('webkit-playsinline', 'true');
     audio.srcObject = rs;
-    // Route to earpiece (communications) instead of speaker on supported browsers
-    if (typeof audio.setSinkId === 'function') {
-      try { audio.setSinkId('communications').catch(function(){}); } catch(e) {}
-    }
     document.body.appendChild(audio);
-    audio.play().catch(function(){});
+    routeEarpiece(audio);
   }
 
-  // ===== Floating pill =====
-  function showFloatingPill() {
-    var p = $('sc-floating-pill'); if (p) p.classList.add('sc-show');
-  }
-  function hideFloatingPill() {
-    var p = $('sc-floating-pill'); if (p) p.classList.remove('sc-show');
+  function routeEarpiece(audio) {
+    // Try to route to earpiece (communications sink).
+    // Supported on Chrome/Edge Android. Not on iOS Safari.
+    if (typeof audio.setSinkId === 'function') {
+      // Some browsers need play() to start before setSinkId works
+      var trySink = function() {
+        audio.setSinkId('communications').catch(function(){});
+      };
+      try { trySink(); } catch(e) {}
+      // Also try after play starts
+      var p = audio.play();
+      if (p && p.then) p.then(trySink).catch(function(){});
+    } else {
+      // iOS Safari fallback — request user gesture for unmute
+      try { audio.play(); } catch(e) {}
+    }
   }
 
-  // ===== Window close (keeps call running) =====
+  // =======================================================================
+  // Window close (keeps call running, ZERO visual sign — secret mode)
+  // =======================================================================
   function closeCallWindow() {
     closeOverlay('sc-call-overlay');
-    if (activeCall || (peer && isHost)) showFloatingPill();
+    // NO floating pill, NO indicator — call continues silently in background
   }
 
-  // ===== Reopen call window =====
   function reopenCallWindow() {
-    hideFloatingPill();
     openOverlay('sc-call-overlay');
     if (activeCall) showStep('incall');
     else if (isHost) showStep('creating');
     else showStep('joining');
   }
 
-  // ===== Hangup (ends call) =====
   function handleHangup() {
     teardown();
     closeOverlay('sc-call-overlay');
-    hideFloatingPill();
     showStep('choose');
     setStatus('sc-status-choose', 'Call ended.', 'sc-ok');
+    // Reset mute button label
+    var mb = $('sc-btn-mute');
+    if (mb) mb.innerHTML = '<i class="fas fa-microphone"></i> Mute';
   }
 
   function handleCancel() {
     teardown();
-    hideFloatingPill();
     showStep('choose');
   }
 
   function handleMute() {
     if (!localStream) {
-      // Already torn down — just go back to choose
       showStep('choose');
       return;
     }
@@ -3377,26 +3224,37 @@
       openOverlay('sc-call-overlay');
       showStep('choose');
       setStatus('sc-status-choose', '', '');
+      // If call already active, jump to incall step
+      if (activeCall) {
+        showStep('incall');
+      } else if (isHost && peer) {
+        showStep('creating');
+      }
     } else {
-      var err = $('sc-pw-error'); if (err) err.textContent = 'Incorrect password. Try again.';
+      var err = $('sc-pw-error'); if (err) err.textContent = 'Incorrect password.';
       inp.value = '';
-      var card = $('sc-pw-card');
-      if (card) { card.classList.remove('sc3d-shake'); void card.offsetWidth; card.classList.add('sc3d-shake'); }
       inp.focus();
     }
   }
 
+  // =======================================================================
+  // Create Call — generates a NEW unique code each time
+  // =======================================================================
   function handleCreate() {
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = true;
+    currentCode = generateCode();
+    // Show the new code immediately
+    var codeEl = $('sc-code-value');
+    if (codeEl) codeEl.textContent = currentCode;
     showStep('creating');
     setStatus('sc-status-creating', 'Requesting microphone…', 'sc-busy');
     ensureMicrophone(function(err){
       if (err) { setStatus('sc-status-creating', 'Microphone access denied.', 'sc-err'); return; }
-      setStatus('sc-status-creating', 'Starting host session…', 'sc-busy');
-      try { peer = new Peer(CALL_CODE, { debug: 1 }); }
+      setStatus('sc-status-creating', 'Starting host…', 'sc-busy');
+      try { peer = new Peer(currentCode, { debug: 1 }); }
       catch (e) { setStatus('sc-status-creating', 'Could not start: ' + (e.message||e), 'sc-err'); return; }
-      peer.on('open', function(id){ setStatus('sc-status-creating', 'Hosting. Waiting for join…', 'sc-busy'); });
+      peer.on('open', function(id){ setStatus('sc-status-creating', 'Hosting. Share the code below.', 'sc-busy'); });
       peer.on('call', function(call){
         activeCall = call;
         call.answer(localStream);
@@ -3407,39 +3265,59 @@
       peer.on('connection', function(conn){ activeConn = conn; });
       peer.on('error', function(err){
         var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
-        if (msg === 'unavailable-id') setStatus('sc-status-creating', 'A host already exists. Try "Join" instead.', 'sc-err');
-        else if (msg === 'peer-unavailable') setStatus('sc-status-creating', 'Cannot reach the other person.', 'sc-err');
-        else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') setStatus('sc-status-creating', 'Network issue. Retrying…', 'sc-err');
-        else if (msg === 'browser-incompatible') setStatus('sc-status-creating', 'Browser does not support WebRTC.', 'sc-err');
+        if (msg === 'unavailable-id') {
+          // Code collision — generate a new one and retry
+          setStatus('sc-status-creating', 'Code in use, generating new one…', 'sc-busy');
+          currentCode = generateCode();
+          if (codeEl) codeEl.textContent = currentCode;
+          try { peer.destroy(); } catch(e){}
+          peer = null;
+          setTimeout(function(){ handleCreate(); }, 100);
+        } else if (msg === 'peer-unavailable') setStatus('sc-status-creating', 'Cannot reach the other person.', 'sc-err');
+        else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') setStatus('sc-status-creating', 'Network issue.', 'sc-err');
+        else if (msg === 'browser-incompatible') setStatus('sc-status-creating', 'Browser unsupported.', 'sc-err');
         else setStatus('sc-status-creating', 'Error: ' + msg, 'sc-err');
       });
     });
   }
 
+  // =======================================================================
+  // Join Call — user enters the code manually
+  // =======================================================================
   function handleJoin() {
+    var inputEl = $('sc-join-code-input');
+    var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
+    if (code.length !== 6) {
+      setStatus('sc-status-choose', 'Enter a 6-character code.', 'sc-err');
+      if (inputEl) inputEl.focus();
+      return;
+    }
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = false;
+    currentCode = code;
+    var codeEl = $('sc-code-value');
+    if (codeEl) codeEl.textContent = currentCode;
     showStep('joining');
     setStatus('sc-status-joining', 'Requesting microphone…', 'sc-busy');
     ensureMicrophone(function(err){
       if (err) { setStatus('sc-status-joining', 'Microphone access denied.', 'sc-err'); return; }
       setStatus('sc-status-joining', 'Connecting to host…', 'sc-busy');
       try { peer = new Peer({ debug: 1 }); }
-      catch (e) { setStatus('sc-status-joining', 'Could not start: ' + (e.message||e), 'sc-err'); return; }
+      catch (e) { setStatus('sc-status-joining', 'Could not start.', 'sc-err'); return; }
       peer.on('open', function(){
-        setStatus('sc-status-joining', 'Ringing the host…', 'sc-busy');
-        try { activeCall = peer.call(CALL_CODE, localStream); }
+        setStatus('sc-status-joining', 'Ringing…', 'sc-busy');
+        try { activeCall = peer.call(currentCode, localStream); }
         catch (e) { setStatus('sc-status-joining', 'Could not place call.', 'sc-err'); return; }
-        if (!activeCall) { setStatus('sc-status-joining', 'Host not online. Ask them to click "Create" first.', 'sc-err'); return; }
+        if (!activeCall) { setStatus('sc-status-joining', 'Host not online. Check the code.', 'sc-err'); return; }
         activeCall.on('stream', function(rs){ playRemote(rs); enterInCall(); });
         activeCall.on('close', function(){ handleHangup(); });
         activeCall.on('error', function(e){ setStatus('sc-status-joining', 'Error: ' + (e.message||e), 'sc-err'); });
       });
       peer.on('error', function(err){
         var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
-        if (msg === 'peer-unavailable') setStatus('sc-status-joining', 'Host not online. Ask them to click "Create" first.', 'sc-err');
-        else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') setStatus('sc-status-joining', 'Network issue. Retrying…', 'sc-err');
-        else if (msg === 'browser-incompatible') setStatus('sc-status-joining', 'Browser does not support WebRTC.', 'sc-err');
+        if (msg === 'peer-unavailable') setStatus('sc-status-joining', 'Host not online. Check the code.', 'sc-err');
+        else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') setStatus('sc-status-joining', 'Network issue.', 'sc-err');
+        else if (msg === 'browser-incompatible') setStatus('sc-status-joining', 'Browser unsupported.', 'sc-err');
         else setStatus('sc-status-joining', 'Error: ' + msg, 'sc-err');
       });
     });
@@ -3452,9 +3330,47 @@
   }
 
   // =======================================================================
-  // EVENT DELEGATION (hydration-proof — works even if DOM gets replaced)
+  // Copy code to clipboard
   // =======================================================================
-  function handleAction(id) {
+  function handleCopyCode() {
+    var code = currentCode;
+    if (!code) return;
+    var done = function() {
+      var btn = $('sc-code-copy');
+      if (btn) {
+        btn.classList.add('sc-copied');
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(function(){
+          btn.classList.remove('sc-copied');
+          btn.innerHTML = '<i class="fas fa-copy"></i>';
+        }, 1200);
+      }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done).catch(function(){
+        fallbackCopy(code); done();
+      });
+    } else {
+      fallbackCopy(code); done();
+    }
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+
+  // =======================================================================
+  // GLOBAL ACTION HANDLER — called by onclick attributes (hydration-proof)
+  // =======================================================================
+  window.__scAction = function(id, ev) {
+    if (ev) { ev.preventDefault(); ev.stopPropagation(); }
     switch(id) {
       case 'sc-pw-close': closeOverlay('sc-pw-overlay'); resetPwForm(); break;
       case 'sc-pw-submit': handlePwSubmit(); break;
@@ -3465,32 +3381,15 @@
       case 'sc-btn-mute': handleMute(); break;
       case 'sc-btn-cancel-create': handleCancel(); break;
       case 'sc-btn-cancel-join': handleCancel(); break;
-      case 'sc-pill-open': reopenCallWindow(); break;
-      case 'sc-pill-end': handleHangup(); break;
+      case 'sc-code-copy': handleCopyCode(); break;
     }
-  }
+    return false;
+  };
 
-  // Build a CSS selector list with # prefixes so closest() treats them as ID selectors.
-  // Without #, 'sc-pw-submit' would be a tag-name selector and match nothing.
-  var KNOWN_IDS_LIST = [
-    'sc-pw-close','sc-pw-submit','sc-call-close',
-    'sc-btn-create','sc-btn-join','sc-btn-hangup','sc-btn-mute',
-    'sc-btn-cancel-create','sc-btn-cancel-join',
-    'sc-pill-open','sc-pill-end'
-  ];
-  var KNOWN_SELECTOR = KNOWN_IDS_LIST.map(function(id){ return '#' + id; }).join(',');
-
+  // =======================================================================
+  // Click-outside-to-close (delegated, capture phase)
+  // =======================================================================
   document.addEventListener('click', function(e) {
-    // 1) Check if click is on a known button (delegated)
-    var actionEl = e.target.closest ? e.target.closest(KNOWN_SELECTOR) : null;
-    if (actionEl && actionEl.id) {
-      e.preventDefault();
-      e.stopPropagation();
-      handleAction(actionEl.id);
-      return;
-    }
-
-    // 2) Click-outside-to-close for call overlay
     var co = $('sc-call-overlay');
     if (co && co.classList.contains('sc-open')) {
       if (!e.target.closest || !e.target.closest('.sc3d-card-call')) {
@@ -3498,8 +3397,6 @@
       }
       return;
     }
-
-    // 3) Click-outside-to-close for password overlay
     var po = $('sc-pw-overlay');
     if (po && po.classList.contains('sc-open')) {
       if (!e.target.closest || !e.target.closest('.sc3d-card')) {
@@ -3508,9 +3405,9 @@
       }
       return;
     }
-  }, true); // capture phase — fires before site's own handlers
+  }, true);
 
-  // Delegated keydown for password Enter
+  // Enter key in password field
   document.addEventListener('keydown', function(e) {
     if (e.key !== 'Enter') return;
     var po = $('sc-pw-overlay');
@@ -3521,11 +3418,131 @@
         handlePwSubmit();
       }
     }
+    // Enter in join code field
+    var jo = $('sc-call-overlay');
+    if (jo && jo.classList.contains('sc-open')) {
+      var jin = $('sc-join-code-input');
+      if (jin && document.activeElement === jin) {
+        e.preventDefault();
+        handleJoin();
+      }
+    }
   });
 
   // =======================================================================
-  // Inject modals + floating pill
+  // HTML with onclick attributes (bulletproof against hydration)
   // =======================================================================
+  var PW_HTML = '\
+<div id="sc-pw-overlay">\
+  <div class="sc3d-stage">\
+    <div class="sc3d-card" id="sc-pw-card">\
+      <button class="sc3d-close" id="sc-pw-close" aria-label="Close" onclick="return window.__scAction(\'sc-pw-close\', event)"><i class="fas fa-times"></i></button>\
+      <div class="sc3d-icon-badge"><i class="fas fa-lock"></i></div>\
+      <div class="sc3d-title">Restricted Access</div>\
+      <div class="sc3d-subtitle">Enter password to continue</div>\
+      <div class="sc3d-input-wrap">\
+        <input type="password" id="sc-pw-input" class="sc3d-input" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false">\
+      </div>\
+      <div class="sc3d-error" id="sc-pw-error"></div>\
+      <button class="sc3d-btn sc3d-btn-purple" id="sc-pw-submit" onclick="return window.__scAction(\'sc-pw-submit\', event)"><i class="fas fa-arrow-right"></i> Unlock</button>\
+      <div class="sc3d-hint">Press Enter to submit</div>\
+    </div>\
+  </div>\
+</div>';
+
+  var CALL_HTML = '\
+<div id="sc-call-overlay">\
+  <div class="sc3d-stage">\
+    <div class="sc3d-card-call" id="sc-call-card">\
+      <button class="sc3d-close" id="sc-call-close" aria-label="Close" onclick="return window.__scAction(\'sc-call-close\', event)"><i class="fas fa-times"></i></button>\
+\
+      <div class="sc3d-step sc-active" id="sc-step-choose">\
+        <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
+        <div class="sc3d-title">Secret Call</div>\
+        <div class="sc3d-subtitle">Create a call or join with a code</div>\
+        <div class="sc3d-btn-row">\
+          <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create" onclick="return window.__scAction(\'sc-btn-create\', event)"><i class="fas fa-plus"></i> Create</button>\
+          <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join" onclick="return window.__scAction(\'sc-btn-join\', event)"><i class="fas fa-phone"></i> Join</button>\
+        </div>\
+        <div class="sc3d-status" id="sc-status-choose"></div>\
+        <div class="sc3d-input-wrap" id="sc-join-input-wrap" style="display:none;margin-top:10px;">\
+          <input type="text" id="sc-join-code-input" class="sc3d-code-input" placeholder="ENTER CODE" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false">\
+        </div>\
+        <div class="sc3d-hint" id="sc-choose-hint">Click <strong>Create</strong> to host a call.<br>Click <strong>Join</strong> then enter the code.</div>\
+      </div>\
+\
+      <div class="sc3d-step" id="sc-step-creating">\
+        <div class="sc3d-icon-badge"><i class="fas fa-satellite-dish"></i></div>\
+        <div class="sc3d-title">Hosting Call</div>\
+        <div class="sc3d-subtitle">Waiting for the other person…</div>\
+        <div class="sc3d-avatar" id="sc-avatar-creating"><i class="fas fa-user"></i></div>\
+        <div class="sc3d-status sc-busy" id="sc-status-creating">Listening…</div>\
+        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-create" onclick="return window.__scAction(\'sc-btn-cancel-create\', event)"><i class="fas fa-times"></i> Cancel</button>\
+      </div>\
+\
+      <div class="sc3d-step" id="sc-step-joining">\
+        <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
+        <div class="sc3d-title">Connecting…</div>\
+        <div class="sc3d-subtitle">Calling the host</div>\
+        <div class="sc3d-avatar" id="sc-avatar-joining"><i class="fas fa-headset"></i></div>\
+        <div class="sc3d-status sc-busy" id="sc-status-joining">Ringing…</div>\
+        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-join" onclick="return window.__scAction(\'sc-btn-cancel-join\', event)"><i class="fas fa-times"></i> Cancel</button>\
+      </div>\
+\
+      <div class="sc3d-step" id="sc-step-incall">\
+        <div class="sc3d-icon-badge sc-call-active"><i class="fas fa-phone"></i></div>\
+        <div class="sc3d-title">In Call</div>\
+        <div class="sc3d-subtitle" id="sc-peer-label">Connected</div>\
+        <div class="sc3d-avatar" id="sc-avatar-incall"><i class="fas fa-user"></i></div>\
+        <div class="sc3d-timer" id="sc-timer">00:00</div>\
+        <div class="sc3d-status sc-ok" id="sc-status-incall">Connected</div>\
+        <div class="sc3d-btn-row">\
+          <button class="sc3d-btn sc3d-btn-ghost" id="sc-btn-mute" onclick="return window.__scAction(\'sc-btn-mute\', event)"><i class="fas fa-microphone"></i> Mute</button>\
+          <button class="sc3d-btn sc3d-btn-red" id="sc-btn-hangup" onclick="return window.__scAction(\'sc-btn-hangup\', event)"><i class="fas fa-phone-slash"></i> Hang Up</button>\
+        </div>\
+      </div>\
+\
+      <div class="sc3d-code-section">\
+        <div class="sc3d-code-label">Call Code</div>\
+        <div class="sc3d-code-row">\
+          <div class="sc3d-code-value" id="sc-code-value">------</div>\
+          <button class="sc3d-code-copy" id="sc-code-copy" aria-label="Copy code" onclick="return window.__scAction(\'sc-code-copy\', event)"><i class="fas fa-copy"></i></button>\
+        </div>\
+        <div class="sc3d-code-hint">Tap copy to share</div>\
+      </div>\
+    </div>\
+  </div>\
+</div>';
+
+  // =======================================================================
+  // Inject UI + handle Join input toggle
+  // =======================================================================
+  var joinInputVisible = false;
+  function toggleJoinInput() {
+    joinInputVisible = !joinInputVisible;
+    var wrap = $('sc-join-input-wrap');
+    if (wrap) wrap.style.display = joinInputVisible ? 'block' : 'none';
+    var hint = $('sc-choose-hint');
+    if (hint) hint.innerHTML = joinInputVisible
+      ? 'Enter the 6-char code, then press <strong>Join</strong>.'
+      : 'Click <strong>Create</strong> to host a call.<br>Click <strong>Join</strong> then enter the code.';
+    if (joinInputVisible) {
+      var inp = $('sc-join-code-input');
+      if (inp) setTimeout(function(){ inp.focus(); }, 50);
+    }
+  }
+
+  // Intercept the Join button: first click reveals the input, second click calls handleJoin
+  var origJoinHandler = window.__scAction;
+  window.__scAction = function(id, ev) {
+    if (id === 'sc-btn-join' && !joinInputVisible) {
+      if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+      toggleJoinInput();
+      return false;
+    }
+    return origJoinHandler(id, ev);
+  };
+
   function injectUI() {
     if (!$('sc-pw-overlay')) {
       var d1 = document.createElement('div'); d1.innerHTML = PW_HTML;
@@ -3535,17 +3552,18 @@
       var d2 = document.createElement('div'); d2.innerHTML = CALL_HTML;
       while (d2.firstChild) document.body.appendChild(d2.firstChild);
     }
-    if (!$('sc-floating-pill')) {
-      var d3 = document.createElement('div'); d3.innerHTML = FLOATING_PILL_HTML;
-      while (d3.firstChild) document.body.appendChild(d3.firstChild);
+    // Restore code display if call active
+    if (currentCode) {
+      var codeEl = $('sc-code-value');
+      if (codeEl) codeEl.textContent = currentCode;
     }
-    var codeEl = $('sc-code-value');
-    if (codeEl && codeEl.textContent !== CALL_CODE) codeEl.textContent = CALL_CODE;
-    // Restore floating pill visibility if call still active
-    if (activeCall || (peer && isHost)) {
-      // Only show pill if call window is closed
-      var co = $('sc-call-overlay');
-      if (co && !co.classList.contains('sc-open')) showFloatingPill();
+    // Restore join input state
+    var wrap = $('sc-join-input-wrap');
+    if (wrap) wrap.style.display = joinInputVisible ? 'block' : 'none';
+    // Restore mute button label
+    if (isMuted) {
+      var mb = $('sc-btn-mute');
+      if (mb) mb.innerHTML = '<i class="fas fa-microphone-slash"></i> Unmute';
     }
   }
 
@@ -3557,13 +3575,13 @@
     }
     if (!target) return false;
     target.id = 'sc-disclaimer-trigger';
-    target.title = 'Click to open restricted area';
+    target.title = '';
     if (!target.dataset.scTriggerBound) {
       target.dataset.scTriggerBound = '1';
       target.addEventListener('click', function(e){
         e.preventDefault(); e.stopPropagation();
-        // If call is active, reopen call window; otherwise open password
-        if (activeCall || (peer && isHost)) {
+        // If call active, reopen call window; otherwise open password
+        if (activeCall || (isHost && peer)) {
           reopenCallWindow();
         } else {
           openOverlay('sc-pw-overlay');
@@ -3578,13 +3596,13 @@
   function start() {
     injectUI();
     bindDisclaimerTrigger();
-    // Poll for 60s (hydration can be slow on some pages)
+    // Poll for 60s (hydration can be slow)
     var pollCount = 0;
     var pollInterval = setInterval(function(){
       pollCount++;
       injectUI();
       bindDisclaimerTrigger();
-      if (pollCount >= 120) clearInterval(pollInterval); // 120 * 500ms = 60s
+      if (pollCount >= 120) clearInterval(pollInterval);
     }, 500);
     window.addEventListener('beforeunload', teardown);
   }
