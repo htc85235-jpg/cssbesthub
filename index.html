@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v15: ONE SINGLE CODE BOX EVERYWHERE (no duplicates) ===== */
+/* ===== SECRET CALL v16: SIMPLIFIED 2-SCREEN DESIGN (no extra windows) ===== */
 /* User request:
    - "All Buttons are looking bumpy" → redesigned as INSET 3D buttons that sit inside a
      recessed groove and PRESS INTO the surface on :active (gradient reverses + top
@@ -896,13 +896,13 @@
 /* Hint hidden (v10 user request) */
 #sc-call-overlay .sc3d-code-hint { display: none !important; }
 
-/* ===== v15: SINGLE CODE BOX IN CHOOSE STEP (replaces banner + bottom section) =====
-   This is the ONLY code box the user sees after Create. It is hidden by default
-   and shown ONLY when currentCode is set AND the Enter Call modal is NOT showing.
-   When user clicks Join, this box is hidden and the Enter Call modal takes over
-   so only ONE code box is visible at any time. */
+/* ===== v16: SINGLE CODE BOX (always visible on main screen, editable input) =====
+   This is the ONLY code box the user sees on the main screen. It is BOTH a
+   display field (auto-filled with the created code) AND an input field (user
+   can type a code to join a remote call). The "Call Created" notification
+   appears INSIDE this box when Create succeeds. */
 #sc-call-overlay .sc3d-current-code {
-  display: none !important;
+  display: block !important;
   margin-top: 10px !important;
   padding: 9px 11px !important;
   border-radius: 12px !important;
@@ -916,7 +916,6 @@
     0 1px 0 rgba(255,255,255,0.55),
     0 0 14px -4px rgba(103,232,249,0.30) !important;
 }
-#sc-call-overlay .sc3d-current-code.sc-code-show { display: block !important; }
 #sc-call-overlay .sc3d-current-code-label {
   display: block !important;
   font-size: 7px !important; font-weight: 700 !important;
@@ -932,15 +931,38 @@
   justify-content: center !important;
   gap: 6px !important;
 }
-#sc-call-overlay .sc3d-current-code-value {
+#sc-call-overlay .sc3d-current-code-input {
+  flex: 1 !important;
+  display: block !important;
+  width: 100% !important;
+  padding: 7px 9px !important;
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 14px !important; font-weight: 700 !important;
-  letter-spacing: 2px !important;
+  letter-spacing: 2.5px !important;
   color: #fbbf24 !important;
-  user-select: all !important;
-  flex: 1 !important;
   text-align: center !important;
+  text-transform: uppercase !important;
+  background: linear-gradient(180deg, rgba(50,55,62,0.85) 0%, rgba(38,42,48,0.90) 100%) !important;
+  border: 1px solid rgba(120,128,140,0.45) !important;
+  border-radius: 8px !important;
+  outline: none !important;
   text-shadow: 0 0 8px rgba(251,191,36,0.55), 0 0 14px rgba(251,191,36,0.35), 0 1px 0 rgba(0,0,0,0.7) !important;
+  box-shadow:
+    inset 0 3px 5px rgba(0,0,0,0.7),
+    inset 0 -1px 0 rgba(255,255,255,0.06) !important;
+}
+#sc-call-overlay .sc3d-current-code-input:focus {
+  border-color: #67e8f9 !important;
+  box-shadow:
+    inset 0 3px 5px rgba(0,0,0,0.7),
+    0 0 0 2px rgba(103,232,249,0.45),
+    0 0 14px rgba(103,232,249,0.55) !important;
+}
+#sc-call-overlay .sc3d-current-code-input::placeholder {
+  font-size: 11px !important;
+  letter-spacing: 1.5px !important;
+  color: rgba(200,210,220,0.45) !important;
+  text-shadow: none !important;
 }
 #sc-call-overlay .sc3d-current-code-copy {
   display: inline-flex !important;
@@ -948,6 +970,7 @@
   width: 22px !important; height: 22px !important;
   border-radius: 7px !important;
   cursor: pointer !important;
+  flex-shrink: 0 !important;
   background: linear-gradient(180deg, rgba(244,247,251,0.94) 0%, rgba(220,226,236,0.90) 35%, rgba(192,200,214,0.88) 70%, rgba(160,170,184,0.92) 100%) !important;
   color: #1a1a1f !important;
   font-size: 9px !important;
@@ -988,6 +1011,36 @@
     inset 0 1px 0 rgba(255,255,255,0.95),
     inset 0 -1px 1px rgba(20,60,30,0.30),
     inset 0 0 0 1px rgba(180,220,200,0.55) !important;
+}
+/* v16: "Call Created" notification INSIDE the code box.
+   Hidden by default, slides in + fades out when shown. */
+#sc-call-overlay .sc3d-notify {
+  display: none !important;
+  margin-top: 5px !important;
+  padding: 3px 6px !important;
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  text-align: center !important;
+  color: #34d399 !important;
+  background: linear-gradient(180deg, rgba(6,78,59,0.55) 0%, rgba(4,47,36,0.65) 100%) !important;
+  border: 1px solid rgba(52,211,153,0.45) !important;
+  border-radius: 6px !important;
+  text-shadow: 0 0 6px rgba(52,211,153,0.65), 0 1px 0 rgba(0,0,0,0.6) !important;
+  box-shadow:
+    0 0 10px -2px rgba(52,211,153,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+#sc-call-overlay .sc3d-notify.sc-notify-show {
+  display: block !important;
+  animation: scNotifyFade 4s ease-out forwards !important;
+}
+@keyframes scNotifyFade {
+  0%   { opacity: 0; transform: translateY(-4px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-2px); }
 }
 
 /* Steps */
@@ -3765,22 +3818,11 @@
   // speakerMuted=false means audio plays normally through the current route.
   // Initial state: false (audio plays on connect). Tapping Speaker button toggles this.
   var speakerMuted = false;
-  // === v13: Enter Call modal state ===
-  // User request: 'When a call is created and code is generated, the newly created call
-  // code must be automatically fetched when clicked on "join" button: newly created call
-  // code must be automatically filled in join section, and a new small window must open
-  // saying "Enter Call". When clicked on "Enter Call" button, call must be connected.'
-  // So: tapping Join (when a code is already created in this session) auto-fills the input
-  // AND opens a small 'Enter Call' confirmation window. Tapping 'Enter Call' inside that
-  // window actually places the call.
-  var enterModalVisible = false;
-  // === v14: track the code shown inside the Enter Call modal ===
-  // v13 bug: only `enterModalVisible` was tracked, but the modal's code text was NOT
-  // re-asserted in injectUI. When hydration replaced the modal element, the code text
-  // stayed as '------' and (more importantly) the sc-enter-show class could be lost.
-  // v14 fix: we track `enterModalCode` too and re-assert BOTH the class AND the code
-  // text on every injectUI poll tick (same pattern as sc-code-value / sc-banner-code).
-  var enterModalCode = '';
+  // === v16: SIMPLIFIED — only 2 screens before call connects ===
+  // The Enter Call modal, sc-step-creating, and sc-step-joining have all been removed.
+  // Clicking Create just fills the code box + shows "Call Created" notification + listens.
+  // Clicking Join reads the code from the box and calls. No modal, no extra screens.
+  // The only step transition is: choose → incall (when call connects) → choose (when ends).
   var remoteAudioEl = null;
   var setSinkSupported = (typeof HTMLMediaElement !== 'undefined') &&
                          (typeof HTMLMediaElement.prototype.setSinkId === 'function');
@@ -3804,7 +3846,8 @@
   function $(id) { return document.getElementById(id); }
 
   function showStep(name) {
-    ['choose','creating','joining','incall'].forEach(function(s){
+    // v16: only 'choose' and 'incall' steps remain. 'creating' and 'joining' removed.
+    ['choose','incall'].forEach(function(s){
       var el = $('sc-step-' + s);
       if (el) el.classList.toggle('sc-active', s === name);
     });
@@ -3864,7 +3907,9 @@
     activeRoutingMethod = 'none';
     // === v13: reset new state vars ===
     speakerMuted = false;
-    hideEnterCallModal();
+    // v16: hideEnterCallModal() removed — the Enter Call modal no longer exists.
+    // Also hide the "Call Created" notification on teardown.
+    hideCallCreatedNotify();
   }
 
   // === v11: Web Audio API routing (iOS earpiece fix) ===
@@ -4219,9 +4264,10 @@
 
   function reopenCallWindow() {
     openOverlay('sc-call-overlay');
+    // v16: only 'choose' and 'incall' steps exist. If a call is active, show incall.
+    // Otherwise, show the main choose screen (which has Create + Join + code box).
     if (activeCall) showStep('incall');
-    else if (isHost) showStep('creating');
-    else showStep('joining');
+    else showStep('choose');
   }
 
   function handleHangup() {
@@ -4242,12 +4288,9 @@
       spBtn.classList.remove('sc-ctrl-off');
       spBtn.classList.remove('sc-ctrl-active');
     }
-    joinInputVisible = false;
-    var wrap = $('sc-join-input-wrap');
-    if (wrap) wrap.style.display = 'none';
-    // === v13: clear join input so next Join click starts fresh ===
-    var joinInp = $('sc-join-code-input');
-    if (joinInp) joinInp.value = '';
+    // v16: joinInputVisible / sc-join-input-wrap / sc-join-code-input all removed.
+    // The single code box (sc-current-code-value) retains its value so the user can
+    // quickly rejoin the same code without retyping. They can clear it manually if needed.
   }
 
   function handleCancel() {
@@ -4398,15 +4441,16 @@
     }
   }
 
-  // v15: Helper to instantly set the code in the SINGLE code box (sc-current-code-value)
-  // and make the wrapper visible. Replaces the old setCodeDisplay that targeted sc-code-value.
+  // v16: Helper to instantly set the code in the SINGLE code box input field.
+  // The code box is now an <input> element (so the user can ALSO type a code),
+  // not a static <div>. Replaces the placeholder with the auto-filled code.
   // Retries beat hydration races (same pattern as before).
   function setCodeDisplay(code) {
     if (!code) return;
     var setIt = function() {
       var el = $('sc-current-code-value');
       if (el) {
-        el.textContent = code;
+        el.value = code;
         return true;
       }
       return false;
@@ -4416,11 +4460,35 @@
     setTimeout(setIt, 50);
     setTimeout(setIt, 150);
     setTimeout(setIt, 300);
-    // Also show the wrapper (will be re-asserted in injectUI based on enterModalVisible)
-    var wrap = $('sc-current-code');
-    if (wrap && !wrap.classList.contains('sc-code-show')) {
-      wrap.classList.add('sc-code-show');
+  }
+
+  // v16: Show the "Call Created" notification INSIDE the code box.
+  // Re-asserts on retries (hydration-proof). Auto-fades via CSS animation after 4s.
+  function showCallCreatedNotify() {
+    var showIt = function() {
+      var el = $('sc-notify');
+      if (!el) return false;
+      // Remove + re-add the class so the CSS animation restarts each time
+      el.classList.remove('sc-notify-show');
+      // Force reflow before re-adding
+      void el.offsetWidth;
+      el.classList.add('sc-notify-show');
+      return true;
+    };
+    if (showIt()) {
+      // Also try a couple of retries in case the element is hydrated out
+      setTimeout(showIt, 50);
+      setTimeout(showIt, 200);
+    } else {
+      setTimeout(showIt, 50);
+      setTimeout(showIt, 200);
     }
+  }
+
+  // v16: Hide the "Call Created" notification (used when status changes to error, etc.)
+  function hideCallCreatedNotify() {
+    var el = $('sc-notify');
+    if (el) el.classList.remove('sc-notify-show');
   }
 
   // ===== v15: BANNER REMOVED =====
@@ -4433,30 +4501,43 @@
   function handleBannerDismiss() { /* v15: no-op — banner removed */ }
   function handleBannerCopy() { /* v15: no-op — banner removed */ }
 
+  // v16: handleCreate — RADICALLY SIMPLIFIED.
+  // User request: "Clicking on create button will open no new window, will just say
+  // 'Call Created' text as little notification inside the box and show created call
+  // code that will appear in the code box of same window."
+  // So: NO step switch (stay on 'choose' step), just fill the code box + show notification
+  // + initialize PeerJS to listen for incoming calls.
   function handleCreate() {
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = true;
     currentCode = generateCode();
     console.log('[sc] CREATE: new code =', currentCode);
     // === v11: Prewarm AudioContext DURING user gesture (required by iOS) ===
-    // This MUST happen synchronously inside the click handler — before any async work —
-    // or iOS Safari will leave the AudioContext suspended and earpiece routing will fail.
     prewarmAudioContext();
-    // INSTANT code update in lower box (with retries to beat hydration)
+    // v16: INSTANT code update in the code box input (with retries to beat hydration)
     setCodeDisplay(currentCode);
-    // SHOW notification banner with the new code
-    showBanner(currentCode);
-    showStep('creating');
-    setStatus('sc-status-creating', 'Requesting microphone…', 'sc-busy');
+    // v16: show "Call Created" notification INSIDE the code box
+    showCallCreatedNotify();
+    // v16: NO step switch — stay on the 'choose' step (the same screen)
+    // Update status text on the SAME screen
+    setStatus('sc-status-choose', 'Requesting microphone…', 'sc-busy');
     ensureMicrophone(function(err){
-      if (err) { setStatus('sc-status-creating', 'Microphone access denied.', 'sc-err'); return; }
-      setStatus('sc-status-creating', 'Starting host…', 'sc-busy');
+      if (err) {
+        setStatus('sc-status-choose', 'Microphone access denied.', 'sc-err');
+        hideCallCreatedNotify();
+        return;
+      }
+      setStatus('sc-status-choose', 'Starting host…', 'sc-busy');
       // Re-assert code in case hydration wiped it during async wait
       setCodeDisplay(currentCode);
       try { peer = new Peer(currentCode, { debug: 1 }); }
-      catch (e) { setStatus('sc-status-creating', 'Could not start: ' + (e.message||e), 'sc-err'); return; }
+      catch (e) {
+        setStatus('sc-status-choose', 'Could not start: ' + (e.message||e), 'sc-err');
+        hideCallCreatedNotify();
+        return;
+      }
       peer.on('open', function(id){
-        setStatus('sc-status-creating', 'Hosting. Share the code below.', 'sc-busy');
+        setStatus('sc-status-choose', 'Listening for caller…', 'sc-busy');
         setCodeDisplay(currentCode);
       });
       peer.on('call', function(call){
@@ -4464,175 +4545,114 @@
         call.answer(localStream);
         call.on('stream', function(rs){ playRemote(rs); enterInCall(); });
         call.on('close', function(){ handleHangup(); });
-        call.on('error', function(e){ setStatus('sc-status-creating', 'Error: ' + (e.message||e), 'sc-err'); });
+        call.on('error', function(e){
+          setStatus('sc-status-choose', 'Error: ' + (e.message||e), 'sc-err');
+        });
       });
       peer.on('connection', function(conn){ activeConn = conn; });
       peer.on('error', function(err){
         var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
         if (msg === 'unavailable-id') {
-          setStatus('sc-status-creating', 'Code in use, regenerating…', 'sc-busy');
+          setStatus('sc-status-choose', 'Code in use, regenerating…', 'sc-busy');
           currentCode = generateCode();
           setCodeDisplay(currentCode);
           try { peer.destroy(); } catch(e){}
           peer = null;
           setTimeout(function(){ handleCreate(); }, 100);
-        } else if (msg === 'peer-unavailable') setStatus('sc-status-creating', 'Cannot reach the other person.', 'sc-err');
-        else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') setStatus('sc-status-creating', 'Network issue.', 'sc-err');
-        else if (msg === 'browser-incompatible') setStatus('sc-status-creating', 'Browser unsupported.', 'sc-err');
-        else setStatus('sc-status-creating', 'Error: ' + msg, 'sc-err');
+        } else if (msg === 'peer-unavailable') {
+          setStatus('sc-status-choose', 'Cannot reach the other person.', 'sc-err');
+        } else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') {
+          setStatus('sc-status-choose', 'Network issue.', 'sc-err');
+        } else if (msg === 'browser-incompatible') {
+          setStatus('sc-status-choose', 'Browser unsupported.', 'sc-err');
+        } else {
+          setStatus('sc-status-choose', 'Error: ' + msg, 'sc-err');
+        }
       });
     });
   }
 
-  // === v13: Join flow redesigned per user request ===
-  // User: 'When a call is created and code is generated, the newly created call code must
-  // be automatically fetched when clicked on "join" button: newly created call code must be
-  // automatically filled in join section, and a new small window must open saying "Enter Call".
-  // When clicked on "Enter Call" button, call must be connected.'
-  //
-  // New flow:
-  //  1) User clicks Join button. If a code was created earlier in this session (currentCode),
-  //     auto-fill the join input with that code AND open a small 'Enter Call' modal showing
-  //     the code + an 'Enter Call' button. User can still edit the code in the input.
-  //  2) If NO code was created yet (user just opened the call window and tapped Join),
-  //     just show the join input as before — user types a code manually.
-  //  3) When user taps 'Enter Call' inside the modal, validate the code and actually place the call.
+  // v16: handleJoinClick — RADICALLY SIMPLIFIED.
+  // User request: "There must be only 2 screens until call is connected... 2nd screen
+  // must only have create and join call button and one code box where code will appear
+  // when call will be created."
+  // So: NO Enter Call modal. Just read the code from the SAME code box input (whether
+  // it was auto-filled by Create OR typed by the user), validate, and place the call.
+  // Stay on the SAME screen — only switch to incall when the call actually connects.
   function handleJoinClick() {
-    console.log('[sc] JOIN clicked, currentCode:', currentCode, 'joinInputVisible:', joinInputVisible);
-    // === v15: determine the code to use for the Enter Call modal ===
-    // Priority: (1) value currently in the join input, (2) currentCode (just-created code).
-    var inputEl = $('sc-join-code-input');
+    console.log('[sc] JOIN clicked, currentCode:', currentCode);
+    // v16: read the code from the SINGLE code box input
+    var inputEl = $('sc-current-code-value');
     var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
+    // If input is empty/invalid but we have a currentCode (just-created), use that
+    // AND back-fill the input so the user can see what's being called.
     if (code.length !== 6 && currentCode && currentCode.length === 6) {
-      // Input is empty or invalid, but we have a just-created code → use it AND fill the input
       code = currentCode;
       if (inputEl) {
         inputEl.value = currentCode;
-        console.log('[sc] v15: back-filled join input with currentCode (was empty):', currentCode);
+        console.log('[sc] v16: back-filled code box input with currentCode:', currentCode);
       }
-    }
-    if (code.length === 6) {
-      // === v15: We have a valid code → hide the join input, open the Enter Call modal ===
-      // This ensures only ONE code box (the modal) is visible at a time.
-      joinInputVisible = false;
-      var wrap = $('sc-join-input-wrap');
-      if (wrap) wrap.style.display = 'none';
-      showEnterCallModal(code);
-    } else {
-      // No valid code yet → show the join input so the user can type a code
-      if (!joinInputVisible) {
-        joinInputVisible = true;
-        var wrap2 = $('sc-join-input-wrap');
-        if (wrap2) wrap2.style.display = 'block';
-        if (inputEl) setTimeout(function(){ inputEl.focus(); inputEl.select(); }, 50);
-      }
-      setStatus('sc-status-choose', 'Enter a 6-character code.', 'sc-busy');
-      if (inputEl) inputEl.focus();
-    }
-  }
-
-  // === v13: Show the Enter Call confirmation modal ===
-  // Populates the modal with the prefetched code and makes it visible.
-  // v14: also tracks `enterModalCode` so injectUI can re-assert both the class AND the
-  // code text on every poll tick (hydration-proof).
-  function showEnterCallModal(code) {
-    if (!code || code.length !== 6) return;
-    console.log('[sc] showEnterCallModal:', code);
-    enterModalCode = code;
-    enterModalVisible = true;
-    var modal = $('sc-enter-modal');
-    var codeEl = $('sc-enter-code');
-    if (!modal || !codeEl) {
-      // Elements may not be injected yet — retry
-      setTimeout(function(){ showEnterCallModal(code); }, 50);
-      return;
-    }
-    codeEl.textContent = code;
-    modal.classList.add('sc-enter-show');
-    // Re-assert in case hydration wipes it
-    setTimeout(function(){
-      var m = $('sc-enter-modal');
-      var c = $('sc-enter-code');
-      if (m) m.classList.add('sc-enter-show');
-      if (c) c.textContent = code;
-    }, 50);
-    setTimeout(function(){
-      var m = $('sc-enter-modal');
-      var c = $('sc-enter-code');
-      if (m) m.classList.add('sc-enter-show');
-      if (c) c.textContent = code;
-    }, 200);
-  }
-
-  // === v13: Hide the Enter Call modal ===
-  // v14: also clears `enterModalCode` so injectUI stops re-asserting the modal.
-  function hideEnterCallModal() {
-    enterModalVisible = false;
-    enterModalCode = '';
-    var modal = $('sc-enter-modal');
-    if (modal) modal.classList.remove('sc-enter-show');
-  }
-
-  // === v13: Handle 'Enter Call' button click inside the modal — actually places the call ===
-  // v14: reads code from join input FIRST, then falls back to `enterModalCode` (the code
-  // shown in the modal). Either path works — fixes edge case where input was cleared
-  // after the modal opened.
-  function handleEnterCall() {
-    console.log('[sc] ENTER CALL clicked');
-    var inputEl = $('sc-join-code-input');
-    var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
-    // v14: fall back to the code shown in the modal if input is empty/invalid
-    if (code.length !== 6 && enterModalCode && enterModalCode.length === 6) {
-      code = enterModalCode;
-      if (inputEl) inputEl.value = code;
-      console.log('[sc] v14: falling back to enterModalCode:', code);
     }
     if (code.length !== 6) {
-      setStatus('sc-status-choose', 'Enter a 6-character code.', 'sc-err');
-      hideEnterCallModal();
+      // No valid code — prompt the user to enter one
+      setStatus('sc-status-choose', 'Enter a 6-character code in the box above.', 'sc-err');
       if (inputEl) inputEl.focus();
       return;
     }
-    hideEnterCallModal();
+    // v16: place the call — stay on the SAME screen
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = false;
     currentCode = code;
     setCodeDisplay(currentCode);
     // === v11: Prewarm AudioContext DURING user gesture (required by iOS) ===
-    // This MUST happen synchronously inside the click handler — before any async work —
-    // or iOS Safari will leave the AudioContext suspended and earpiece routing will fail.
     prewarmAudioContext();
-    showStep('joining');
-    setStatus('sc-status-joining', 'Requesting microphone…', 'sc-busy');
+    // v16: NO step switch — stay on 'choose' step. Just update status.
+    setStatus('sc-status-choose', 'Requesting microphone…', 'sc-busy');
     ensureMicrophone(function(err){
-      if (err) { setStatus('sc-status-joining', 'Microphone access denied.', 'sc-err'); return; }
-      setStatus('sc-status-joining', 'Connecting to host…', 'sc-busy');
+      if (err) {
+        setStatus('sc-status-choose', 'Microphone access denied.', 'sc-err');
+        return;
+      }
+      setStatus('sc-status-choose', 'Connecting to host…', 'sc-busy');
       try { peer = new Peer({ debug: 1 }); }
-      catch (e) { setStatus('sc-status-joining', 'Could not start.', 'sc-err'); return; }
+      catch (e) {
+        setStatus('sc-status-choose', 'Could not start.', 'sc-err');
+        return;
+      }
       peer.on('open', function(){
-        setStatus('sc-status-joining', 'Ringing…', 'sc-busy');
+        setStatus('sc-status-choose', 'Ringing…', 'sc-busy');
         try { activeCall = peer.call(currentCode, localStream); }
-        catch (e) { setStatus('sc-status-joining', 'Could not place call.', 'sc-err'); return; }
-        if (!activeCall) { setStatus('sc-status-joining', 'Host not online. Check the code.', 'sc-err'); return; }
+        catch (e) {
+          setStatus('sc-status-choose', 'Could not place call.', 'sc-err');
+          return;
+        }
+        if (!activeCall) {
+          setStatus('sc-status-choose', 'Host not online. Check the code.', 'sc-err');
+          return;
+        }
         activeCall.on('stream', function(rs){ playRemote(rs); enterInCall(); });
         activeCall.on('close', function(){ handleHangup(); });
-        activeCall.on('error', function(e){ setStatus('sc-status-joining', 'Error: ' + (e.message||e), 'sc-err'); });
+        activeCall.on('error', function(e){
+          setStatus('sc-status-choose', 'Error: ' + (e.message||e), 'sc-err');
+        });
       });
       peer.on('error', function(err){
         var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
-        if (msg === 'peer-unavailable') setStatus('sc-status-joining', 'Host not online. Check the code.', 'sc-err');
-        else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') setStatus('sc-status-joining', 'Network issue.', 'sc-err');
-        else if (msg === 'browser-incompatible') setStatus('sc-status-joining', 'Browser unsupported.', 'sc-err');
-        else setStatus('sc-status-joining', 'Error: ' + msg, 'sc-err');
+        if (msg === 'peer-unavailable') {
+          setStatus('sc-status-choose', 'Host not online. Check the code.', 'sc-err');
+        } else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') {
+          setStatus('sc-status-choose', 'Network issue.', 'sc-err');
+        } else if (msg === 'browser-incompatible') {
+          setStatus('sc-status-choose', 'Browser unsupported.', 'sc-err');
+        } else {
+          setStatus('sc-status-choose', 'Error: ' + msg, 'sc-err');
+        }
       });
     });
   }
 
-  // === v13: Handle 'Cancel' link inside the Enter Call modal ===
-  function handleEnterCancel() {
-    console.log('[sc] ENTER CALL cancelled');
-    hideEnterCallModal();
-  }
+  // v16: NO showEnterCallModal, hideEnterCallModal, handleEnterCall, handleEnterCancel
+  // functions — the Enter Call modal has been removed entirely.
 
   function enterInCall() {
     showStep('incall');
@@ -4722,14 +4742,10 @@
     bindButton('sc-btn-mute', handleMute);
     bindButton('sc-btn-earpiece', handleEarpiece);
     bindButton('sc-btn-speaker', handleSpeaker);
-    bindButton('sc-btn-cancel-create', handleCancel);
-    bindButton('sc-btn-cancel-join', handleCancel);
+    // v16: sc-btn-cancel-create / sc-btn-cancel-join removed (no creating/joining steps)
     // v15: bind the SINGLE code-copy button (was sc-code-copy + sc-banner-copy)
     bindButton('sc-current-code-copy', handleCopyCode);
-    // v15: banner buttons removed (banner element no longer exists)
-    // === v13: Enter Call modal buttons ===
-    bindButton('sc-enter-call', handleEnterCall);
-    bindButton('sc-enter-cancel', handleEnterCancel);
+    // v16: sc-enter-call / sc-enter-cancel removed (Enter Call modal removed)
   }
 
   // Click-outside-to-close (capture phase)
@@ -4763,13 +4779,12 @@
     }
     var jo = $('sc-call-overlay');
     if (jo && jo.classList.contains('sc-open')) {
-      var jin = $('sc-join-code-input');
-      if (jin && document.activeElement === jin) {
+      // v16: Enter key on the SINGLE code box input places the call directly.
+      // No Enter Call modal anymore.
+      var codeInp = $('sc-current-code-value');
+      if (codeInp && document.activeElement === codeInp) {
         e.preventDefault();
-        // v13: If Enter Call modal is visible, Enter key places the call directly.
-        // Otherwise, Enter key opens the Enter Call modal (same as clicking Join again).
-        if (enterModalVisible) handleEnterCall();
-        else handleJoinClick();
+        handleJoinClick();
       }
     }
   });
@@ -4798,14 +4813,6 @@
     <div class="sc3d-card-call" id="sc-call-card">\
       <button class="sc3d-close" id="sc-call-close" aria-label="Close" type="button"><i class="fas fa-times"></i></button>\
 \
-      <div class="sc3d-current-code" id="sc-current-code">\
-        <div class="sc3d-current-code-label">Call Code</div>\
-        <div class="sc3d-current-code-row">\
-          <div class="sc3d-current-code-value" id="sc-current-code-value">------</div>\
-          <button class="sc3d-current-code-copy" id="sc-current-code-copy" aria-label="Copy code" type="button"><i class="fas fa-copy"></i></button>\
-        </div>\
-      </div>\
-\
       <div class="sc3d-step sc-active" id="sc-step-choose">\
         <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
         <div class="sc3d-btn-row">\
@@ -4813,33 +4820,14 @@
           <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join" type="button"><i class="fas fa-phone"></i> Join</button>\
         </div>\
         <div class="sc3d-status" id="sc-status-choose"></div>\
-        <div class="sc3d-input-wrap" id="sc-join-input-wrap" style="display:none;margin-top:5px;">\
-          <input type="text" id="sc-join-code-input" class="sc3d-code-input" placeholder="CODE" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false">\
+        <div class="sc3d-current-code" id="sc-current-code">\
+          <div class="sc3d-current-code-label">Call Code</div>\
+          <div class="sc3d-current-code-row">\
+            <input type="text" id="sc-current-code-value" class="sc3d-current-code-input" placeholder="------" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text">\
+            <button class="sc3d-current-code-copy" id="sc-current-code-copy" aria-label="Copy code" type="button"><i class="fas fa-copy"></i></button>\
+          </div>\
+          <div class="sc3d-notify" id="sc-notify">Call Created</div>\
         </div>\
-        <div class="sc3d-enter-modal" id="sc-enter-modal">\
-          <div class="sc3d-enter-label">Enter Call</div>\
-          <div class="sc3d-enter-code" id="sc-enter-code">------</div>\
-          <button class="sc3d-enter-btn" id="sc-enter-call" type="button"><i class="fas fa-phone"></i> Enter Call</button>\
-          <button class="sc3d-enter-cancel" id="sc-enter-cancel" type="button">Cancel</button>\
-        </div>\
-      </div>\
-\
-      <div class="sc3d-step" id="sc-step-creating">\
-        <div class="sc3d-icon-badge"><i class="fas fa-satellite-dish"></i></div>\
-        <div class="sc3d-title" style="display:none">Hosting Call</div>\
-        <div class="sc3d-subtitle" style="display:none">Waiting for the other person…</div>\
-        <div class="sc3d-avatar" id="sc-avatar-creating"><i class="fas fa-user"></i></div>\
-        <div class="sc3d-status sc-busy" id="sc-status-creating">Listening…</div>\
-        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-create" type="button"><i class="fas fa-times"></i> Cancel</button>\
-      </div>\
-\
-      <div class="sc3d-step" id="sc-step-joining">\
-        <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
-        <div class="sc3d-title" style="display:none">Connecting…</div>\
-        <div class="sc3d-subtitle" style="display:none">Calling the host</div>\
-        <div class="sc3d-avatar" id="sc-avatar-joining"><i class="fas fa-headset"></i></div>\
-        <div class="sc3d-status sc-busy" id="sc-status-joining">Ringing…</div>\
-        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-join" type="button"><i class="fas fa-times"></i> Cancel</button>\
       </div>\
 \
       <div class="sc3d-step" id="sc-step-incall">\
@@ -4874,63 +4862,23 @@
       var d2 = document.createElement('div'); d2.innerHTML = CALL_HTML;
       while (d2.firstChild) document.body.appendChild(d2.firstChild);
     }
-    // v15: Re-assert the SINGLE code box (sc-current-code-value).
-    // The old sc-code-value / sc-banner-code re-asserts are GONE because those
-    // elements no longer exist in the DOM (banner + bottom section removed).
+    // v16: Re-assert the code in the SINGLE code box INPUT field.
+    // The element is now an <input> (not a <div>), so we set .value (not .textContent).
+    // Only re-assert when the user is NOT actively editing it (avoid clobbering their typing).
     if (currentCode) {
       var codeEl = $('sc-current-code-value');
-      if (codeEl && codeEl.textContent !== currentCode) {
-        codeEl.textContent = currentCode;
-      }
-    }
-    // v15: Show sc-current-code ONLY when:
-    //   - currentCode is set (a code was created/entered in this session), AND
-    //   - the Enter Call modal is NOT visible (avoid showing TWO code boxes at once), AND
-    //   - we are NOT in the incall step (the in-call screen has no code box).
-    // This guarantees only ONE code box is visible on screen at any time.
-    var currentCodeBox = $('sc-current-code');
-    if (currentCodeBox) {
-      var incallStep = $('sc-step-incall');
-      var inCallActive = incallStep && incallStep.classList.contains('sc-active');
-      var shouldShowCodeBox = currentCode && !enterModalVisible && !inCallActive;
-      if (shouldShowCodeBox) {
-        if (!currentCodeBox.classList.contains('sc-code-show')) {
-          currentCodeBox.classList.add('sc-code-show');
-        }
-      } else {
-        if (currentCodeBox.classList.contains('sc-code-show')) {
-          currentCodeBox.classList.remove('sc-code-show');
+      if (codeEl && codeEl.value !== currentCode) {
+        // Don't clobber while the user is typing in the field
+        if (document.activeElement !== codeEl) {
+          codeEl.value = currentCode;
         }
       }
     }
-    var wrap = $('sc-join-input-wrap');
-    // v15: Hide the join input when the Enter Call modal is showing — avoids
-    // showing TWO code displays (the input + the modal) at the same time.
-    if (wrap) wrap.style.display = (joinInputVisible && !enterModalVisible) ? 'block' : 'none';
-    // === v14: Re-assert Enter Call modal state (hydration-proof fix for v13 bug) ===
-    // v13 bug: the modal's sc-enter-show class and code text were only set inside
-    // showEnterCallModal() — they were NOT re-asserted on poll ticks. When hydration
-    // replaced the modal element, the class was lost and the modal stayed hidden.
-    // v14 fix: on every poll tick, if enterModalVisible is true, ensure the modal has
-    // sc-enter-show AND its code text matches enterModalCode. This makes the modal
-    // survive any hydration/race condition (same pattern as sc-current-code-value).
-    var enterModal = $('sc-enter-modal');
-    if (enterModal) {
-      if (enterModalVisible && enterModalCode) {
-        if (!enterModal.classList.contains('sc-enter-show')) {
-          enterModal.classList.add('sc-enter-show');
-        }
-        var enterCodeEl = $('sc-enter-code');
-        if (enterCodeEl && enterCodeEl.textContent !== enterModalCode) {
-          enterCodeEl.textContent = enterModalCode;
-        }
-      } else if (!enterModalVisible) {
-        // Only remove if currently showing — avoid unnecessary DOM writes
-        if (enterModal.classList.contains('sc-enter-show')) {
-          enterModal.classList.remove('sc-enter-show');
-        }
-      }
-    }
+    // v16: The code box is ALWAYS visible on the choose step (it's the single input
+    // field where the code appears AND where the user can type a code to join).
+    // When we switch to incall, the choose step (and thus the code box) is hidden
+    // automatically by the .sc3d-step display rules — no manual toggle needed.
+    // The Enter Call modal has been removed entirely — no modal state to re-assert.
     if (isMuted) {
       var mb = $('sc-btn-mute');
       if (mb && !mb.classList.contains('sc-ctrl-muted')) {
