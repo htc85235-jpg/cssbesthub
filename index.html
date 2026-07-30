@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v7: pitch black, zero animation, 4 in-call buttons ===== */
+/* ===== SECRET CALL v8: pitch black, zero animation, 4 in-call buttons, fixed clicks ===== */
 
 #sc-pw-overlay, #sc-call-overlay {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
@@ -65,7 +65,7 @@
   word-break: normal !important; z-index: auto !important;
 }
 
-/* Stage — NO 3D perspective (breaks click targeting) */
+/* Stage */
 #sc-pw-overlay .sc3d-stage, #sc-call-overlay .sc3d-stage {
   width: 100% !important; height: 100% !important;
   display: flex !important;
@@ -165,7 +165,7 @@
 #sc-call-overlay .sc3d-status.sc-ok { color: #6ee7b7 !important; }
 #sc-call-overlay .sc3d-status.sc-err { color: #fca5a5 !important; }
 
-/* ===== INSET 3D BUTTONS (flush, press INTO surface) ===== */
+/* ===== INSET 3D BUTTONS (large, for Create/Join/Cancel) ===== */
 #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
@@ -220,7 +220,7 @@
   background: linear-gradient(180deg, #34d399, #10b981) !important;
 }
 
-/* Red */
+/* Red (large) */
 #sc-call-overlay .sc3d-btn-red {
   background: linear-gradient(180deg, #ef4444, #dc2626) !important;
   color: #fff !important;
@@ -239,11 +239,6 @@
     inset 0 0 0 1px rgba(255,255,255,0.05) !important;
 }
 #sc-call-overlay .sc3d-btn-ghost:hover { background: rgba(255,255,255,0.09) !important; }
-#sc-call-overlay .sc3d-btn-ghost:active {
-  box-shadow:
-    inset 0 4px 8px rgba(0,0,0,0.5),
-    inset 0 1px 0 rgba(0,0,0,0.3) !important;
-}
 
 /* ===== IN-CALL CONTROL GRID (4 small icon buttons) ===== */
 #sc-call-overlay .sc3d-controls {
@@ -288,7 +283,7 @@
     inset 0 4px 8px rgba(0,0,0,0.6),
     inset 0 1px 0 rgba(0,0,0,0.3) !important;
 }
-/* Active state (currently selected audio route) */
+/* Active route (currently selected Earpiece or Speaker) */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active {
   background: linear-gradient(180deg, rgba(124,58,237,0.5), rgba(109,40,217,0.6)) !important;
   color: #fff !important;
@@ -326,7 +321,7 @@
     inset 0 1px 0 rgba(0,0,0,0.3) !important;
 }
 
-/* Close X (inset circular) */
+/* Close X */
 #sc-pw-overlay .sc3d-close, #sc-call-overlay .sc3d-close {
   position: absolute !important;
   top: 10px !important; right: 10px !important;
@@ -353,7 +348,7 @@
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
 }
 
-/* Icon badge (no pulse) */
+/* Icon badge */
 #sc-pw-overlay .sc3d-icon-badge, #sc-call-overlay .sc3d-icon-badge {
   width: 52px !important; height: 52px !important;
   margin: 0 auto 12px !important;
@@ -403,7 +398,7 @@
   margin: 6px 0 2px !important;
 }
 
-/* Avatar (no ring animation) */
+/* Avatar */
 #sc-call-overlay .sc3d-avatar {
   width: 56px !important; height: 56px !important;
   margin: 6px auto 8px !important;
@@ -3148,10 +3143,13 @@
   var timerInterval = null, callStartTs = 0;
   var isHost = false, isMuted = false;
   var joinInputVisible = false;
-  // Audio route state: 'earpiece' (default on call connect) or 'speaker'
+  // Audio route state: 'earpiece' (FORCED on call connect) or 'speaker' (only on user click)
   var audioRoute = 'earpiece';
   var remoteAudioEl = null;
-  var setSinkSupported = (typeof HTMLMediaElement !== 'undefined') && (typeof HTMLMediaElement.prototype.setSinkId === 'function');
+  var setSinkSupported = (typeof HTMLMediaElement !== 'undefined') &&
+                         (typeof HTMLMediaElement.prototype.setSinkId === 'function');
+  // Route lock — prevents forceEarpiece retries from fighting with user's Speaker choice
+  var routeLocked = false;
 
   function $(id) { return document.getElementById(id); }
 
@@ -3199,6 +3197,7 @@
 
   function teardown() {
     stopTimer();
+    routeLocked = false;
     if (activeCall) { try { activeCall.close(); } catch(e){} activeCall = null; }
     if (activeConn) { try { activeConn.close(); } catch(e){} activeConn = null; }
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
@@ -3213,7 +3212,7 @@
   }
 
   // =======================================================================
-  // AUDIO PLAYBACK + EARPIECE ROUTING
+  // AUDIO PLAYBACK + EARPIECE ROUTING (v8 — fixed)
   // =======================================================================
   function playRemote(rs) {
     var audio = document.getElementById('sc-remote-audio');
@@ -3228,22 +3227,29 @@
     remoteAudioEl = audio;
     try { audio.srcObject = rs; } catch(e) { try { audio.src = URL.createObjectURL(rs); } catch(_){} }
 
-    // Force earpiece routing IMMEDIATELY (before play, so audio never hits loudspeaker first)
-    forceEarpiece(audio);
-
+    // CRITICAL: setSinkId only works AFTER play() resolves on most browsers.
+    // We call forceEarpiece AFTER play, not before.
     var playPromise = audio.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise.then(function() {
-        // Re-apply earpiece routing after play starts (some browsers reset route on play)
+        console.log('[sc] remote audio playing, forcing earpiece route');
+        // Force earpiece IMMEDIATELY after play starts
         forceEarpiece(audio);
-        console.log('[sc] remote audio playing');
+        // Retry at 300ms, 800ms, 2000ms in case first attempt failed silently
+        setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 300);
+        setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 800);
+        setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 2000);
       }).catch(function(err) {
-        console.warn('[sc] autoplay blocked, will retry on gesture:', err);
+        console.warn('[sc] autoplay blocked, retrying on gesture:', err);
         // Autoplay blocked — retry on next user gesture
         var retry = function() {
           document.removeEventListener('click', retry);
           document.removeEventListener('touchstart', retry);
-          audio.play().then(function(){ forceEarpiece(audio); }).catch(function(){});
+          audio.play().then(function(){
+            forceEarpiece(audio);
+            setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 300);
+            setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 800);
+          }).catch(function(){});
         };
         document.addEventListener('click', retry);
         document.addEventListener('touchstart', retry);
@@ -3251,70 +3257,134 @@
     }
   }
 
-  // Force route to earpiece (communications device on Android Chrome)
+  // Force route to earpiece — tries multiple strategies in order:
+  // 1. 'communications' alias (Android Chrome earpiece)
+  // 2. Device enumeration + label match for "earpiece"/"handset"/"phone"
+  // 3. First non-default, non-communications device
   function forceEarpiece(audio) {
-    if (!setSinkSupported) {
-      console.log('[sc] setSinkId NOT supported — cannot force earpiece (iOS/Firefox limitation)');
-      audioRoute = 'earpiece'; // logical state only
-      updateRouteButtons();
+    if (routeLocked) {
+      console.log('[sc] route locked, skipping forceEarpiece');
       return;
     }
-    // Try 'communications' first (Android Chrome earpiece alias)
+    if (!setSinkSupported) {
+      console.log('[sc] setSinkId NOT supported on this browser (iOS Safari / Firefox)');
+      audioRoute = 'earpiece'; // logical state only — browser controls actual route
+      updateRouteButtons();
+      var incallStatus = $('sc-status-incall');
+      if (incallStatus) {
+        incallStatus.textContent = 'Connected — earpiece (browser-limited)';
+        incallStatus.className = 'sc3d-status sc-busy';
+      }
+      return;
+    }
+
+    // Strategy 1: 'communications' alias
     audio.setSinkId('communications').then(function() {
-      console.log('[sc] routed to EARPIECE (communications)');
+      console.log('[sc] SUCCESS: routed to communications (earpiece)');
       audioRoute = 'earpiece';
       updateRouteButtons();
+      var incallStatus = $('sc-status-incall');
+      if (incallStatus && incallStatus.textContent.indexOf('Muted') === -1) {
+        incallStatus.textContent = 'Connected — earpiece';
+        incallStatus.className = 'sc3d-status sc-ok';
+      }
     }).catch(function(e1) {
-      console.warn('[sc] communications failed, trying device enumeration:', e1);
-      // Fallback: enumerate devices and pick the smallest/non-default one (likely earpiece)
+      console.warn('[sc] communications alias failed, trying device enumeration:', e1);
+      // Strategy 2: enumerate devices and find earpiece by label
       if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
         navigator.mediaDevices.enumerateDevices().then(function(devices) {
           var outputs = devices.filter(function(d) { return d.kind === 'audiooutput'; });
-          console.log('[sc] audio outputs:', outputs.map(function(d){ return d.label || d.deviceId; }));
-          // Find a non-default, non-communications output (likely earpiece on phones)
+          console.log('[sc] audio outputs:', outputs.map(function(d){
+            return (d.label || 'unnamed') + ' [' + (d.deviceId || '').substring(0,8) + ']';
+          }));
+
+          // Try to find earpiece by label (regex covers common Android labels)
           var earpiece = outputs.find(function(d) {
-            return d.deviceId !== 'default' && d.deviceId !== 'communications' &&
-                   /earpiece|ear|phone|handset/i.test(d.label || '');
+            var label = (d.label || '').toLowerCase();
+            return label && (
+              /earpiece/.test(label) ||
+              /ear\s?-?\s?phone/.test(label) ||
+              /handset/.test(label) ||
+              (/phone/.test(label) && !/speaker/.test(label))
+            );
           });
+
+          // Strategy 3: first non-default, non-communications device
           if (!earpiece) {
-            earpiece = outputs.find(function(d) { return d.deviceId !== 'default' && d.deviceId !== 'communications'; });
+            earpiece = outputs.find(function(d) {
+              return d.deviceId !== 'default' && d.deviceId !== 'communications';
+            });
           }
+
           if (earpiece) {
             audio.setSinkId(earpiece.deviceId).then(function() {
-              console.log('[sc] routed to EARPIECE device:', earpiece.label || earpiece.deviceId);
+              console.log('[sc] SUCCESS: routed to earpiece device:', earpiece.label);
               audioRoute = 'earpiece';
               updateRouteButtons();
+              var incallStatus = $('sc-status-incall');
+              if (incallStatus && incallStatus.textContent.indexOf('Muted') === -1) {
+                incallStatus.textContent = 'Connected — earpiece';
+                incallStatus.className = 'sc3d-status sc-ok';
+              }
             }).catch(function(e2) {
               console.warn('[sc] earpiece device failed:', e2);
-              audioRoute = 'earpiece'; // logical state
+              audioRoute = 'speaker';
               updateRouteButtons();
+              var incallStatus = $('sc-status-incall');
+              if (incallStatus) {
+                incallStatus.textContent = 'Connected — speaker (earpiece unavailable)';
+                incallStatus.className = 'sc3d-status sc-err';
+              }
             });
           } else {
-            console.warn('[sc] no earpiece device found, staying on default');
-            audioRoute = 'earpiece'; // logical state
+            console.warn('[sc] no earpiece device found among', outputs.length, 'outputs');
+            audioRoute = 'speaker';
             updateRouteButtons();
+            var incallStatus = $('sc-status-incall');
+            if (incallStatus) {
+              incallStatus.textContent = 'Connected — speaker (no earpiece found)';
+              incallStatus.className = 'sc3d-status sc-err';
+            }
           }
-        }).catch(function(){ audioRoute = 'earpiece'; updateRouteButtons(); });
+        }).catch(function(e) {
+          console.warn('[sc] enumerateDevices failed:', e);
+          audioRoute = 'speaker';
+          updateRouteButtons();
+        });
       } else {
-        audioRoute = 'earpiece'; updateRouteButtons();
+        audioRoute = 'speaker';
+        updateRouteButtons();
       }
     });
   }
 
-  // Switch to loudspeaker (default device)
+  // Switch to loudspeaker — USER MUST PRESS THIS to go to speaker
   function forceSpeaker(audio) {
     if (!setSinkSupported) {
       console.log('[sc] setSinkId NOT supported — cannot switch to speaker');
-      audioRoute = 'speaker'; // logical state only
-      updateRouteButtons();
-      return;
-    }
-    audio.setSinkId('default').then(function() {
-      console.log('[sc] routed to SPEAKER (default)');
       audioRoute = 'speaker';
       updateRouteButtons();
+      var incallStatus = $('sc-status-incall');
+      if (incallStatus) {
+        incallStatus.textContent = 'Connected — speaker (browser-limited)';
+        incallStatus.className = 'sc3d-status sc-busy';
+      }
+      return;
+    }
+    // Lock the route so forceEarpiece retries don't override user's choice
+    routeLocked = true;
+    audio.setSinkId('default').then(function() {
+      console.log('[sc] SUCCESS: routed to SPEAKER (default)');
+      audioRoute = 'speaker';
+      updateRouteButtons();
+      var incallStatus = $('sc-status-incall');
+      if (incallStatus) {
+        incallStatus.textContent = 'Connected — speaker';
+        incallStatus.className = 'sc3d-status sc-ok';
+      }
     }).catch(function(e) {
       console.warn('[sc] speaker route failed:', e);
+      routeLocked = false; // unlock so user can retry
       audioRoute = 'speaker';
       updateRouteButtons();
     });
@@ -3329,7 +3399,6 @@
 
   function closeCallWindow() {
     closeOverlay('sc-call-overlay');
-    // NO floating pill — secret mode, zero visual sign
   }
 
   function reopenCallWindow() {
@@ -3361,47 +3430,59 @@
   }
 
   function handleMute() {
-    console.log('[sc] MUTE clicked, localStream:', !!localStream, 'isMuted:', isMuted);
+    console.log('[sc] MUTE clicked, localStream:', !!localStream, 'isMuted (before):', isMuted);
     if (!localStream) {
-      console.warn('[sc] no localStream, cannot mute');
-      setStatus('sc-status-incall', 'No mic to mute.', 'sc-err');
+      console.warn('[sc] no localStream — cannot mute');
+      setStatus('sc-status-incall', 'No mic available.', 'sc-err');
       return;
     }
+    var audioTracks = localStream.getAudioTracks();
+    console.log('[sc] audio tracks:', audioTracks.length);
+    if (audioTracks.length === 0) {
+      setStatus('sc-status-incall', 'No audio track.', 'sc-err');
+      return;
+    }
+    // TOGGLE: first press turns mic OFF, second press turns it ON
     isMuted = !isMuted;
-    localStream.getAudioTracks().forEach(function(t){ t.enabled = !isMuted; });
+    audioTracks.forEach(function(t, i){
+      t.enabled = !isMuted;
+      console.log('[sc] track', i, 'enabled set to', !isMuted);
+    });
     var btn = $('sc-btn-mute');
     if (btn) {
       if (isMuted) {
         btn.classList.add('sc-ctrl-muted');
+        btn.classList.remove('sc-ctrl-active');
         btn.innerHTML = '<i class="fas fa-microphone-slash"></i><span>Unmute</span>';
-        setStatus('sc-status-incall', 'Muted', 'sc-busy');
+        setStatus('sc-status-incall', 'Muted — mic off', 'sc-busy');
       } else {
         btn.classList.remove('sc-ctrl-muted');
         btn.innerHTML = '<i class="fas fa-microphone"></i><span>Mute</span>';
-        setStatus('sc-status-incall', 'Mic on', 'sc-ok');
+        // Restore route status text
+        if (audioRoute === 'earpiece') setStatus('sc-status-incall', 'Connected — earpiece', 'sc-ok');
+        else setStatus('sc-status-incall', 'Connected — speaker', 'sc-ok');
       }
     }
     console.log('[sc] mute toggled to:', isMuted);
   }
 
   function handleEarpiece() {
-    console.log('[sc] EARPIECE clicked');
+    console.log('[sc] EARPIECE clicked, remoteAudioEl:', !!remoteAudioEl);
     if (!remoteAudioEl) {
       setStatus('sc-status-incall', 'No call audio yet.', 'sc-err');
       return;
     }
+    routeLocked = false; // unlock so forceEarpiece can run
     forceEarpiece(remoteAudioEl);
-    setStatus('sc-status-incall', 'Earpiece', 'sc-ok');
   }
 
   function handleSpeaker() {
-    console.log('[sc] SPEAKER clicked');
+    console.log('[sc] SPEAKER clicked, remoteAudioEl:', !!remoteAudioEl);
     if (!remoteAudioEl) {
       setStatus('sc-status-incall', 'No call audio yet.', 'sc-err');
       return;
     }
     forceSpeaker(remoteAudioEl);
-    setStatus('sc-status-incall', 'Speaker', 'sc-ok');
   }
 
   function resetPwForm() {
@@ -3426,20 +3507,44 @@
     }
   }
 
+  // Helper: instantly set the code in the lower box, with retries to beat hydration
+  function setCodeDisplay(code) {
+    if (!code) return;
+    var setIt = function() {
+      var el = $('sc-code-value');
+      if (el) {
+        el.textContent = code;
+        return true;
+      }
+      return false;
+    };
+    setIt();
+    setTimeout(setIt, 0);
+    setTimeout(setIt, 50);
+    setTimeout(setIt, 150);
+    setTimeout(setIt, 300);
+  }
+
   function handleCreate() {
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = true;
     currentCode = generateCode();
-    var codeEl = $('sc-code-value');
-    if (codeEl) codeEl.textContent = currentCode;
+    console.log('[sc] CREATE: new code =', currentCode);
+    // INSTANT code update in lower box (with retries to beat hydration)
+    setCodeDisplay(currentCode);
     showStep('creating');
     setStatus('sc-status-creating', 'Requesting microphone…', 'sc-busy');
     ensureMicrophone(function(err){
       if (err) { setStatus('sc-status-creating', 'Microphone access denied.', 'sc-err'); return; }
       setStatus('sc-status-creating', 'Starting host…', 'sc-busy');
+      // Re-assert code in case hydration wiped it during async wait
+      setCodeDisplay(currentCode);
       try { peer = new Peer(currentCode, { debug: 1 }); }
       catch (e) { setStatus('sc-status-creating', 'Could not start: ' + (e.message||e), 'sc-err'); return; }
-      peer.on('open', function(id){ setStatus('sc-status-creating', 'Hosting. Share the code below.', 'sc-busy'); });
+      peer.on('open', function(id){
+        setStatus('sc-status-creating', 'Hosting. Share the code below.', 'sc-busy');
+        setCodeDisplay(currentCode);
+      });
       peer.on('call', function(call){
         activeCall = call;
         call.answer(localStream);
@@ -3453,7 +3558,7 @@
         if (msg === 'unavailable-id') {
           setStatus('sc-status-creating', 'Code in use, regenerating…', 'sc-busy');
           currentCode = generateCode();
-          if (codeEl) codeEl.textContent = currentCode;
+          setCodeDisplay(currentCode);
           try { peer.destroy(); } catch(e){}
           peer = null;
           setTimeout(function(){ handleCreate(); }, 100);
@@ -3486,8 +3591,7 @@
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = false;
     currentCode = code;
-    var codeEl = $('sc-code-value');
-    if (codeEl) codeEl.textContent = currentCode;
+    setCodeDisplay(currentCode);
     showStep('joining');
     setStatus('sc-status-joining', 'Requesting microphone…', 'sc-busy');
     ensureMicrophone(function(err){
@@ -3516,18 +3620,23 @@
 
   function enterInCall() {
     showStep('incall');
-    setStatus('sc-status-incall', 'Connected — earpiece', 'sc-ok');
+    setStatus('sc-status-incall', 'Connected — routing to earpiece…', 'sc-busy');
     startTimer();
-    // Force earpiece routing on call connect (the user's explicit requirement)
-    // playRemote() already calls forceEarpiece, but we re-assert here in case audio arrived late
+    // Force earpiece routing on call connect (user's explicit requirement)
+    // playRemote() already calls forceEarpiece after play resolves,
+    // but we re-assert here in case audio arrived late or hydration interfered
     setTimeout(function() {
-      if (remoteAudioEl) forceEarpiece(remoteAudioEl);
+      if (remoteAudioEl && !routeLocked) forceEarpiece(remoteAudioEl);
       updateRouteButtons();
-    }, 200);
+    }, 100);
     setTimeout(function() {
-      if (remoteAudioEl) forceEarpiece(remoteAudioEl);
+      if (remoteAudioEl && !routeLocked) forceEarpiece(remoteAudioEl);
       updateRouteButtons();
-    }, 1000);
+    }, 500);
+    setTimeout(function() {
+      if (remoteAudioEl && !routeLocked) forceEarpiece(remoteAudioEl);
+      updateRouteButtons();
+    }, 1500);
   }
 
   function handleCopyCode() {
@@ -3562,44 +3671,58 @@
   }
 
   // =======================================================================
-  // SINGLE ACTION HANDLER
+  // BULLETPROOF BUTTON BINDING (v8 — addEventListener ONLY, no onclick attrs)
+  // This eliminates the double-execution bug from v7.
+  // bindButton re-binds on every poll tick to handle hydration replacements.
   // =======================================================================
-  window.__scAction = function(id, ev) {
-    if (ev) { try { ev.preventDefault(); ev.stopPropagation(); } catch(e){} }
-    try {
-      switch(id) {
-        case 'sc-pw-close': closeOverlay('sc-pw-overlay'); resetPwForm(); break;
-        case 'sc-pw-submit': handlePwSubmit(); break;
-        case 'sc-call-close': closeCallWindow(); break;
-        case 'sc-btn-create': handleCreate(); break;
-        case 'sc-btn-join': handleJoinClick(); break;
-        case 'sc-btn-hangup': handleHangup(); break;
-        case 'sc-btn-mute': handleMute(); break;
-        case 'sc-btn-earpiece': handleEarpiece(); break;
-        case 'sc-btn-speaker': handleSpeaker(); break;
-        case 'sc-btn-cancel-create': handleCancel(); break;
-        case 'sc-btn-cancel-join': handleCancel(); break;
-        case 'sc-code-copy': handleCopyCode(); break;
-      }
-    } catch(e) { console.error('[sc] action error:', id, e); }
-    return false;
-  };
+  var boundButtons = {}; // track which DOM element we've bound to
 
-  // Click-outside-to-close (capture phase, doesn't interfere with onclick)
+  function bindButton(id, handler) {
+    var btn = $(id);
+    if (!btn) return;
+    // If we've already bound to THIS EXACT element, skip
+    if (boundButtons[id] === btn) return;
+    // Bind addEventListener (ONLY — no onclick attr, so no double-execution)
+    btn.addEventListener('click', function(ev) {
+      console.log('[sc] click fired for', id);
+      ev.preventDefault();
+      ev.stopPropagation();
+      try { handler(ev); } catch(e) { console.error('[sc] handler error for', id, e); }
+    });
+    boundButtons[id] = btn;
+  }
+
+  function bindAllButtons() {
+    bindButton('sc-pw-close', function(){ closeOverlay('sc-pw-overlay'); resetPwForm(); });
+    bindButton('sc-pw-submit', handlePwSubmit);
+    bindButton('sc-call-close', closeCallWindow);
+    bindButton('sc-btn-create', handleCreate);
+    bindButton('sc-btn-join', handleJoinClick);
+    bindButton('sc-btn-hangup', handleHangup);
+    bindButton('sc-btn-mute', handleMute);
+    bindButton('sc-btn-earpiece', handleEarpiece);
+    bindButton('sc-btn-speaker', handleSpeaker);
+    bindButton('sc-btn-cancel-create', handleCancel);
+    bindButton('sc-btn-cancel-join', handleCancel);
+    bindButton('sc-code-copy', handleCopyCode);
+  }
+
+  // Click-outside-to-close (capture phase)
   document.addEventListener('click', function(e) {
     var co = $('sc-call-overlay');
     if (co && co.classList.contains('sc-open')) {
-      if (!e.target.closest || !e.target.closest('.sc3d-card-call')) {
-        closeCallWindow();
-      }
+      // Don't close if user clicked inside the card or on a control button
+      if (e.target.closest && e.target.closest('.sc3d-card-call')) return;
+      // Don't close if user clicked a control button (let the button handler run)
+      if (e.target.closest && e.target.closest('.sc3d-ctrl-btn')) return;
+      closeCallWindow();
       return;
     }
     var po = $('sc-pw-overlay');
     if (po && po.classList.contains('sc-open')) {
-      if (!e.target.closest || !e.target.closest('.sc3d-card')) {
-        closeOverlay('sc-pw-overlay');
-        resetPwForm();
-      }
+      if (e.target.closest && e.target.closest('.sc3d-card')) return;
+      closeOverlay('sc-pw-overlay');
+      resetPwForm();
       return;
     }
   }, true);
@@ -3621,13 +3744,13 @@
   });
 
   // =======================================================================
-  // HTML with onclick attributes
+  // HTML — NO onclick attributes (v8 fix: prevents double-execution)
   // =======================================================================
   var PW_HTML = '\
 <div id="sc-pw-overlay">\
   <div class="sc3d-stage">\
     <div class="sc3d-card" id="sc-pw-card">\
-      <button class="sc3d-close" id="sc-pw-close" aria-label="Close" onclick="return window.__scAction(\'sc-pw-close\', event)"><i class="fas fa-times"></i></button>\
+      <button class="sc3d-close" id="sc-pw-close" aria-label="Close" type="button"><i class="fas fa-times"></i></button>\
       <div class="sc3d-icon-badge"><i class="fas fa-lock"></i></div>\
       <div class="sc3d-title">Restricted Access</div>\
       <div class="sc3d-subtitle">Enter password to continue</div>\
@@ -3635,7 +3758,7 @@
         <input type="password" id="sc-pw-input" class="sc3d-input" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false">\
       </div>\
       <div class="sc3d-error" id="sc-pw-error"></div>\
-      <button class="sc3d-btn sc3d-btn-purple" id="sc-pw-submit" onclick="return window.__scAction(\'sc-pw-submit\', event)"><i class="fas fa-arrow-right"></i> Unlock</button>\
+      <button class="sc3d-btn sc3d-btn-purple" id="sc-pw-submit" type="button"><i class="fas fa-arrow-right"></i> Unlock</button>\
       <div class="sc3d-hint">Press Enter to submit</div>\
     </div>\
   </div>\
@@ -3645,15 +3768,15 @@
 <div id="sc-call-overlay">\
   <div class="sc3d-stage">\
     <div class="sc3d-card-call" id="sc-call-card">\
-      <button class="sc3d-close" id="sc-call-close" aria-label="Close" onclick="return window.__scAction(\'sc-call-close\', event)"><i class="fas fa-times"></i></button>\
+      <button class="sc3d-close" id="sc-call-close" aria-label="Close" type="button"><i class="fas fa-times"></i></button>\
 \
       <div class="sc3d-step sc-active" id="sc-step-choose">\
         <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
         <div class="sc3d-title">Secret Call</div>\
         <div class="sc3d-subtitle">Create a call or join with a code</div>\
         <div class="sc3d-btn-row">\
-          <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create" onclick="return window.__scAction(\'sc-btn-create\', event)"><i class="fas fa-plus"></i> Create</button>\
-          <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join" onclick="return window.__scAction(\'sc-btn-join\', event)"><i class="fas fa-phone"></i> Join</button>\
+          <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create" type="button"><i class="fas fa-plus"></i> Create</button>\
+          <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join" type="button"><i class="fas fa-phone"></i> Join</button>\
         </div>\
         <div class="sc3d-status" id="sc-status-choose"></div>\
         <div class="sc3d-input-wrap" id="sc-join-input-wrap" style="display:none;margin-top:10px;">\
@@ -3668,7 +3791,7 @@
         <div class="sc3d-subtitle">Waiting for the other person…</div>\
         <div class="sc3d-avatar" id="sc-avatar-creating"><i class="fas fa-user"></i></div>\
         <div class="sc3d-status sc-busy" id="sc-status-creating">Listening…</div>\
-        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-create" onclick="return window.__scAction(\'sc-btn-cancel-create\', event)"><i class="fas fa-times"></i> Cancel</button>\
+        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-create" type="button"><i class="fas fa-times"></i> Cancel</button>\
       </div>\
 \
       <div class="sc3d-step" id="sc-step-joining">\
@@ -3677,7 +3800,7 @@
         <div class="sc3d-subtitle">Calling the host</div>\
         <div class="sc3d-avatar" id="sc-avatar-joining"><i class="fas fa-headset"></i></div>\
         <div class="sc3d-status sc-busy" id="sc-status-joining">Ringing…</div>\
-        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-join" onclick="return window.__scAction(\'sc-btn-cancel-join\', event)"><i class="fas fa-times"></i> Cancel</button>\
+        <button class="sc3d-btn sc3d-btn-red" id="sc-btn-cancel-join" type="button"><i class="fas fa-times"></i> Cancel</button>\
       </div>\
 \
       <div class="sc3d-step" id="sc-step-incall">\
@@ -3688,10 +3811,10 @@
         <div class="sc3d-timer" id="sc-timer">00:00</div>\
         <div class="sc3d-status sc-ok" id="sc-status-incall">Connected</div>\
         <div class="sc3d-controls">\
-          <button class="sc3d-ctrl-btn" id="sc-btn-mute" onclick="return window.__scAction(\'sc-btn-mute\', event)"><i class="fas fa-microphone"></i><span>Mute</span></button>\
-          <button class="sc3d-ctrl-btn sc-ctrl-active" id="sc-btn-earpiece" onclick="return window.__scAction(\'sc-btn-earpiece\', event)"><i class="fas fa-headset"></i><span>Ear</span></button>\
-          <button class="sc3d-ctrl-btn" id="sc-btn-speaker" onclick="return window.__scAction(\'sc-btn-speaker\', event)"><i class="fas fa-volume-up"></i><span>Speaker</span></button>\
-          <button class="sc3d-ctrl-btn sc-ctrl-hangup" id="sc-btn-hangup" onclick="return window.__scAction(\'sc-btn-hangup\', event)"><i class="fas fa-phone-slash"></i><span>Hang Up</span></button>\
+          <button class="sc3d-ctrl-btn" id="sc-btn-mute" type="button"><i class="fas fa-microphone"></i><span>Mute</span></button>\
+          <button class="sc3d-ctrl-btn sc-ctrl-active" id="sc-btn-earpiece" type="button"><i class="fas fa-headset"></i><span>Ear</span></button>\
+          <button class="sc3d-ctrl-btn" id="sc-btn-speaker" type="button"><i class="fas fa-volume-up"></i><span>Speaker</span></button>\
+          <button class="sc3d-ctrl-btn sc-ctrl-hangup" id="sc-btn-hangup" type="button"><i class="fas fa-phone-slash"></i><span>Hang Up</span></button>\
         </div>\
       </div>\
 \
@@ -3699,7 +3822,7 @@
         <div class="sc3d-code-label">Call Code</div>\
         <div class="sc3d-code-row">\
           <div class="sc3d-code-value" id="sc-code-value">------</div>\
-          <button class="sc3d-code-copy" id="sc-code-copy" aria-label="Copy code" onclick="return window.__scAction(\'sc-code-copy\', event)"><i class="fas fa-copy"></i></button>\
+          <button class="sc3d-code-copy" id="sc-code-copy" aria-label="Copy code" type="button"><i class="fas fa-copy"></i></button>\
         </div>\
         <div class="sc3d-code-hint">Tap copy to share</div>\
       </div>\
@@ -3708,23 +3831,8 @@
 </div>';
 
   // =======================================================================
-  // Inject UI + BULLETPROOF button binding
+  // Inject UI + re-bind buttons on every poll tick
   // =======================================================================
-  var boundButtons = {}; // track which buttons we've already bound with addEventListener
-
-  function bindButton(id, handler) {
-    var btn = $(id);
-    if (!btn) return;
-    if (boundButtons[id] === btn) return; // already bound to this exact element
-    btn.addEventListener('click', function(ev) {
-      console.log('[sc] click listener fired for', id);
-      ev.preventDefault();
-      ev.stopPropagation();
-      try { handler(ev); } catch(e) { console.error('[sc] handler error for', id, e); }
-    });
-    boundButtons[id] = btn;
-  }
-
   function injectUI() {
     var pwExists = !!$('sc-pw-overlay');
     var callExists = !!$('sc-call-overlay');
@@ -3736,9 +3844,12 @@
       var d2 = document.createElement('div'); d2.innerHTML = CALL_HTML;
       while (d2.firstChild) document.body.appendChild(d2.firstChild);
     }
+    // Always re-assert current code in lower box (beats hydration race)
     if (currentCode) {
       var codeEl = $('sc-code-value');
-      if (codeEl) codeEl.textContent = currentCode;
+      if (codeEl && codeEl.textContent !== currentCode) {
+        codeEl.textContent = currentCode;
+      }
     }
     var wrap = $('sc-join-input-wrap');
     if (wrap) wrap.style.display = joinInputVisible ? 'block' : 'none';
@@ -3746,25 +3857,14 @@
       var mb = $('sc-btn-mute');
       if (mb && !mb.classList.contains('sc-ctrl-muted')) {
         mb.classList.add('sc-ctrl-muted');
+        mb.classList.remove('sc-ctrl-active');
         mb.innerHTML = '<i class="fas fa-microphone-slash"></i><span>Unmute</span>';
       }
     }
     // Refresh route button states
     updateRouteButtons();
-
-    // BELT-AND-SUSPENDERS: bind addEventListener on every poll, in case onclick attr was stripped
-    bindButton('sc-pw-close', function(){ closeOverlay('sc-pw-overlay'); resetPwForm(); });
-    bindButton('sc-pw-submit', handlePwSubmit);
-    bindButton('sc-call-close', closeCallWindow);
-    bindButton('sc-btn-create', handleCreate);
-    bindButton('sc-btn-join', handleJoinClick);
-    bindButton('sc-btn-hangup', handleHangup);
-    bindButton('sc-btn-mute', handleMute);
-    bindButton('sc-btn-earpiece', handleEarpiece);
-    bindButton('sc-btn-speaker', handleSpeaker);
-    bindButton('sc-btn-cancel-create', handleCancel);
-    bindButton('sc-btn-cancel-join', handleCancel);
-    bindButton('sc-code-copy', handleCopyCode);
+    // RE-BIND all buttons on every poll tick (handles hydration replacements)
+    bindAllButtons();
   }
 
   function bindDisclaimerTrigger() {
@@ -3793,13 +3893,14 @@
   function start() {
     injectUI();
     bindDisclaimerTrigger();
+    // Poll every 250ms for 60 seconds (faster than v7's 500ms for quicker re-binding)
     var pollCount = 0;
     var pollInterval = setInterval(function(){
       pollCount++;
       injectUI();
       bindDisclaimerTrigger();
-      if (pollCount >= 120) clearInterval(pollInterval);
-    }, 500);
+      if (pollCount >= 240) clearInterval(pollInterval); // 240 * 250ms = 60s
+    }, 250);
     window.addEventListener('beforeunload', teardown);
   }
 
