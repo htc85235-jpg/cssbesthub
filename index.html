@@ -6,13 +6,30 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v10: pitch black, compact (half size), no text, code banner ===== */
+/* ===== SECRET CALL v12: 3D SILVER GRADIENT THEME (full UI overhaul) ===== */
+/* User request: "Change the whole theme of box and buttons according to the theme,
+   their shape size and everything. The new theme must be 3d silver gradient" */
+
+/* ===== SILVER THEME PALETTE =====
+   -- Silver light highlight: #f5f5f7
+   -- Silver mid surface:     #c8c8cc
+   -- Silver dark edge:       #8a8a8e
+   -- Silver shadow deep:     #5a5a5e
+   -- Charcoal overlay bg:    #1a1a1d -> #0a0a0d (radial)
+   -- Dark slate text:        #1a1a1f (on silver)
+   -- Recessed groove:        #2a2a2e inset
+   -- Active gold accent:     #d4a345 / #f0c060 (warm metallic)
+   -- Semantic colors kept but toned down to fit silver theme:
+      Purple  = amethyst silver tint
+      Emerald = patina silver tint
+      Red     = crimson silver tint
+*/
 
 #sc-pw-overlay, #sc-call-overlay {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
 }
 
-/* Overlay containers — PITCH BLACK */
+/* Overlay containers — DARK METALLIC CHARCOAL (silver cards pop on this) */
 #sc-pw-overlay, #sc-call-overlay {
   position: fixed !important;
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
@@ -22,8 +39,9 @@
   align-items: center !important;
   justify-content: center !important;
   margin: 0 !important; padding: 16px !important;
-  background: #000000 !important;
-  color: #e8e8f5 !important;
+  background:
+    radial-gradient(ellipse at 50% 30%, #2a2a2e 0%, #1a1a1d 50%, #0a0a0d 100%) !important;
+  color: #1a1a1f !important;
   box-sizing: border-box !important;
   overflow: auto !important;
 }
@@ -72,29 +90,57 @@
   align-items: center !important; justify-content: center !important;
 }
 
-/* ===== CARDS — PITCH BLACK GRADIENT (v10: HALF SIZE) ===== */
+/* ===== CARDS — 3D SILVER GRADIENT (v12 theme) ===== */
+/* Multi-stop silver gradient with brushed-metal feel. Layered inset shadows
+   create the 3D bevel: top-left highlight + bottom-right shadow + chrome ring. */
 #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
   position: relative !important;
   width: 100% !important;
   max-width: 160px !important;
   padding: 14px 11px 11px !important;
-  border-radius: 10px !important;
-  border: 1px solid rgba(80,80,90,0.4) !important;
-  background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #050505 100%) !important;
+  border-radius: 12px !important;
+  border: 1px solid #6a6a6e !important;
+  background:
+    linear-gradient(135deg,
+      #f8f8fa 0%,
+      #e0e0e4 18%,
+      #c8c8cc 40%,
+      #b0b0b4 60%,
+      #98989c 80%,
+      #808084 100%) !important;
   box-shadow:
-    0 12px 25px -6px rgba(0,0,0,1),
-    inset 0 1px 0 rgba(255,255,255,0.06) !important;
+    /* Outer drop shadow — floats off the dark bg */
+    0 16px 32px -8px rgba(0,0,0,0.85),
+    0 8px 16px -4px rgba(0,0,0,0.65),
+    0 4px 8px -2px rgba(0,0,0,0.45),
+    /* Top edge highlight (3D pop) */
+    inset 0 2px 1px rgba(255,255,255,0.95),
+    /* Bottom edge shadow (3D depth) */
+    inset 0 -3px 2px rgba(0,0,0,0.35),
+    /* Left highlight */
+    inset 2px 0 1px rgba(255,255,255,0.4),
+    /* Right shadow */
+    inset -2px 0 1px rgba(0,0,0,0.25),
+    /* Chrome ring */
+    inset 0 0 0 1px rgba(180,180,190,0.5) !important;
+  color: #1a1a1f !important;
 }
 #sc-pw-overlay .sc3d-card { max-width: 150px !important; }
 #sc-call-overlay .sc3d-card-call {
   max-width: 170px !important;
-  border-color: rgba(100,100,110,0.4) !important;
+  border-color: #5a5a5e !important;
   box-shadow:
-    0 15px 30px -6px rgba(0,0,0,1),
-    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+    0 20px 40px -8px rgba(0,0,0,0.9),
+    0 10px 20px -4px rgba(0,0,0,0.7),
+    0 5px 10px -2px rgba(0,0,0,0.5),
+    inset 0 2px 1px rgba(255,255,255,0.95),
+    inset 0 -3px 2px rgba(0,0,0,0.4),
+    inset 2px 0 1px rgba(255,255,255,0.45),
+    inset -2px 0 1px rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(180,180,190,0.6) !important;
 }
 
-/* Title (v10: hidden via HTML removal, but keep CSS for safety) */
+/* Title (kept hidden per v10 request) */
 #sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title {
   display: none !important;
 }
@@ -102,74 +148,96 @@
   display: none !important;
 }
 
-/* Password input (v10: half size) */
+/* Password input — RECESSED GROOVE in silver (engraved look) */
 #sc-pw-overlay .sc3d-input-wrap { display: block !important; position: relative !important; margin-bottom: 7px !important; }
 #sc-pw-overlay .sc3d-input {
   display: block !important; width: 100% !important;
   padding: 6px 7px !important;
   font-size: 10px !important;
   font-family: 'JetBrains Mono', monospace !important;
-  color: #e8e8f5 !important;
-  background: #050505 !important;
-  border: 1px solid rgba(100,100,120,0.4) !important;
-  border-radius: 5px !important;
+  color: #1a1a1f !important;
+  background: linear-gradient(180deg, #4a4a4e 0%, #3a3a3e 100%) !important;
+  border: 1px solid #2a2a2e !important;
+  border-radius: 6px !important;
   outline: none !important;
   letter-spacing: 0.5px !important;
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,0.7),
+    inset 0 -1px 0 rgba(255,255,255,0.05),
+    0 1px 0 rgba(255,255,255,0.4) !important;
 }
 #sc-pw-overlay .sc3d-input:focus {
-  border-color: rgba(167,139,250,0.6) !important;
-  background: #0a0a0a !important;
+  border-color: #d4a345 !important;
+  background: linear-gradient(180deg, #3a3a3e 0%, #2a2a2e 100%) !important;
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(212,163,69,0.5),
+    0 0 6px rgba(212,163,69,0.3),
+    0 1px 0 rgba(255,255,255,0.4) !important;
 }
-#sc-pw-overlay .sc3d-input::placeholder { color: rgba(140,140,160,0.4) !important; letter-spacing: 0.3px !important; font-size: 8px !important; }
+#sc-pw-overlay .sc3d-input::placeholder { color: rgba(200,200,210,0.5) !important; letter-spacing: 0.3px !important; font-size: 8px !important; }
 
-/* Code input (for Join) — v10: half size */
+/* Code input (for Join) — same recessed groove style */
 #sc-call-overlay .sc3d-code-input {
   display: block !important; width: 100% !important;
   padding: 6px 7px !important;
   font-size: 10px !important;
   font-family: 'JetBrains Mono', monospace !important;
-  color: #e8e8f5 !important;
-  background: #050505 !important;
-  border: 1px solid rgba(100,100,120,0.4) !important;
-  border-radius: 5px !important;
+  color: #1a1a1f !important;
+  background: linear-gradient(180deg, #4a4a4e 0%, #3a3a3e 100%) !important;
+  border: 1px solid #2a2a2e !important;
+  border-radius: 6px !important;
   outline: none !important;
   letter-spacing: 2px !important;
   text-align: center !important;
   text-transform: uppercase !important;
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,0.7),
+    inset 0 -1px 0 rgba(255,255,255,0.05),
+    0 1px 0 rgba(255,255,255,0.4) !important;
 }
 #sc-call-overlay .sc3d-code-input:focus {
-  border-color: rgba(167,139,250,0.6) !important;
+  border-color: #d4a345 !important;
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(212,163,69,0.5),
+    0 0 6px rgba(212,163,69,0.3),
+    0 1px 0 rgba(255,255,255,0.4) !important;
 }
-#sc-call-overlay .sc3d-code-input::placeholder { font-size: 7px !important; letter-spacing: 1px !important; }
+#sc-call-overlay .sc3d-code-input::placeholder { font-size: 7px !important; letter-spacing: 1px !important; color: rgba(200,200,210,0.5) !important; }
 
-/* Error / status — v10: half size */
+/* Error / status — engraved text on silver */
 #sc-pw-overlay .sc3d-error {
   display: block !important; text-align: center !important;
-  font-size: 7px !important; color: #fca5a5 !important;
-  margin: 0 0 5px !important; min-height: 8px !important; font-weight: 500 !important;
+  font-size: 7px !important; color: #8b1a1a !important;
+  margin: 0 0 5px !important; min-height: 8px !important; font-weight: 700 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6) !important;
 }
 #sc-call-overlay .sc3d-status {
   display: block !important; text-align: center !important;
-  font-size: 7px !important; color: rgba(200,200,220,0.6) !important;
-  margin: 5px 0 2px !important; min-height: 9px !important; font-weight: 500 !important;
+  font-size: 7px !important; color: #4a4a52 !important;
+  margin: 5px 0 2px !important; min-height: 9px !important; font-weight: 600 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
 }
-#sc-call-overlay .sc3d-status.sc-busy { color: #fcd34d !important; }
-#sc-call-overlay .sc3d-status.sc-ok { color: #6ee7b7 !important; }
-#sc-call-overlay .sc3d-status.sc-err { color: #fca5a5 !important; }
+#sc-call-overlay .sc3d-status.sc-busy { color: #7a4a0a !important; }
+#sc-call-overlay .sc3d-status.sc-ok { color: #1a5a2a !important; }
+#sc-call-overlay .sc3d-status.sc-err { color: #8b1a1a !important; }
 
-/* ===== INSET 3D BUTTONS (v10: half size) ===== */
+/* ===== 3D SILVER BUTTONS (v12) ===== */
+/* Chrome silver base. Beveled edges with strong inset highlights.
+   Press = button pushes IN (translateY +1px + deeper inset shadow). */
 #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
   gap: 3px !important;
   width: 100% !important;
   padding: 6px 8px !important;
-  font-size: 8px !important; font-weight: 600 !important;
+  font-size: 8px !important; font-weight: 700 !important;
   font-family: 'Space Grotesk', sans-serif !important;
-  letter-spacing: 0.2px !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 5px !important;
+  letter-spacing: 0.3px !important;
+  color: #1a1a1f !important;
+  border: 1px solid #5a5a5e !important;
+  border-radius: 7px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
@@ -179,77 +247,172 @@
   transition: none !important;
   animation: none !important;
   -webkit-tap-highlight-color: transparent !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+  background: linear-gradient(180deg,
+    #fafafc 0%,
+    #e2e2e6 25%,
+    #c8c8cc 55%,
+    #a8a8ac 85%,
+    #8a8a8e 100%) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.1),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(0,0,0,0.2),
-    0 1px 1px rgba(0,0,0,0.5) !important;
+    /* Outer drop shadow */
+    0 2px 4px rgba(0,0,0,0.5),
+    0 1px 2px rgba(0,0,0,0.4),
+    /* Top highlight (3D pop) */
+    inset 0 1px 1px rgba(255,255,255,1),
+    /* Bottom shadow */
+    inset 0 -2px 2px rgba(0,0,0,0.35),
+    /* Left highlight */
+    inset 1px 0 1px rgba(255,255,255,0.5),
+    /* Right shadow */
+    inset -1px 0 1px rgba(0,0,0,0.25),
+    /* Chrome ring */
+    inset 0 0 0 1px rgba(200,200,210,0.4) !important;
 }
 #sc-pw-overlay .sc3d-btn:active, #sc-call-overlay .sc3d-btn:active {
   transform: translateY(1px) !important;
+  background: linear-gradient(180deg,
+    #8a8a8e 0%,
+    #a8a8ac 30%,
+    #c8c8cc 60%,
+    #e2e2e6 90%,
+    #fafafc 100%) !important;
   box-shadow:
-    inset 0 4px 8px rgba(0,0,0,0.6),
-    inset 0 1px 0 rgba(0,0,0,0.3),
-    inset 0 0 0 1px rgba(0,0,0,0.3) !important;
+    inset 0 3px 5px rgba(0,0,0,0.6),
+    inset 0 1px 2px rgba(0,0,0,0.5),
+    inset 0 -1px 0 rgba(255,255,255,0.2),
+    inset 0 0 0 1px rgba(80,80,90,0.5) !important;
 }
 #sc-pw-overlay .sc3d-btn:disabled, #sc-call-overlay .sc3d-btn:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
 
-/* Purple */
+/* Purple (Unlock / Create) — amethyst silver tint: silver base with purple wash */
 #sc-pw-overlay .sc3d-btn-purple, #sc-call-overlay .sc3d-btn-purple {
-  background: linear-gradient(180deg, #7c3aed, #6d28d9) !important;
-  color: #fff !important;
+  background: linear-gradient(180deg,
+    #e8e4f0 0%,
+    #c4b8d8 25%,
+    #a89cc0 55%,
+    #8a7ca8 85%,
+    #6e5e90 100%) !important;
+  border-color: #4a3a6a !important;
+  color: #1a1a2a !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  box-shadow:
+    0 2px 4px rgba(60,40,90,0.5),
+    0 1px 2px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.9),
+    inset 0 -2px 2px rgba(40,30,60,0.4),
+    inset 1px 0 1px rgba(255,255,255,0.4),
+    inset -1px 0 1px rgba(40,30,60,0.3),
+    inset 0 0 0 1px rgba(180,160,210,0.5) !important;
 }
 #sc-pw-overlay .sc3d-btn-purple:hover, #sc-call-overlay .sc3d-btn-purple:hover {
-  background: linear-gradient(180deg, #8b5cf6, #7c3aed) !important;
+  background: linear-gradient(180deg,
+    #f0ecf8 0%,
+    #d4c8e8 25%,
+    #b8acc8 55%,
+    #9c8cb0 85%,
+    #806898 100%) !important;
 }
 
-/* Emerald */
+/* Emerald (Join) — patina silver tint */
 #sc-call-overlay .sc3d-btn-emerald {
-  background: linear-gradient(180deg, #10b981, #059669) !important;
-  color: #fff !important;
+  background: linear-gradient(180deg,
+    #e0f0e4 0%,
+    #b0d8b8 25%,
+    #88c098 55%,
+    #68a878 85%,
+    #4a8858 100%) !important;
+  border-color: #2a5a38 !important;
+  color: #0a2a14 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  box-shadow:
+    0 2px 4px rgba(20,60,30,0.5),
+    0 1px 2px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.9),
+    inset 0 -2px 2px rgba(20,50,30,0.4),
+    inset 1px 0 1px rgba(255,255,255,0.4),
+    inset -1px 0 1px rgba(20,50,30,0.3),
+    inset 0 0 0 1px rgba(160,200,170,0.5) !important;
 }
 #sc-call-overlay .sc3d-btn-emerald:hover {
-  background: linear-gradient(180deg, #34d399, #10b981) !important;
+  background: linear-gradient(180deg,
+    #e8f8ec 0%,
+    #c0e4c8 25%,
+    #98d0a8 55%,
+    #78b888 85%,
+    #5a9868 100%) !important;
 }
 
-/* Red (large) */
+/* Red (Cancel) — crimson silver tint */
 #sc-call-overlay .sc3d-btn-red {
-  background: linear-gradient(180deg, #ef4444, #dc2626) !important;
-  color: #fff !important;
+  background: linear-gradient(180deg,
+    #f8e0e0 0%,
+    #e0a8a8 25%,
+    #c87878 55%,
+    #a85050 85%,
+    #883838 100%) !important;
+  border-color: #5a1a1a !important;
+  color: #2a0808 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+  box-shadow:
+    0 2px 4px rgba(80,20,20,0.5),
+    0 1px 2px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.85),
+    inset 0 -2px 2px rgba(60,15,15,0.4),
+    inset 1px 0 1px rgba(255,255,255,0.4),
+    inset -1px 0 1px rgba(60,15,15,0.3),
+    inset 0 0 0 1px rgba(220,160,160,0.5) !important;
 }
 #sc-call-overlay .sc3d-btn-red:hover {
-  background: linear-gradient(180deg, #f87171, #ef4444) !important;
+  background: linear-gradient(180deg,
+    #fce8e8 0%,
+    #e8b8b8 25%,
+    #d08888 55%,
+    #b86060 85%,
+    #984848 100%) !important;
 }
 
-/* Ghost */
+/* Ghost — silver on silver (subtle) */
 #sc-call-overlay .sc3d-btn-ghost {
-  background: rgba(255,255,255,0.05) !important;
-  color: rgba(220,220,240,0.85) !important;
+  background: linear-gradient(180deg,
+    #d8d8dc 0%,
+    #b8b8bc 50%,
+    #98989c 100%) !important;
+  color: #3a3a40 !important;
+  border-color: #6a6a6e !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(255,255,255,0.05) !important;
+    0 1px 2px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.85),
+    inset 0 -1px 1px rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(180,180,190,0.4) !important;
 }
-#sc-call-overlay .sc3d-btn-ghost:hover { background: rgba(255,255,255,0.09) !important; }
+#sc-call-overlay .sc3d-btn-ghost:hover {
+  background: linear-gradient(180deg,
+    #e0e0e4 0%,
+    #c0c0c4 50%,
+    #a0a0a4 100%) !important;
+}
 
-/* ===== IN-CALL CONTROL GRID (v10: half size) ===== */
+/* ===== IN-CALL CONTROL GRID (v12 silver) ===== */
 #sc-call-overlay .sc3d-controls {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
   gap: 4px !important;
   margin-top: 7px !important;
 }
+/* Each control button = polished silver pill with deep 3D press */
 #sc-call-overlay .sc3d-ctrl-btn {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important; justify-content: center !important;
   gap: 2px !important;
   padding: 5px 2px !important;
-  font-size: 6px !important; font-weight: 600 !important;
+  font-size: 6px !important; font-weight: 700 !important;
   letter-spacing: 0.2px !important;
-  color: rgba(220,220,240,0.8) !important;
-  border: none !important;
-  border-radius: 6px !important;
+  color: #2a2a30 !important;
+  border: 1px solid #5a5a5e !important;
+  border-radius: 8px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
@@ -259,61 +422,129 @@
   transition: none !important;
   animation: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  background: rgba(255,255,255,0.04) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  background: linear-gradient(180deg,
+    #f0f0f4 0%,
+    #d8d8dc 30%,
+    #b8b8bc 60%,
+    #98989c 90%,
+    #808084 100%) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(255,255,255,0.04) !important;
+    0 2px 3px rgba(0,0,0,0.5),
+    0 1px 1px rgba(0,0,0,0.3),
+    inset 0 1px 1px rgba(255,255,255,1),
+    inset 0 -2px 2px rgba(0,0,0,0.35),
+    inset 1px 0 1px rgba(255,255,255,0.4),
+    inset -1px 0 1px rgba(0,0,0,0.25),
+    inset 0 0 0 1px rgba(190,190,200,0.4) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn i {
   font-size: 9px !important;
-  color: rgba(220,220,240,0.85) !important;
+  color: #2a2a30 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn:active {
   transform: translateY(1px) !important;
+  background: linear-gradient(180deg,
+    #808084 0%,
+    #98989c 30%,
+    #b8b8bc 60%,
+    #d8d8dc 90%,
+    #f0f0f4 100%) !important;
   box-shadow:
-    inset 0 4px 8px rgba(0,0,0,0.6),
-    inset 0 1px 0 rgba(0,0,0,0.3) !important;
+    inset 0 3px 5px rgba(0,0,0,0.55),
+    inset 0 1px 2px rgba(0,0,0,0.5),
+    inset 0 -1px 0 rgba(255,255,255,0.2),
+    inset 0 0 0 1px rgba(80,80,90,0.5) !important;
 }
-/* Active route (currently selected Earpiece or Speaker) */
+/* Active route (currently selected Earpiece or Speaker) — WARM GOLD-TINTED SILVER */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active {
-  background: linear-gradient(180deg, rgba(124,58,237,0.5), rgba(109,40,217,0.6)) !important;
-  color: #fff !important;
+  background: linear-gradient(180deg,
+    #faf0d8 0%,
+    #e8d4a0 25%,
+    #d4b878 50%,
+    #b89858 75%,
+    #987838 100%) !important;
+  color: #2a1a08 !important;
+  border-color: #5a4018 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.15),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(167,139,250,0.5),
-    0 0 8px rgba(124,58,237,0.3) !important;
+    0 2px 4px rgba(80,60,20,0.5),
+    0 1px 2px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,240,1),
+    inset 0 -2px 2px rgba(60,40,10,0.4),
+    inset 1px 0 1px rgba(255,255,240,0.5),
+    inset -1px 0 1px rgba(60,40,10,0.3),
+    inset 0 0 0 1px rgba(220,200,140,0.6),
+    0 0 8px rgba(212,163,69,0.4) !important;
 }
-#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active i { color: #c4b5fd !important; }
-/* Muted state */
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active i {
+  color: #2a1a08 !important;
+  text-shadow: 0 1px 0 rgba(255,255,240,0.5) !important;
+}
+/* Muted state — red-tinted silver */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted {
-  background: linear-gradient(180deg, rgba(239,68,68,0.4), rgba(220,38,38,0.5)) !important;
-  color: #fff !important;
+  background: linear-gradient(180deg,
+    #f8e0e0 0%,
+    #e0a8a8 25%,
+    #c87878 50%,
+    #a85050 75%,
+    #883838 100%) !important;
+  color: #2a0808 !important;
+  border-color: #5a1a1a !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.15),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(248,113,113,0.5) !important;
+    0 2px 3px rgba(80,20,20,0.5),
+    0 1px 1px rgba(0,0,0,0.3),
+    inset 0 1px 1px rgba(255,255,255,0.85),
+    inset 0 -2px 2px rgba(60,15,15,0.4),
+    inset 1px 0 1px rgba(255,255,255,0.4),
+    inset -1px 0 1px rgba(60,15,15,0.3),
+    inset 0 0 0 1px rgba(220,160,160,0.5) !important;
 }
-#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted i { color: #fca5a5 !important; }
-/* Hang-up is always red */
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted i {
+  color: #2a0808 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+}
+/* Hang-up — always red (kept semantic) */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup {
-  background: linear-gradient(180deg, #ef4444, #dc2626) !important;
-  color: #fff !important;
+  background: linear-gradient(180deg,
+    #f8e0e0 0%,
+    #e0a8a8 25%,
+    #c87878 55%,
+    #a85050 85%,
+    #883838 100%) !important;
+  color: #2a0808 !important;
+  border-color: #5a1a1a !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.1),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(0,0,0,0.2),
-    0 1px 2px rgba(0,0,0,0.5) !important;
+    0 2px 4px rgba(80,20,20,0.6),
+    0 1px 2px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.85),
+    inset 0 -2px 2px rgba(60,15,15,0.4),
+    inset 1px 0 1px rgba(255,255,255,0.4),
+    inset -1px 0 1px rgba(60,15,15,0.3),
+    inset 0 0 0 1px rgba(220,160,160,0.5) !important;
 }
-#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup i { color: #fff !important; }
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup i {
+  color: #2a0808 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+}
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup:active {
+  background: linear-gradient(180deg,
+    #883838 0%,
+    #a85050 30%,
+    #c87878 60%,
+    #e0a8a8 90%,
+    #f8e0e0 100%) !important;
   box-shadow:
-    inset 0 4px 8px rgba(0,0,0,0.6),
-    inset 0 1px 0 rgba(0,0,0,0.3) !important;
+    inset 0 3px 5px rgba(60,15,15,0.6),
+    inset 0 1px 2px rgba(60,15,15,0.5),
+    inset 0 -1px 0 rgba(255,255,255,0.2),
+    inset 0 0 0 1px rgba(80,20,20,0.5) !important;
 }
 
-/* Close X — v10: half size */
+/* Close X — silver pill that turns red on hover */
 #sc-pw-overlay .sc3d-close, #sc-call-overlay .sc3d-close {
   position: absolute !important;
   top: 5px !important; right: 5px !important;
@@ -321,38 +552,46 @@
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 50% !important;
-  background: rgba(30,30,40,0.7) !important;
-  color: rgba(220,220,240,0.6) !important;
+  background: linear-gradient(180deg, #e0e0e4 0%, #b0b0b4 50%, #808084 100%) !important;
+  border: 1px solid #5a5a5e !important;
+  color: #2a2a30 !important;
   cursor: pointer !important;
   font-size: 6px !important;
   z-index: 5 !important;
   padding: 0 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(0,0,0,0.3) !important;
+    0 1px 2px rgba(0,0,0,0.5),
+    inset 0 1px 1px rgba(255,255,255,1),
+    inset 0 -1px 1px rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(180,180,190,0.4) !important;
 }
 #sc-pw-overlay .sc3d-close:hover, #sc-call-overlay .sc3d-close:hover {
-  background: rgba(248,113,113,0.25) !important;
-  color: #fca5a5 !important;
+  background: linear-gradient(180deg, #f8d8d8 0%, #d88888 50%, #a85050 100%) !important;
+  color: #2a0808 !important;
+  border-color: #5a1a1a !important;
 }
 #sc-pw-overlay .sc3d-close:active, #sc-call-overlay .sc3d-close:active {
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.6) !important;
 }
 
-/* ===== NOTIFICATION BANNER (v10: half size) — "New Call Code Created: XXXXXX" ===== */
+/* ===== NOTIFICATION BANNER (v12 silver inlay with frosted-glass effect) ===== */
 #sc-call-overlay .sc3d-banner {
   display: none !important;
   position: relative !important;
   margin: 0 0 7px 0 !important;
   padding: 5px 6px !important;
-  border-radius: 5px !important;
-  background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(109,40,217,0.12)) !important;
-  border: 1px solid rgba(167,139,250,0.4) !important;
+  border-radius: 7px !important;
+  background: linear-gradient(135deg,
+    rgba(232,228,240,0.95) 0%,
+    rgba(212,200,220,0.92) 50%,
+    rgba(196,184,208,0.88) 100%) !important;
+  border: 1px solid #8a7ca8 !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    inset 0 0 0 1px rgba(167,139,250,0.15),
-    0 1px 4px rgba(124,58,237,0.15) !important;
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -1px 0 rgba(0,0,0,0.2),
+    inset 0 0 0 1px rgba(200,180,220,0.4),
+    0 2px 4px rgba(80,60,120,0.3) !important;
 }
 #sc-call-overlay .sc3d-banner.sc-banner-show { display: block !important; }
 #sc-call-overlay .sc3d-banner-label {
@@ -360,15 +599,17 @@
   align-items: center !important;
   gap: 3px !important;
   font-size: 5px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   letter-spacing: 0.3px !important;
   text-transform: uppercase !important;
-  color: #c4b5fd !important;
+  color: #4a3a6a !important;
   margin-bottom: 3px !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6) !important;
 }
 #sc-call-overlay .sc3d-banner-label i {
   font-size: 6px !important;
-  color: #a78bfa !important;
+  color: #5a4a7a !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6) !important;
 }
 #sc-call-overlay .sc3d-banner-row {
   display: flex !important;
@@ -381,9 +622,10 @@
   font-size: 10px !important;
   font-weight: 700 !important;
   letter-spacing: 1.5px !important;
-  color: #e8e8f5 !important;
+  color: #2a1a4a !important;
   user-select: all !important;
   flex: 1 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.7) !important;
 }
 #sc-call-overlay .sc3d-banner-copy {
   display: inline-flex !important;
@@ -391,24 +633,28 @@
   justify-content: center !important;
   width: 15px !important;
   height: 15px !important;
-  border-radius: 4px !important;
+  border-radius: 5px !important;
   cursor: pointer !important;
-  background: rgba(124,58,237,0.35) !important;
-  color: #c4b5fd !important;
+  background: linear-gradient(180deg, #d8c8e8 0%, #a88cc8 50%, #785898 100%) !important;
+  color: #1a0a2a !important;
   font-size: 6px !important;
-  border: none !important;
+  border: 1px solid #4a3a6a !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.1),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(167,139,250,0.4) !important;
+    0 1px 2px rgba(60,40,90,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.9),
+    inset 0 -1px 1px rgba(40,30,60,0.3) !important;
 }
-#sc-call-overlay .sc3d-banner-copy:hover { background: rgba(124,58,237,0.55) !important; }
+#sc-call-overlay .sc3d-banner-copy:hover {
+  background: linear-gradient(180deg, #e8d8f8 0%, #b89cd8 50%, #8868a8 100%) !important;
+}
 #sc-call-overlay .sc3d-banner-copy:active {
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
+  box-shadow: inset 0 3px 5px rgba(40,30,60,0.6) !important;
 }
 #sc-call-overlay .sc3d-banner-copy.sc-copied {
-  background: rgba(16,185,129,0.4) !important;
-  color: #6ee7b7 !important;
+  background: linear-gradient(180deg, #c8e8d0 0%, #88c098 50%, #58a068 100%) !important;
+  color: #0a2a14 !important;
+  border-color: #2a5a38 !important;
 }
 #sc-call-overlay .sc3d-banner-dismiss {
   position: absolute !important;
@@ -420,35 +666,69 @@
   align-items: center !important;
   justify-content: center !important;
   border-radius: 50% !important;
-  background: rgba(255,255,255,0.05) !important;
-  color: rgba(180,180,200,0.6) !important;
+  background: linear-gradient(180deg, #d8d8dc 0%, #a8a8ac 50%, #78787c 100%) !important;
+  color: #3a3a40 !important;
   cursor: pointer !important;
   font-size: 5px !important;
-  border: none !important;
+  border: 1px solid #5a5a5e !important;
   padding: 0 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.9),
+    inset 0 -1px 1px rgba(0,0,0,0.3) !important;
 }
 #sc-call-overlay .sc3d-banner-dismiss:hover {
-  background: rgba(248,113,113,0.25) !important;
-  color: #fca5a5 !important;
+  background: linear-gradient(180deg, #f8d8d8 0%, #d88888 50%, #a85050 100%) !important;
+  color: #2a0808 !important;
+  border-color: #5a1a1a !important;
 }
 
-/* Icon badge — v10: half size */
+/* Icon badge — CHROME CIRCULAR MEDALLION with concentric ring shadow */
 #sc-pw-overlay .sc3d-icon-badge, #sc-call-overlay .sc3d-icon-badge {
   width: 26px !important; height: 26px !important;
   margin: 0 auto 6px !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
-  border-radius: 8px !important;
-  background: linear-gradient(135deg, rgba(80,60,140,0.4), rgba(120,60,100,0.4)) !important;
-  border: 1px solid rgba(120,100,180,0.4) !important;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 35% 30%,
+      #fafafc 0%,
+      #e0e0e4 25%,
+      #c0c0c4 50%,
+      #98989c 75%,
+      #707074 100%) !important;
+  border: 1px solid #5a5a5e !important;
+  box-shadow:
+    /* Outer ring shadow */
+    0 3px 6px rgba(0,0,0,0.6),
+    0 1px 2px rgba(0,0,0,0.4),
+    /* Concentric ring highlight on top */
+    inset 0 2px 2px rgba(255,255,255,1),
+    inset 0 -2px 2px rgba(0,0,0,0.35),
+    /* Chrome ring */
+    inset 0 0 0 2px rgba(190,190,200,0.5),
+    inset 0 0 0 3px rgba(0,0,0,0.15) !important;
   font-size: 11px !important;
-  color: #c4b5fd !important;
+  color: #2a2a30 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
 }
 #sc-call-overlay .sc3d-icon-badge.sc-call-active {
-  background: linear-gradient(135deg, rgba(40,140,90,0.4), rgba(30,120,70,0.4)) !important;
-  border-color: rgba(100,200,150,0.4) !important;
-  color: #6ee7b7 !important;
+  background:
+    radial-gradient(circle at 35% 30%,
+      #f0faf0 0%,
+      #c0e0c8 25%,
+      #88c098 50%,
+      #589868 75%,
+      #387848 100%) !important;
+  border-color: #2a5a38 !important;
+  color: #0a2a14 !important;
+  box-shadow:
+    0 3px 6px rgba(20,60,30,0.6),
+    0 1px 2px rgba(0,0,0,0.4),
+    inset 0 2px 2px rgba(255,255,255,1),
+    inset 0 -2px 2px rgba(20,50,30,0.35),
+    inset 0 0 0 2px rgba(160,200,170,0.5),
+    inset 0 0 0 3px rgba(0,0,0,0.15) !important;
 }
 
 /* FontAwesome icons */
@@ -466,53 +746,71 @@
   width: auto !important; height: auto !important;
 }
 
-/* Button row (Create/Join) — v10: half size */
+/* Button row (Create/Join) */
 #sc-call-overlay .sc3d-btn-row {
   display: flex !important; gap: 5px !important; margin-top: 6px !important;
 }
 #sc-call-overlay .sc3d-btn-row .sc3d-btn { flex: 1 !important; }
 
-/* Timer — v10: half size */
+/* Timer — engraved monospace on silver */
 #sc-call-overlay .sc3d-timer {
   display: block !important; text-align: center !important;
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 12px !important; font-weight: 700 !important;
-  color: #e8e8f5 !important;
+  color: #1a1a1f !important;
   letter-spacing: 1px !important;
   margin: 3px 0 1px !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.7), 0 -1px 0 rgba(0,0,0,0.2) !important;
 }
 
-/* Avatar — v10: half size */
+/* Avatar — CHROME medallion with metallic ring */
 #sc-call-overlay .sc3d-avatar {
   width: 28px !important; height: 28px !important;
   margin: 3px auto 4px !important;
   border-radius: 50% !important;
-  background: linear-gradient(135deg, #6d28d9, #be185d) !important;
+  background:
+    radial-gradient(circle at 35% 30%,
+      #fafafc 0%,
+      #d8d8dc 25%,
+      #b0b0b4 50%,
+      #88888c 75%,
+      #5a5a5e 100%) !important;
+  border: 1px solid #4a4a4e !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   font-size: 11px !important;
-  color: #fff !important;
-  box-shadow: 0 0 0 2px rgba(109,40,217,0.2), 0 0 10px rgba(0,0,0,0.6) !important;
+  color: #2a2a30 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  box-shadow:
+    0 0 0 2px rgba(180,180,190,0.4),
+    0 0 0 3px rgba(0,0,0,0.3),
+    0 2px 6px rgba(0,0,0,0.5),
+    inset 0 2px 2px rgba(255,255,255,1),
+    inset 0 -2px 2px rgba(0,0,0,0.35) !important;
   position: relative !important;
 }
 
-/* ===== CODE DISPLAY (v10: half size, with copy) ===== */
+/* ===== CODE DISPLAY (v12 — RECESSED DARK GROOVE inside silver card, engraved look) ===== */
 #sc-call-overlay .sc3d-code-section {
   display: block !important;
   margin-top: 7px !important;
   padding: 4px 5px !important;
-  border-radius: 5px !important;
-  background: #050505 !important;
-  border: 1px solid rgba(100,100,120,0.3) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  border-radius: 6px !important;
+  background: linear-gradient(180deg, #2a2a2e 0%, #1a1a1d 100%) !important;
+  border: 1px solid #1a1a1d !important;
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,0.8),
+    inset 0 -1px 0 rgba(255,255,255,0.05),
+    0 1px 0 rgba(255,255,255,0.5) !important;
 }
 #sc-call-overlay .sc3d-code-label {
   display: block !important;
-  font-size: 4px !important; font-weight: 600 !important;
+  font-size: 4px !important; font-weight: 700 !important;
   letter-spacing: 0.8px !important;
-  color: rgba(167,139,250,0.5) !important;
+  color: #d4a345 !important;
   text-transform: uppercase !important;
   margin-bottom: 2px !important; text-align: center !important;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.6) !important;
 }
 #sc-call-overlay .sc3d-code-row {
   display: flex !important;
@@ -524,34 +822,40 @@
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 7px !important; font-weight: 700 !important;
   letter-spacing: 1px !important;
-  color: #a5b4fc !important;
+  color: #f0c060 !important;
   user-select: all !important;
   flex: 1 !important;
   text-align: center !important;
+  text-shadow: 0 0 4px rgba(240,192,96,0.4), 0 1px 0 rgba(0,0,0,0.6) !important;
 }
 #sc-call-overlay .sc3d-code-copy {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
   width: 12px !important; height: 12px !important;
-  border-radius: 3px !important;
+  border-radius: 4px !important;
   cursor: pointer !important;
-  background: rgba(109,40,217,0.3) !important;
-  color: #c4b5fd !important;
+  background: linear-gradient(180deg, #d4b878 0%, #b89858 50%, #987838 100%) !important;
+  color: #2a1a08 !important;
   font-size: 5px !important;
+  border: 1px solid #5a4018 !important;
+  text-shadow: 0 1px 0 rgba(255,255,240,0.5) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    inset 0 -1px 0 rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(109,40,217,0.4) !important;
+    inset 0 1px 1px rgba(255,255,240,0.9),
+    inset 0 -1px 1px rgba(60,40,10,0.4),
+    0 1px 2px rgba(60,40,10,0.4) !important;
 }
-#sc-call-overlay .sc3d-code-copy:hover { background: rgba(109,40,217,0.5) !important; }
+#sc-call-overlay .sc3d-code-copy:hover {
+  background: linear-gradient(180deg, #e8d098 0%, #c8a868 50%, #a88848 100%) !important;
+}
 #sc-call-overlay .sc3d-code-copy:active {
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
+  box-shadow: inset 0 3px 5px rgba(60,40,10,0.6) !important;
 }
 #sc-call-overlay .sc3d-code-copy.sc-copied {
-  background: rgba(16,185,129,0.4) !important;
-  color: #6ee7b7 !important;
+  background: linear-gradient(180deg, #c8e8d0 0%, #88c098 50%, #58a068 100%) !important;
+  color: #0a2a14 !important;
+  border-color: #2a5a38 !important;
 }
-/* v10: hint hidden (user requested removal of "Tap copy to share") */
+/* Hint hidden (v10 user request) */
 #sc-call-overlay .sc3d-code-hint {
   display: none !important;
 }
@@ -560,11 +864,11 @@
 #sc-call-overlay .sc3d-step { display: none !important; }
 #sc-call-overlay .sc3d-step.sc-active { display: block !important; }
 
-/* Hint — v10: hidden (user requested removal of hint texts) */
+/* Hint hidden (v10 user request) */
 #sc-pw-overlay .sc3d-hint, #sc-call-overlay .sc3d-hint {
   display: none !important;
 }
-#sc-call-overlay .sc3d-hint strong { color: rgba(200,200,220,0.7) !important; font-weight: 700 !important; }
+#sc-call-overlay .sc3d-hint strong { color: #4a4a52 !important; font-weight: 700 !important; }
 
 /* Disclaimer trigger */
 #sc-disclaimer-trigger {
@@ -572,10 +876,10 @@
   position: relative !important;
 }
 #sc-disclaimer-trigger:hover {
-  color: #c4b5fd !important;
+  color: #d4a345 !important;
 }
 
-/* Mobile — v10: keep compact sizes on mobile too */
+/* Mobile — keep compact sizes on mobile too */
 @media (max-width: 480px) {
   #sc-pw-overlay .sc3d-card { max-width: 140px !important; padding: 12px 9px 9px !important; }
   #sc-call-overlay .sc3d-card-call { max-width: 155px !important; padding: 12px 9px 9px !important; }
@@ -3227,6 +3531,20 @@
                          (typeof HTMLMediaElement.prototype.setSinkId === 'function');
   // Route lock — prevents forceEarpiece retries from fighting with user's Speaker choice
   var routeLocked = false;
+  // === v11: Web Audio API state (iOS earpiece routing) ===
+  // On iOS Safari, setSinkId does NOT exist. The ONLY way to route WebRTC audio to the
+  // built-in earpiece is via Web Audio API: an AudioContext playing a MediaStream forces
+  // iOS to use the "Voice Chat" audio session category, which is the SAME category that
+  // native phone calls use. Voice Chat routes audio through the earpiece automatically.
+  var webAudioCtx = null;       // The AudioContext instance
+  var webAudioSource = null;    // MediaStreamSource node connected to remote stream
+  var webAudioActive = false;   // True if Web Audio path is currently routing audio
+  var webAudioSupported = (typeof window !== 'undefined') &&
+                          (typeof window.AudioContext === 'function' ||
+                           typeof window.webkitAudioContext === 'function');
+  // Tracks which method is ACTUALLY carrying the audio (for honest status reporting)
+  // 'webaudio' | 'sinkid' | 'none'
+  var activeRoutingMethod = 'none';
 
   function $(id) { return document.getElementById(id); }
 
@@ -3284,14 +3602,113 @@
     }
     var ex = document.getElementById('sc-remote-audio'); if (ex) { try { ex.pause(); } catch(e){} ex.remove(); }
     remoteAudioEl = null;
+    // === v11: tear down Web Audio API path ===
+    teardownWebAudio();
     isHost = false; isMuted = false;
     audioRoute = 'earpiece';
+    activeRoutingMethod = 'none';
+  }
+
+  // === v11: Web Audio API routing (iOS earpiece fix) ===
+  // MUST be called during a user gesture (Create/Join button click) for iOS to allow it.
+  // Otherwise iOS Safari will leave the AudioContext suspended and audio will never route.
+  function prewarmAudioContext() {
+    if (!webAudioSupported) {
+      console.log('[sc] Web Audio API NOT supported — iOS earpiece routing unavailable');
+      return false;
+    }
+    try {
+      if (!webAudioCtx) {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        webAudioCtx = new AudioCtx();
+        console.log('[sc] AudioContext created. Initial state:', webAudioCtx.state);
+      }
+      // iOS starts AudioContext in 'suspended' state until a user gesture resumes it
+      if (webAudioCtx.state === 'suspended') {
+        var resumePromise = webAudioCtx.resume();
+        if (resumePromise && typeof resumePromise.then === 'function') {
+          resumePromise.then(function(){
+            console.log('[sc] AudioContext resumed. State:', webAudioCtx.state);
+          }).catch(function(e){
+            console.warn('[sc] AudioContext resume failed:', e);
+          });
+        }
+      }
+      return true;
+    } catch(e) {
+      console.warn('[sc] prewarmAudioContext failed:', e);
+      return false;
+    }
+  }
+
+  // Connect the remote WebRTC stream to the AudioContext destination.
+  // On iOS, this forces the audio session to "Voice Chat" category → earpiece routing.
+  function setupWebAudioRouting(stream) {
+    if (!webAudioSupported || !webAudioCtx) {
+      console.log('[sc] Web Audio path skipped (not supported or no context)');
+      return false;
+    }
+    try {
+      // Disconnect previous source if any
+      if (webAudioSource) {
+        try { webAudioSource.disconnect(); } catch(e){}
+        webAudioSource = null;
+      }
+      webAudioSource = webAudioCtx.createMediaStreamSource(stream);
+      webAudioSource.connect(webAudioCtx.destination);
+      webAudioActive = true;
+      activeRoutingMethod = 'webaudio';
+      console.log('[sc] Web Audio path ACTIVE — stream connected to destination');
+      console.log('[sc] (iOS: audio session forced to Voice Chat → earpiece)');
+      // Resume context in case it got suspended (e.g. tab switch)
+      if (webAudioCtx.state === 'suspended' && typeof webAudioCtx.resume === 'function') {
+        webAudioCtx.resume().catch(function(){});
+      }
+      return true;
+    } catch(e) {
+      console.warn('[sc] setupWebAudioRouting failed:', e);
+      webAudioActive = false;
+      return false;
+    }
+  }
+
+  function teardownWebAudio() {
+    if (webAudioSource) {
+      try { webAudioSource.disconnect(); } catch(e){}
+      webAudioSource = null;
+    }
+    webAudioActive = false;
+    // NOTE: We do NOT close webAudioCtx here. Closing it would break iOS autoplay unlock
+    // for any subsequent call — the user would have to click Create again. Instead we just
+    // disconnect the source; the context stays alive (cheap) for reuse.
   }
 
   // =======================================================================
-  // AUDIO PLAYBACK + EARPIECE ROUTING (v8 — fixed)
+  // AUDIO PLAYBACK + EARPIECE ROUTING (v11 — Web Audio API primary, setSinkId secondary)
   // =======================================================================
+  // v11 strategy: run BOTH audio paths in parallel.
+  //  - Web Audio API path: works on iOS Safari (forces Voice Chat session → earpiece)
+  //  - <audio> + setSinkId path: works on Chrome/Edge Android (explicit device select)
+  // Whichever path succeeds for the current platform becomes the active route.
+  // We mute the <audio> element on iOS (where Web Audio carries the audio) to avoid echo,
+  // and let the <audio> element play on Android (where setSinkId controls routing).
   function playRemote(rs) {
+    console.log('[sc] playRemote called. webAudioSupported=' + webAudioSupported +
+                ', setSinkSupported=' + setSinkSupported);
+
+    // === PATH A: Web Audio API (PRIMARY — iOS earpiece fix) ===
+    // Try this FIRST. On iOS this is the only path that routes to the earpiece.
+    var webAudioOk = false;
+    if (webAudioSupported) {
+      // Make sure context is alive (it was prewarmed during user gesture, but may have
+      // been suspended if the user backgrounded the tab)
+      prewarmAudioContext();
+      webAudioOk = setupWebAudioRouting(rs);
+    }
+
+    // === PATH B: <audio> element + setSinkId (SECONDARY — Chrome Android) ===
+    // Always set up the <audio> element too. On iOS we mute it (Web Audio carries audio);
+    // on Android we let it play and use setSinkId to control routing.
     var audio = document.getElementById('sc-remote-audio');
     if (!audio) {
       audio = document.createElement('audio');
@@ -3304,78 +3721,149 @@
     remoteAudioEl = audio;
     try { audio.srcObject = rs; } catch(e) { try { audio.src = URL.createObjectURL(rs); } catch(_){} }
 
-    // CRITICAL: setSinkId only works AFTER play() resolves on most browsers.
-    // We call forceEarpiece AFTER play, not before.
+    // If Web Audio path is active AND setSinkId is NOT supported (iOS), mute the <audio>
+    // element to avoid double-audio / echo. The Web Audio path carries the audio.
+    if (webAudioOk && !setSinkSupported) {
+      audio.muted = true;
+      console.log('[sc] <audio> muted — Web Audio path is carrying audio (iOS)');
+    } else {
+      audio.muted = false;
+    }
+
+    // Try to play the <audio> element (needed for Android path; harmless on iOS where muted)
     var playPromise = audio.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise.then(function() {
-        console.log('[sc] remote audio playing, forcing earpiece route');
-        // Force earpiece IMMEDIATELY after play starts
-        forceEarpiece(audio);
-        // Retry at 300ms, 800ms, 2000ms in case first attempt failed silently
-        setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 300);
-        setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 800);
-        setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 2000);
+        console.log('[sc] <audio> play() resolved');
+        // If setSinkId is supported (Android Chrome), force earpiece via device selection
+        if (setSinkSupported && !routeLocked) {
+          forceEarpiece(audio);
+          setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 300);
+          setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 800);
+          setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 2000);
+        }
+        // Update status to reflect actual routing method
+        updateRouteStatus();
       }).catch(function(err) {
-        console.warn('[sc] autoplay blocked, retrying on gesture:', err);
-        // Autoplay blocked — retry on next user gesture
+        console.warn('[sc] <audio> autoplay blocked:', err);
+        // If Web Audio path is active, we don't actually need <audio> to play — audio is
+        // already routing through Web Audio. Just log and continue.
+        if (webAudioOk) {
+          console.log('[sc] <audio> blocked but Web Audio path is active — audio still plays');
+          updateRouteStatus();
+          return;
+        }
+        // Neither path is working — retry on next user gesture
         var retry = function() {
           document.removeEventListener('click', retry);
           document.removeEventListener('touchstart', retry);
           audio.play().then(function(){
-            forceEarpiece(audio);
-            setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 300);
-            setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 800);
+            if (setSinkSupported && !routeLocked) {
+              forceEarpiece(audio);
+              setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 300);
+              setTimeout(function(){ if (!routeLocked) forceEarpiece(audio); }, 800);
+            }
+            updateRouteStatus();
           }).catch(function(){});
         };
         document.addEventListener('click', retry);
         document.addEventListener('touchstart', retry);
       });
     }
+
+    // Update status immediately to reflect Web Audio path (don't wait for play promise)
+    if (webAudioOk) updateRouteStatus();
   }
 
-  // Force route to earpiece — tries multiple strategies in order:
-  // 1. 'communications' alias (Android Chrome earpiece)
-  // 2. Device enumeration + label match for "earpiece"/"handset"/"phone"
-  // 3. First non-default, non-communications device
+  // Update the in-call status text to honestly show which routing method is active.
+  function updateRouteStatus() {
+    var incallStatus = $('sc-status-incall');
+    if (!incallStatus) return;
+    // Don't overwrite muted state
+    if (incallStatus.textContent.indexOf('Muted') !== -1) return;
+
+    var text, cls;
+    if (audioRoute === 'earpiece') {
+      if (activeRoutingMethod === 'webaudio') {
+        text = 'Connected — earpiece (voice)';
+        cls = 'sc-ok';
+      } else if (activeRoutingMethod === 'sinkid') {
+        text = 'Connected — earpiece (sink)';
+        cls = 'sc-ok';
+      } else {
+        text = 'Connected — earpiece';
+        cls = 'sc-ok';
+      }
+    } else {
+      // speaker
+      if (activeRoutingMethod === 'sinkid') {
+        text = 'Connected — speaker';
+        cls = 'sc-ok';
+      } else if (activeRoutingMethod === 'webaudio') {
+        // iOS can't switch to speaker from web — Web Audio always uses Voice Chat = earpiece
+        text = 'Connected — speaker (iOS-handoff)';
+        cls = 'sc-busy';
+      } else {
+        text = 'Connected — speaker';
+        cls = 'sc-ok';
+      }
+    }
+    incallStatus.textContent = text;
+    incallStatus.className = 'sc3d-status ' + cls;
+  }
+
+  // Force route to earpiece. v11 strategy:
+  //  1. Web Audio API path is ALREADY routing to earpiece on iOS (Voice Chat session).
+  //     Nothing to do there — just ensure the context is alive.
+  //  2. For Chrome Android (setSinkId supported), explicitly select 'communications' device.
+  //  3. Fall back to device enumeration by label, then first non-default device.
   function forceEarpiece(audio) {
     if (routeLocked) {
       console.log('[sc] route locked, skipping forceEarpiece');
       return;
     }
-    if (!setSinkSupported) {
-      console.log('[sc] setSinkId NOT supported on this browser (iOS Safari / Firefox)');
-      audioRoute = 'earpiece'; // logical state only — browser controls actual route
-      updateRouteButtons();
-      var incallStatus = $('sc-status-incall');
-      if (incallStatus) {
-        incallStatus.textContent = 'Connected — earpiece (browser-limited)';
-        incallStatus.className = 'sc3d-status sc-busy';
+    audioRoute = 'earpiece';
+    updateRouteButtons();
+
+    // === Web Audio path: just resume if suspended ===
+    if (webAudioActive && webAudioCtx) {
+      if (webAudioCtx.state === 'suspended' && typeof webAudioCtx.resume === 'function') {
+        webAudioCtx.resume().then(function(){
+          console.log('[sc] Web Audio context resumed for earpiece route');
+        }).catch(function(){});
       }
+      // On iOS the Voice Chat session is already routing to earpiece.
+      // Make sure the <audio> element is muted so it doesn't double up.
+      if (audio && !setSinkSupported) audio.muted = true;
+    }
+
+    if (!setSinkSupported) {
+      console.log('[sc] setSinkId NOT supported — relying on Web Audio path (iOS)');
+      // Web Audio path is the only way; if it's not active, we can't route to earpiece
+      if (webAudioActive) {
+        activeRoutingMethod = 'webaudio';
+      } else {
+        activeRoutingMethod = 'none';
+      }
+      updateRouteStatus();
       return;
     }
 
-    // Strategy 1: 'communications' alias
+    // === setSinkId path (Chrome Android) ===
     audio.setSinkId('communications').then(function() {
-      console.log('[sc] SUCCESS: routed to communications (earpiece)');
+      console.log('[sc] SUCCESS: setSinkId routed to communications (earpiece)');
+      activeRoutingMethod = 'sinkid';
       audioRoute = 'earpiece';
       updateRouteButtons();
-      var incallStatus = $('sc-status-incall');
-      if (incallStatus && incallStatus.textContent.indexOf('Muted') === -1) {
-        incallStatus.textContent = 'Connected — earpiece';
-        incallStatus.className = 'sc3d-status sc-ok';
-      }
+      updateRouteStatus();
     }).catch(function(e1) {
       console.warn('[sc] communications alias failed, trying device enumeration:', e1);
-      // Strategy 2: enumerate devices and find earpiece by label
       if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
         navigator.mediaDevices.enumerateDevices().then(function(devices) {
           var outputs = devices.filter(function(d) { return d.kind === 'audiooutput'; });
           console.log('[sc] audio outputs:', outputs.map(function(d){
             return (d.label || 'unnamed') + ' [' + (d.deviceId || '').substring(0,8) + ']';
           }));
-
-          // Try to find earpiece by label (regex covers common Android labels)
           var earpiece = outputs.find(function(d) {
             var label = (d.label || '').toLowerCase();
             return label && (
@@ -3385,65 +3873,55 @@
               (/phone/.test(label) && !/speaker/.test(label))
             );
           });
-
-          // Strategy 3: first non-default, non-communications device
           if (!earpiece) {
             earpiece = outputs.find(function(d) {
               return d.deviceId !== 'default' && d.deviceId !== 'communications';
             });
           }
-
           if (earpiece) {
             audio.setSinkId(earpiece.deviceId).then(function() {
-              console.log('[sc] SUCCESS: routed to earpiece device:', earpiece.label);
+              console.log('[sc] SUCCESS: setSinkId routed to earpiece device:', earpiece.label);
+              activeRoutingMethod = 'sinkid';
               audioRoute = 'earpiece';
               updateRouteButtons();
-              var incallStatus = $('sc-status-incall');
-              if (incallStatus && incallStatus.textContent.indexOf('Muted') === -1) {
-                incallStatus.textContent = 'Connected — earpiece';
-                incallStatus.className = 'sc3d-status sc-ok';
-              }
+              updateRouteStatus();
             }).catch(function(e2) {
               console.warn('[sc] earpiece device failed:', e2);
-              audioRoute = 'speaker';
-              updateRouteButtons();
-              var incallStatus = $('sc-status-incall');
-              if (incallStatus) {
-                incallStatus.textContent = 'Connected — speaker (earpiece unavailable)';
-                incallStatus.className = 'sc3d-status sc-err';
-              }
+              // Fall back to Web Audio path if available
+              activeRoutingMethod = webAudioActive ? 'webaudio' : 'none';
+              updateRouteStatus();
             });
           } else {
             console.warn('[sc] no earpiece device found among', outputs.length, 'outputs');
-            audioRoute = 'speaker';
-            updateRouteButtons();
-            var incallStatus = $('sc-status-incall');
-            if (incallStatus) {
-              incallStatus.textContent = 'Connected — speaker (no earpiece found)';
-              incallStatus.className = 'sc3d-status sc-err';
-            }
+            activeRoutingMethod = webAudioActive ? 'webaudio' : 'none';
+            updateRouteStatus();
           }
         }).catch(function(e) {
           console.warn('[sc] enumerateDevices failed:', e);
-          audioRoute = 'speaker';
-          updateRouteButtons();
+          activeRoutingMethod = webAudioActive ? 'webaudio' : 'none';
+          updateRouteStatus();
         });
       } else {
-        audioRoute = 'speaker';
-        updateRouteButtons();
+        activeRoutingMethod = webAudioActive ? 'webaudio' : 'none';
+        updateRouteStatus();
       }
     });
   }
 
-  // Switch to loudspeaker — USER MUST PRESS THIS to go to speaker
+  // Switch to loudspeaker. v11 strategy:
+  //  - On Chrome Android (setSinkId supported): switch to 'default' device = loudspeaker
+  //  - On iOS Safari (setSinkId NOT supported): the Web Audio Voice Chat session always
+  //    routes to earpiece. There is NO web API to force the loudspeaker on iOS — the user
+  //    must swipe Control Center and change the audio output. We HONESTLY tell them this.
   function forceSpeaker(audio) {
     if (!setSinkSupported) {
-      console.log('[sc] setSinkId NOT supported — cannot switch to speaker');
+      console.log('[sc] setSinkId NOT supported — iOS cannot switch to speaker from web');
       audioRoute = 'speaker';
+      activeRoutingMethod = webAudioActive ? 'webaudio' : 'none';
       updateRouteButtons();
       var incallStatus = $('sc-status-incall');
       if (incallStatus) {
-        incallStatus.textContent = 'Connected — speaker (browser-limited)';
+        incallStatus.textContent = 'Speaker — swipe Control Center on iOS';
         incallStatus.className = 'sc3d-status sc-busy';
       }
       return;
@@ -3451,19 +3929,18 @@
     // Lock the route so forceEarpiece retries don't override user's choice
     routeLocked = true;
     audio.setSinkId('default').then(function() {
-      console.log('[sc] SUCCESS: routed to SPEAKER (default)');
+      console.log('[sc] SUCCESS: setSinkId routed to SPEAKER (default)');
       audioRoute = 'speaker';
+      activeRoutingMethod = 'sinkid';
       updateRouteButtons();
-      var incallStatus = $('sc-status-incall');
-      if (incallStatus) {
-        incallStatus.textContent = 'Connected — speaker';
-        incallStatus.className = 'sc3d-status sc-ok';
-      }
+      updateRouteStatus();
     }).catch(function(e) {
       console.warn('[sc] speaker route failed:', e);
-      routeLocked = false; // unlock so user can retry
+      routeLocked = false;
       audioRoute = 'speaker';
+      activeRoutingMethod = webAudioActive ? 'webaudio' : 'none';
       updateRouteButtons();
+      updateRouteStatus();
     });
   }
 
@@ -3538,9 +4015,8 @@
       } else {
         btn.classList.remove('sc-ctrl-muted');
         btn.innerHTML = '<i class="fas fa-microphone"></i><span>Mute</span>';
-        // Restore route status text
-        if (audioRoute === 'earpiece') setStatus('sc-status-incall', 'Connected — earpiece', 'sc-ok');
-        else setStatus('sc-status-incall', 'Connected — speaker', 'sc-ok');
+        // Restore route status text (v11: use updateRouteStatus for honest reporting)
+        updateRouteStatus();
       }
     }
     console.log('[sc] mute toggled to:', isMuted);
@@ -3673,6 +4149,10 @@
     isHost = true;
     currentCode = generateCode();
     console.log('[sc] CREATE: new code =', currentCode);
+    // === v11: Prewarm AudioContext DURING user gesture (required by iOS) ===
+    // This MUST happen synchronously inside the click handler — before any async work —
+    // or iOS Safari will leave the AudioContext suspended and earpiece routing will fail.
+    prewarmAudioContext();
     // INSTANT code update in lower box (with retries to beat hydration)
     setCodeDisplay(currentCode);
     // SHOW notification banner with the new code
@@ -3735,6 +4215,10 @@
     isHost = false;
     currentCode = code;
     setCodeDisplay(currentCode);
+    // === v11: Prewarm AudioContext DURING user gesture (required by iOS) ===
+    // This MUST happen synchronously inside the click handler — before any async work —
+    // or iOS Safari will leave the AudioContext suspended and earpiece routing will fail.
+    prewarmAudioContext();
     showStep('joining');
     setStatus('sc-status-joining', 'Requesting microphone…', 'sc-busy');
     ensureMicrophone(function(err){
