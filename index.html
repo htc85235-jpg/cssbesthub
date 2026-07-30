@@ -6,13 +6,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v5: dark 3D, inset buttons, zero animation ===== */
+/* ===== SECRET CALL v6: pitch black, zero animation, inset buttons ===== */
 
 #sc-pw-overlay, #sc-call-overlay {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
 }
 
-/* Overlay containers */
+/* Overlay containers — PITCH BLACK */
 #sc-pw-overlay, #sc-call-overlay {
   position: fixed !important;
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
@@ -22,16 +22,14 @@
   align-items: center !important;
   justify-content: center !important;
   margin: 0 !important; padding: 16px !important;
-  background: radial-gradient(ellipse at center, rgba(8,6,20,0.98), rgba(0,0,0,1)) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  background: #000000 !important;
   color: #e8e8f5 !important;
   box-sizing: border-box !important;
   overflow: auto !important;
 }
 #sc-pw-overlay.sc-open, #sc-call-overlay.sc-open { display: flex !important; }
 
-/* Universal reset inside overlays — zero animation */
+/* Universal reset + FORCE ZERO ANIMATION inside overlays */
 #sc-pw-overlay *, #sc-call-overlay * {
   box-sizing: border-box !important;
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
@@ -54,8 +52,12 @@
   max-width: none !important; max-height: none !important;
   opacity: 1 !important; visibility: visible !important;
   pointer-events: auto !important; cursor: auto !important;
-  transition: none !important !important;
+  transition: none !important;
   animation: none !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
   transform: none !important;
   filter: none !important; box-shadow: none !important;
   outline: 0 !important; border-radius: 0 !important;
@@ -72,7 +74,7 @@
   align-items: center !important; justify-content: center !important;
 }
 
-/* ===== 3D CARDS (smaller, darker, no float animation) ===== */
+/* ===== 3D CARDS — PITCH BLACK GRADIENT ===== */
 #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
   position: relative !important;
   width: 100% !important;
@@ -80,22 +82,20 @@
   padding: 28px 22px 22px !important;
   border-radius: 20px !important;
   transform-style: preserve-3d !important;
-  border: 1px solid rgba(139,92,246,0.35) !important;
-  background: linear-gradient(135deg, rgba(18,12,35,0.98), rgba(6,4,18,0.98)) !important;
+  border: 1px solid rgba(80,80,90,0.4) !important;
+  background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #050505 100%) !important;
   box-shadow:
-    0 25px 50px -12px rgba(0,0,0,0.85),
-    0 0 50px rgba(139,92,246,0.18),
-    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+    0 25px 50px -12px rgba(0,0,0,1),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
 }
 #sc-pw-overlay .sc3d-card { transform: rotateX(8deg) !important; max-width: 300px !important; }
 #sc-call-overlay .sc3d-card-call {
   transform: rotateX(6deg) !important;
   max-width: 340px !important;
-  border-color: rgba(100,160,255,0.3) !important;
+  border-color: rgba(100,100,110,0.4) !important;
   box-shadow:
-    0 30px 60px -12px rgba(0,0,0,0.9),
-    0 0 60px rgba(100,160,255,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    0 30px 60px -12px rgba(0,0,0,1),
+    inset 0 1px 0 rgba(255,255,255,0.08) !important;
 }
 
 /* Title */
@@ -111,7 +111,7 @@
 }
 #sc-pw-overlay .sc3d-subtitle, #sc-call-overlay .sc3d-subtitle {
   display: block !important; text-align: center !important;
-  font-size: 11px !important; color: rgba(180,180,210,0.55) !important;
+  font-size: 11px !important; color: rgba(180,180,200,0.5) !important;
   margin: 0 0 18px !important; letter-spacing: 0.3px !important;
 }
 
@@ -123,28 +123,27 @@
   font-size: 14px !important;
   font-family: 'JetBrains Mono', monospace !important;
   color: #e8e8f5 !important;
-  background: rgba(5,4,15,0.7) !important;
-  border: 1px solid rgba(139,92,246,0.3) !important;
+  background: #050505 !important;
+  border: 1px solid rgba(100,100,120,0.4) !important;
   border-radius: 10px !important;
   outline: none !important;
   letter-spacing: 1px !important;
 }
 #sc-pw-overlay .sc3d-input:focus {
-  border-color: rgba(167,139,250,0.7) !important;
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
-  background: rgba(10,8,25,0.85) !important;
+  border-color: rgba(167,139,250,0.6) !important;
+  background: #0a0a0a !important;
 }
-#sc-pw-overlay .sc3d-input::placeholder { color: rgba(160,160,190,0.3) !important; letter-spacing: 0.5px !important; }
+#sc-pw-overlay .sc3d-input::placeholder { color: rgba(140,140,160,0.4) !important; letter-spacing: 0.5px !important; }
 
-/* Code input (for Join flow) */
+/* Code input (for Join) */
 #sc-call-overlay .sc3d-code-input {
   display: block !important; width: 100% !important;
   padding: 12px 14px !important;
   font-size: 16px !important;
   font-family: 'JetBrains Mono', monospace !important;
   color: #e8e8f5 !important;
-  background: rgba(5,4,15,0.7) !important;
-  border: 1px solid rgba(139,92,246,0.3) !important;
+  background: #050505 !important;
+  border: 1px solid rgba(100,100,120,0.4) !important;
   border-radius: 10px !important;
   outline: none !important;
   letter-spacing: 4px !important;
@@ -152,8 +151,7 @@
   text-transform: uppercase !important;
 }
 #sc-call-overlay .sc3d-code-input:focus {
-  border-color: rgba(167,139,250,0.7) !important;
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
+  border-color: rgba(167,139,250,0.6) !important;
 }
 
 /* Error / status */
@@ -164,14 +162,14 @@
 }
 #sc-call-overlay .sc3d-status {
   display: block !important; text-align: center !important;
-  font-size: 12px !important; color: rgba(200,200,220,0.7) !important;
+  font-size: 12px !important; color: rgba(200,200,220,0.6) !important;
   margin: 12px 0 4px !important; min-height: 18px !important; font-weight: 500 !important;
 }
 #sc-call-overlay .sc3d-status.sc-busy { color: #fcd34d !important; }
 #sc-call-overlay .sc3d-status.sc-ok { color: #6ee7b7 !important; }
 #sc-call-overlay .sc3d-status.sc-err { color: #fca5a5 !important; }
 
-/* ===== INSET 3D BUTTONS (flush with surface, press INTO surface) ===== */
+/* ===== INSET 3D BUTTONS (flush, press INTO surface) ===== */
 #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
@@ -189,24 +187,26 @@
   user-select: none !important;
   position: relative !important;
   text-align: center !important;
-  /* INSET look: flush with surface, subtle inner rim */
+  transition: none !important;
+  animation: none !important;
+  /* INSET: flush with surface */
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.12),
-    inset 0 -1px 0 rgba(0,0,0,0.3),
-    inset 0 0 0 1px rgba(0,0,0,0.15),
-    0 1px 2px rgba(0,0,0,0.4) !important;
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(0,0,0,0.2),
+    0 1px 2px rgba(0,0,0,0.5) !important;
 }
 #sc-pw-overlay .sc3d-btn:active, #sc-call-overlay .sc3d-btn:active {
-  /* Pressed INTO surface */
+  /* Pressed INTO surface — instant, no transition */
   transform: translateY(1px) !important;
   box-shadow:
-    inset 0 3px 6px rgba(0,0,0,0.5),
-    inset 0 1px 0 rgba(0,0,0,0.2),
-    inset 0 0 0 1px rgba(0,0,0,0.2) !important;
+    inset 0 4px 8px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(0,0,0,0.3) !important;
 }
 #sc-pw-overlay .sc3d-btn:disabled, #sc-call-overlay .sc3d-btn:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
 
-/* Purple (inset) */
+/* Purple */
 #sc-pw-overlay .sc3d-btn-purple, #sc-call-overlay .sc3d-btn-purple {
   background: linear-gradient(180deg, #7c3aed, #6d28d9) !important;
   color: #fff !important;
@@ -215,7 +215,7 @@
   background: linear-gradient(180deg, #8b5cf6, #7c3aed) !important;
 }
 
-/* Emerald (inset) */
+/* Emerald */
 #sc-call-overlay .sc3d-btn-emerald {
   background: linear-gradient(180deg, #10b981, #059669) !important;
   color: #fff !important;
@@ -224,7 +224,7 @@
   background: linear-gradient(180deg, #34d399, #10b981) !important;
 }
 
-/* Red (inset) */
+/* Red */
 #sc-call-overlay .sc3d-btn-red {
   background: linear-gradient(180deg, #ef4444, #dc2626) !important;
   color: #fff !important;
@@ -233,20 +233,20 @@
   background: linear-gradient(180deg, #f87171, #ef4444) !important;
 }
 
-/* Ghost (inset, subtle) */
+/* Ghost */
 #sc-call-overlay .sc3d-btn-ghost {
-  background: rgba(255,255,255,0.06) !important;
+  background: rgba(255,255,255,0.05) !important;
   color: rgba(220,220,240,0.85) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    inset 0 -1px 0 rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
     inset 0 0 0 1px rgba(255,255,255,0.05) !important;
 }
-#sc-call-overlay .sc3d-btn-ghost:hover { background: rgba(255,255,255,0.1) !important; }
+#sc-call-overlay .sc3d-btn-ghost:hover { background: rgba(255,255,255,0.09) !important; }
 #sc-call-overlay .sc3d-btn-ghost:active {
   box-shadow:
-    inset 0 3px 6px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(0,0,0,0.2) !important;
+    inset 0 4px 8px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(0,0,0,0.3) !important;
 }
 
 /* Close X (inset circular) */
@@ -257,44 +257,43 @@
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 50% !important;
-  background: rgba(40,30,60,0.6) !important;
-  color: rgba(220,220,240,0.7) !important;
+  background: rgba(30,30,40,0.7) !important;
+  color: rgba(220,220,240,0.6) !important;
   cursor: pointer !important;
   font-size: 12px !important;
   z-index: 5 !important;
   padding: 0 !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    inset 0 -1px 0 rgba(0,0,0,0.3),
-    inset 0 0 0 1px rgba(0,0,0,0.2) !important;
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(0,0,0,0.3) !important;
 }
 #sc-pw-overlay .sc3d-close:hover, #sc-call-overlay .sc3d-close:hover {
-  background: rgba(248,113,113,0.3) !important;
+  background: rgba(248,113,113,0.25) !important;
   color: #fca5a5 !important;
 }
 #sc-pw-overlay .sc3d-close:active, #sc-call-overlay .sc3d-close:active {
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.5) !important;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
 }
 
-/* Icon badge (smaller, no pulse) */
+/* Icon badge (no pulse) */
 #sc-pw-overlay .sc3d-icon-badge, #sc-call-overlay .sc3d-icon-badge {
   width: 52px !important; height: 52px !important;
   margin: 0 auto 12px !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 16px !important;
-  background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.3)) !important;
-  border: 1px solid rgba(167,139,250,0.4) !important;
-  box-shadow: 0 6px 16px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+  background: linear-gradient(135deg, rgba(80,60,140,0.4), rgba(120,60,100,0.4)) !important;
+  border: 1px solid rgba(120,100,180,0.4) !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1) !important;
   font-size: 22px !important;
   color: #c4b5fd !important;
   transform: translateZ(20px) !important;
 }
 #sc-call-overlay .sc3d-icon-badge.sc-call-active {
-  background: linear-gradient(135deg, rgba(52,211,153,0.3), rgba(16,185,129,0.3)) !important;
-  border-color: rgba(110,231,183,0.5) !important;
+  background: linear-gradient(135deg, rgba(40,140,90,0.4), rgba(30,120,70,0.4)) !important;
+  border-color: rgba(100,200,150,0.4) !important;
   color: #6ee7b7 !important;
-  box-shadow: 0 6px 16px rgba(52,211,153,0.35), inset 0 1px 0 rgba(255,255,255,0.15) !important;
 }
 
 /* FontAwesome icons */
@@ -328,35 +327,35 @@
   margin: 6px 0 2px !important;
 }
 
-/* Avatar (smaller, no ring animation) */
+/* Avatar (no ring animation) */
 #sc-call-overlay .sc3d-avatar {
   width: 56px !important; height: 56px !important;
   margin: 6px auto 8px !important;
   border-radius: 50% !important;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  background: linear-gradient(135deg, #6d28d9, #be185d) !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   font-size: 22px !important;
   color: #fff !important;
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 0 20px rgba(139,92,246,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(109,40,217,0.2), 0 0 20px rgba(0,0,0,0.6) !important;
   position: relative !important;
 }
 
-/* ===== CODE DISPLAY (smaller — half size, with copy button) ===== */
+/* ===== CODE DISPLAY (small, with copy) ===== */
 #sc-call-overlay .sc3d-code-section {
   display: block !important;
   margin-top: 14px !important;
   padding: 8px 10px !important;
   border-radius: 9px !important;
-  background: linear-gradient(135deg, rgba(10,8,22,0.8), rgba(5,4,15,0.8)) !important;
-  border: 1px solid rgba(139,92,246,0.25) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  background: #050505 !important;
+  border: 1px solid rgba(100,100,120,0.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
 }
 #sc-call-overlay .sc3d-code-label {
   display: block !important;
   font-size: 8px !important; font-weight: 600 !important;
   letter-spacing: 1.5px !important;
-  color: rgba(167,139,250,0.55) !important;
+  color: rgba(167,139,250,0.5) !important;
   text-transform: uppercase !important;
   margin-bottom: 3px !important; text-align: center !important;
 }
@@ -381,26 +380,26 @@
   width: 24px !important; height: 24px !important;
   border-radius: 6px !important;
   cursor: pointer !important;
-  background: rgba(139,92,246,0.2) !important;
+  background: rgba(109,40,217,0.3) !important;
   color: #c4b5fd !important;
   font-size: 10px !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.08),
-    inset 0 -1px 0 rgba(0,0,0,0.3),
-    inset 0 0 0 1px rgba(139,92,246,0.3) !important;
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(109,40,217,0.4) !important;
 }
-#sc-call-overlay .sc3d-code-copy:hover { background: rgba(139,92,246,0.35) !important; }
+#sc-call-overlay .sc3d-code-copy:hover { background: rgba(109,40,217,0.5) !important; }
 #sc-call-overlay .sc3d-code-copy:active {
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5) !important;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.6) !important;
 }
 #sc-call-overlay .sc3d-code-copy.sc-copied {
-  background: rgba(52,211,153,0.3) !important;
+  background: rgba(16,185,129,0.4) !important;
   color: #6ee7b7 !important;
 }
 #sc-call-overlay .sc3d-code-hint {
   display: block !important;
   font-size: 8px !important;
-  color: rgba(160,160,190,0.4) !important;
+  color: rgba(140,140,160,0.4) !important;
   text-align: center !important;
   margin-top: 3px !important; letter-spacing: 0.3px !important;
 }
@@ -413,10 +412,10 @@
 #sc-pw-overlay .sc3d-hint, #sc-call-overlay .sc3d-hint {
   display: block !important; text-align: center !important;
   font-size: 10px !important;
-  color: rgba(160,160,190,0.45) !important;
+  color: rgba(140,140,160,0.4) !important;
   margin-top: 10px !important; line-height: 1.5 !important;
 }
-#sc-call-overlay .sc3d-hint strong { color: rgba(200,200,220,0.75) !important; font-weight: 700 !important; }
+#sc-call-overlay .sc3d-hint strong { color: rgba(200,200,220,0.7) !important; font-weight: 700 !important; }
 
 /* Disclaimer trigger */
 #sc-disclaimer-trigger {
@@ -3056,28 +3055,21 @@
 
   var PASSWORD = 'welovepakistan';
 
-  // Generate a random unique 6-char code (safe alphabet)
   function generateCode() {
     var alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
     var code = '';
     var arr = new Uint32Array(6);
-    if (window.crypto && window.crypto.getRandomValues) {
-      window.crypto.getRandomValues(arr);
-    } else {
-      for (var i = 0; i < 6; i++) arr[i] = Math.floor(Math.random() * 0xFFFFFFFF);
-    }
+    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(arr);
+    else for (var i = 0; i < 6; i++) arr[i] = Math.floor(Math.random() * 0xFFFFFFFF);
     for (var i = 0; i < 6; i++) code += alphabet[arr[i] % alphabet.length];
     return code;
   }
 
-  var currentCode = ''; // set when user clicks Create
-
-  // =======================================================================
-  // State
-  // =======================================================================
+  var currentCode = '';
   var peer = null, localStream = null, activeCall = null, activeConn = null;
   var timerInterval = null, callStartTs = 0;
   var isHost = false, isMuted = false;
+  var joinInputVisible = false;
 
   function $(id) { return document.getElementById(id); }
 
@@ -3130,50 +3122,66 @@
   }
 
   // =======================================================================
-  // Audio playback with earpiece routing
+  // AUDIO PLAYBACK + EARPIECE ROUTING (robust)
   // =======================================================================
   function playRemote(rs) {
-    var ex = document.getElementById('sc-remote-audio');
-    if (ex) {
-      // Reuse existing element
-      try { ex.srcObject = rs; } catch(e) {}
-      routeEarpiece(ex);
-      return;
+    var audio = document.getElementById('sc-remote-audio');
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.id = 'sc-remote-audio';
+      audio.setAttribute('playsinline', 'true');
+      audio.setAttribute('webkit-playsinline', 'true');
+      audio.setAttribute('autoplay', 'true');
+      document.body.appendChild(audio);
     }
-    var audio = document.createElement('audio');
-    audio.id = 'sc-remote-audio';
-    audio.autoplay = true;
-    audio.setAttribute('playsinline', 'true');
-    audio.setAttribute('webkit-playsinline', 'true');
-    audio.srcObject = rs;
-    document.body.appendChild(audio);
-    routeEarpiece(audio);
-  }
+    try { audio.srcObject = rs; } catch(e) { audio.src = URL.createObjectURL(rs); }
 
-  function routeEarpiece(audio) {
-    // Try to route to earpiece (communications sink).
-    // Supported on Chrome/Edge Android. Not on iOS Safari.
-    if (typeof audio.setSinkId === 'function') {
-      // Some browsers need play() to start before setSinkId works
-      var trySink = function() {
-        audio.setSinkId('communications').catch(function(){});
-      };
-      try { trySink(); } catch(e) {}
-      // Also try after play starts
-      var p = audio.play();
-      if (p && p.then) p.then(trySink).catch(function(){});
+    // Play first (required before setSinkId on most browsers)
+    var playPromise = audio.play();
+    var onPlaying = function() { routeToEarpiece(audio); };
+
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise.then(onPlaying).catch(function() {
+        // Autoplay blocked — retry on next user gesture
+        var retry = function() {
+          document.removeEventListener('click', retry);
+          document.removeEventListener('touchstart', retry);
+          audio.play().then(onPlaying).catch(function(){});
+        };
+        document.addEventListener('click', retry);
+        document.addEventListener('touchstart', retry);
+      });
     } else {
-      // iOS Safari fallback — request user gesture for unmute
-      try { audio.play(); } catch(e) {}
+      onPlaying();
     }
   }
 
-  // =======================================================================
-  // Window close (keeps call running, ZERO visual sign — secret mode)
-  // =======================================================================
+  function routeToEarpiece(audio) {
+    if (typeof audio.setSinkId !== 'function') return; // iOS Safari — no API
+
+    // Attempt 1: 'communications' keyword (earpiece on Android Chrome)
+    audio.setSinkId('communications').then(function() {
+      console.log('[sc] routed to communications (earpiece)');
+    }).catch(function() {
+      // Attempt 2: enumerate audio output devices, find earpiece
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      navigator.mediaDevices.enumerateDevices().then(function(devices) {
+        var outputs = devices.filter(function(d) { return d.kind === 'audiooutput'; });
+        // Try each non-default output
+        outputs.forEach(function(d) {
+          if (d.deviceId && d.deviceId !== 'default' && d.deviceId !== 'communications') {
+            audio.setSinkId(d.deviceId).then(function() {
+              console.log('[sc] routed to device:', d.label);
+            }).catch(function(){});
+          }
+        });
+      }).catch(function(){});
+    });
+  }
+
   function closeCallWindow() {
     closeOverlay('sc-call-overlay');
-    // NO floating pill, NO indicator — call continues silently in background
+    // NO floating pill — secret mode, zero visual sign
   }
 
   function reopenCallWindow() {
@@ -3188,9 +3196,11 @@
     closeOverlay('sc-call-overlay');
     showStep('choose');
     setStatus('sc-status-choose', 'Call ended.', 'sc-ok');
-    // Reset mute button label
     var mb = $('sc-btn-mute');
     if (mb) mb.innerHTML = '<i class="fas fa-microphone"></i> Mute';
+    joinInputVisible = false;
+    var wrap = $('sc-join-input-wrap');
+    if (wrap) wrap.style.display = 'none';
   }
 
   function handleCancel() {
@@ -3224,12 +3234,8 @@
       openOverlay('sc-call-overlay');
       showStep('choose');
       setStatus('sc-status-choose', '', '');
-      // If call already active, jump to incall step
-      if (activeCall) {
-        showStep('incall');
-      } else if (isHost && peer) {
-        showStep('creating');
-      }
+      if (activeCall) showStep('incall');
+      else if (isHost && peer) showStep('creating');
     } else {
       var err = $('sc-pw-error'); if (err) err.textContent = 'Incorrect password.';
       inp.value = '';
@@ -3237,14 +3243,10 @@
     }
   }
 
-  // =======================================================================
-  // Create Call — generates a NEW unique code each time
-  // =======================================================================
   function handleCreate() {
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = true;
     currentCode = generateCode();
-    // Show the new code immediately
     var codeEl = $('sc-code-value');
     if (codeEl) codeEl.textContent = currentCode;
     showStep('creating');
@@ -3266,8 +3268,7 @@
       peer.on('error', function(err){
         var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
         if (msg === 'unavailable-id') {
-          // Code collision — generate a new one and retry
-          setStatus('sc-status-creating', 'Code in use, generating new one…', 'sc-busy');
+          setStatus('sc-status-creating', 'Code in use, regenerating…', 'sc-busy');
           currentCode = generateCode();
           if (codeEl) codeEl.textContent = currentCode;
           try { peer.destroy(); } catch(e){}
@@ -3281,10 +3282,19 @@
     });
   }
 
-  // =======================================================================
-  // Join Call — user enters the code manually
-  // =======================================================================
-  function handleJoin() {
+  function handleJoinClick() {
+    if (!joinInputVisible) {
+      // First click: reveal the input
+      joinInputVisible = true;
+      var wrap = $('sc-join-input-wrap');
+      if (wrap) wrap.style.display = 'block';
+      var hint = $('sc-choose-hint');
+      if (hint) hint.innerHTML = 'Enter the 6-char code, then press <strong>Join</strong>.';
+      var inp = $('sc-join-code-input');
+      if (inp) setTimeout(function(){ inp.focus(); }, 50);
+      return;
+    }
+    // Second click: actually join
     var inputEl = $('sc-join-code-input');
     var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
     if (code.length !== 6) {
@@ -3329,9 +3339,6 @@
     startTimer();
   }
 
-  // =======================================================================
-  // Copy code to clipboard
-  // =======================================================================
   function handleCopyCode() {
     var code = currentCode;
     if (!code) return;
@@ -3347,9 +3354,7 @@
       }
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(done).catch(function(){
-        fallbackCopy(code); done();
-      });
+      navigator.clipboard.writeText(code).then(done).catch(function(){ fallbackCopy(code); done(); });
     } else {
       fallbackCopy(code); done();
     }
@@ -3358,8 +3363,7 @@
   function fallbackCopy(text) {
     var ta = document.createElement('textarea');
     ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta);
     ta.select();
     try { document.execCommand('copy'); } catch(e) {}
@@ -3367,28 +3371,28 @@
   }
 
   // =======================================================================
-  // GLOBAL ACTION HANDLER — called by onclick attributes (hydration-proof)
+  // SINGLE ACTION HANDLER (no wrapper chain)
   // =======================================================================
   window.__scAction = function(id, ev) {
-    if (ev) { ev.preventDefault(); ev.stopPropagation(); }
-    switch(id) {
-      case 'sc-pw-close': closeOverlay('sc-pw-overlay'); resetPwForm(); break;
-      case 'sc-pw-submit': handlePwSubmit(); break;
-      case 'sc-call-close': closeCallWindow(); break;
-      case 'sc-btn-create': handleCreate(); break;
-      case 'sc-btn-join': handleJoin(); break;
-      case 'sc-btn-hangup': handleHangup(); break;
-      case 'sc-btn-mute': handleMute(); break;
-      case 'sc-btn-cancel-create': handleCancel(); break;
-      case 'sc-btn-cancel-join': handleCancel(); break;
-      case 'sc-code-copy': handleCopyCode(); break;
-    }
+    if (ev) { try { ev.preventDefault(); ev.stopPropagation(); } catch(e){} }
+    try {
+      switch(id) {
+        case 'sc-pw-close': closeOverlay('sc-pw-overlay'); resetPwForm(); break;
+        case 'sc-pw-submit': handlePwSubmit(); break;
+        case 'sc-call-close': closeCallWindow(); break;
+        case 'sc-btn-create': handleCreate(); break;
+        case 'sc-btn-join': handleJoinClick(); break;
+        case 'sc-btn-hangup': handleHangup(); break;
+        case 'sc-btn-mute': handleMute(); break;
+        case 'sc-btn-cancel-create': handleCancel(); break;
+        case 'sc-btn-cancel-join': handleCancel(); break;
+        case 'sc-code-copy': handleCopyCode(); break;
+      }
+    } catch(e) { console.error('[sc] action error:', id, e); }
     return false;
   };
 
-  // =======================================================================
-  // Click-outside-to-close (delegated, capture phase)
-  // =======================================================================
+  // Click-outside-to-close (capture phase, doesn't interfere with onclick)
   document.addEventListener('click', function(e) {
     var co = $('sc-call-overlay');
     if (co && co.classList.contains('sc-open')) {
@@ -3407,30 +3411,24 @@
     }
   }, true);
 
-  // Enter key in password field
+  // Enter key handling
   document.addEventListener('keydown', function(e) {
     if (e.key !== 'Enter') return;
     var po = $('sc-pw-overlay');
     if (po && po.classList.contains('sc-open')) {
       var inp = $('sc-pw-input');
-      if (inp && document.activeElement === inp) {
-        e.preventDefault();
-        handlePwSubmit();
-      }
+      if (inp && document.activeElement === inp) { e.preventDefault(); handlePwSubmit(); }
+      return;
     }
-    // Enter in join code field
     var jo = $('sc-call-overlay');
     if (jo && jo.classList.contains('sc-open')) {
       var jin = $('sc-join-code-input');
-      if (jin && document.activeElement === jin) {
-        e.preventDefault();
-        handleJoin();
-      }
+      if (jin && document.activeElement === jin) { e.preventDefault(); handleJoinClick(); }
     }
   });
 
   // =======================================================================
-  // HTML with onclick attributes (bulletproof against hydration)
+  // HTML with onclick attributes
   // =======================================================================
   var PW_HTML = '\
 <div id="sc-pw-overlay">\
@@ -3468,7 +3466,7 @@
         <div class="sc3d-input-wrap" id="sc-join-input-wrap" style="display:none;margin-top:10px;">\
           <input type="text" id="sc-join-code-input" class="sc3d-code-input" placeholder="ENTER CODE" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false">\
         </div>\
-        <div class="sc3d-hint" id="sc-choose-hint">Click <strong>Create</strong> to host a call.<br>Click <strong>Join</strong> then enter the code.</div>\
+        <div class="sc3d-hint" id="sc-choose-hint">Click <strong>Create</strong> to host.<br>Click <strong>Join</strong> to enter a code.</div>\
       </div>\
 \
       <div class="sc3d-step" id="sc-step-creating">\
@@ -3515,33 +3513,14 @@
 </div>';
 
   // =======================================================================
-  // Inject UI + handle Join input toggle
+  // Inject UI + BACKUP event listeners (in case onclick is stripped)
   // =======================================================================
-  var joinInputVisible = false;
-  function toggleJoinInput() {
-    joinInputVisible = !joinInputVisible;
-    var wrap = $('sc-join-input-wrap');
-    if (wrap) wrap.style.display = joinInputVisible ? 'block' : 'none';
-    var hint = $('sc-choose-hint');
-    if (hint) hint.innerHTML = joinInputVisible
-      ? 'Enter the 6-char code, then press <strong>Join</strong>.'
-      : 'Click <strong>Create</strong> to host a call.<br>Click <strong>Join</strong> then enter the code.';
-    if (joinInputVisible) {
-      var inp = $('sc-join-code-input');
-      if (inp) setTimeout(function(){ inp.focus(); }, 50);
-    }
+  function bindButton(id, handler) {
+    var el = $(id);
+    if (!el || el.dataset.scBound) return;
+    el.dataset.scBound = '1';
+    el.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); handler(); });
   }
-
-  // Intercept the Join button: first click reveals the input, second click calls handleJoin
-  var origJoinHandler = window.__scAction;
-  window.__scAction = function(id, ev) {
-    if (id === 'sc-btn-join' && !joinInputVisible) {
-      if (ev) { ev.preventDefault(); ev.stopPropagation(); }
-      toggleJoinInput();
-      return false;
-    }
-    return origJoinHandler(id, ev);
-  };
 
   function injectUI() {
     if (!$('sc-pw-overlay')) {
@@ -3552,19 +3531,27 @@
       var d2 = document.createElement('div'); d2.innerHTML = CALL_HTML;
       while (d2.firstChild) document.body.appendChild(d2.firstChild);
     }
-    // Restore code display if call active
     if (currentCode) {
       var codeEl = $('sc-code-value');
       if (codeEl) codeEl.textContent = currentCode;
     }
-    // Restore join input state
     var wrap = $('sc-join-input-wrap');
     if (wrap) wrap.style.display = joinInputVisible ? 'block' : 'none';
-    // Restore mute button label
     if (isMuted) {
       var mb = $('sc-btn-mute');
       if (mb) mb.innerHTML = '<i class="fas fa-microphone-slash"></i> Unmute';
     }
+    // Backup bindings (in addition to onclick)
+    bindButton('sc-pw-close', function(){ closeOverlay('sc-pw-overlay'); resetPwForm(); });
+    bindButton('sc-pw-submit', handlePwSubmit);
+    bindButton('sc-call-close', closeCallWindow);
+    bindButton('sc-btn-create', handleCreate);
+    bindButton('sc-btn-join', handleJoinClick);
+    bindButton('sc-btn-hangup', handleHangup);
+    bindButton('sc-btn-mute', handleMute);
+    bindButton('sc-btn-cancel-create', handleCancel);
+    bindButton('sc-btn-cancel-join', handleCancel);
+    bindButton('sc-code-copy', handleCopyCode);
   }
 
   function bindDisclaimerTrigger() {
@@ -3575,15 +3562,12 @@
     }
     if (!target) return false;
     target.id = 'sc-disclaimer-trigger';
-    target.title = '';
     if (!target.dataset.scTriggerBound) {
       target.dataset.scTriggerBound = '1';
       target.addEventListener('click', function(e){
         e.preventDefault(); e.stopPropagation();
-        // If call active, reopen call window; otherwise open password
-        if (activeCall || (isHost && peer)) {
-          reopenCallWindow();
-        } else {
+        if (activeCall || (isHost && peer)) reopenCallWindow();
+        else {
           openOverlay('sc-pw-overlay');
           var inp = $('sc-pw-input');
           if (inp) setTimeout(function(){ inp.focus(); }, 50);
@@ -3596,7 +3580,6 @@
   function start() {
     injectUI();
     bindDisclaimerTrigger();
-    // Poll for 60s (hydration can be slow)
     var pollCount = 0;
     var pollInterval = setInterval(function(){
       pollCount++;
