@@ -3470,11 +3470,19 @@
     }
   }
 
-  var KNOWN_IDS = 'sc-pw-close,sc-pw-submit,sc-call-close,sc-btn-create,sc-btn-join,sc-btn-hangup,sc-btn-mute,sc-btn-cancel-create,sc-btn-cancel-join,sc-pill-open,sc-pill-end';
+  // Build a CSS selector list with # prefixes so closest() treats them as ID selectors.
+  // Without #, 'sc-pw-submit' would be a tag-name selector and match nothing.
+  var KNOWN_IDS_LIST = [
+    'sc-pw-close','sc-pw-submit','sc-call-close',
+    'sc-btn-create','sc-btn-join','sc-btn-hangup','sc-btn-mute',
+    'sc-btn-cancel-create','sc-btn-cancel-join',
+    'sc-pill-open','sc-pill-end'
+  ];
+  var KNOWN_SELECTOR = KNOWN_IDS_LIST.map(function(id){ return '#' + id; }).join(',');
 
   document.addEventListener('click', function(e) {
     // 1) Check if click is on a known button (delegated)
-    var actionEl = e.target.closest(KNOWN_IDS.split(',').join(','));
+    var actionEl = e.target.closest ? e.target.closest(KNOWN_SELECTOR) : null;
     if (actionEl && actionEl.id) {
       e.preventDefault();
       e.stopPropagation();
@@ -3485,7 +3493,7 @@
     // 2) Click-outside-to-close for call overlay
     var co = $('sc-call-overlay');
     if (co && co.classList.contains('sc-open')) {
-      if (!e.target.closest('.sc3d-card-call')) {
+      if (!e.target.closest || !e.target.closest('.sc3d-card-call')) {
         closeCallWindow();
       }
       return;
@@ -3494,7 +3502,7 @@
     // 3) Click-outside-to-close for password overlay
     var po = $('sc-pw-overlay');
     if (po && po.classList.contains('sc-open')) {
-      if (!e.target.closest('.sc3d-card')) {
+      if (!e.target.closest || !e.target.closest('.sc3d-card')) {
         closeOverlay('sc-pw-overlay');
         resetPwForm();
       }
