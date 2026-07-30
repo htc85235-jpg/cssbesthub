@@ -6,30 +6,36 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v12: 3D SILVER GRADIENT THEME (full UI overhaul) ===== */
-/* User request: "Change the whole theme of box and buttons according to the theme,
-   their shape size and everything. The new theme must be 3d silver gradient" */
+/* ===== SECRET CALL v13: GLASSY 3D SILVER (modern, glowing buttons, larger boxes) ===== */
+/* User request:
+   - "Slightly increase the size of box and everything according to it"
+   - "Theme looks old style. It must be glassy, 3d silver, attractive, modern with
+      glowing effects on buttons"
+   - "Texts of buttons must be according to buttons size"
+   Theme goals: frosted-glass blur surfaces over a metallic charcoal bg, silver-chrome
+   3D bevels, colored glow auras on every interactive button, modern rounded corners,
+   larger overall sizing (cards ~200px, buttons ~10px text, controls ~7px text). */
 
-/* ===== SILVER THEME PALETTE =====
-   -- Silver light highlight: #f5f5f7
-   -- Silver mid surface:     #c8c8cc
-   -- Silver dark edge:       #8a8a8e
-   -- Silver shadow deep:     #5a5a5e
-   -- Charcoal overlay bg:    #1a1a1d -> #0a0a0d (radial)
-   -- Dark slate text:        #1a1a1f (on silver)
-   -- Recessed groove:        #2a2a2e inset
-   -- Active gold accent:     #d4a345 / #f0c060 (warm metallic)
-   -- Semantic colors kept but toned down to fit silver theme:
-      Purple  = amethyst silver tint
-      Emerald = patina silver tint
-      Red     = crimson silver tint
+/* ===== GLASSY SILVER PALETTE (v13) =====
+   -- Glass surface (light): rgba(245,247,250,0.55)  with backdrop-filter blur
+   -- Glass surface (mid):   rgba(220,225,232,0.45)
+   -- Glass surface (dark):  rgba(60,65,72,0.55)  (for code box / inputs)
+   -- Silver chrome edge:    #b0b6c0 / #5a6068
+   -- Glow-purple (Create):  #a78bfa / #7c3aed  (with 0 0 12px aura)
+   -- Glow-emerald (Join):   #34d399 / #10b981
+   -- Glow-crimson (Hangup): #f87171 / #dc2626
+   -- Glow-gold (active):    #fbbf24 / #d4a345
+   -- Glow-cyan (default):   #67e8f9 / #06b6d4  (subtle ambient glow on every silver btn)
+   -- Overlay bg:            radial gradient charcoal + faint blue glow at top
 */
 
 #sc-pw-overlay, #sc-call-overlay {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
 }
 
-/* Overlay containers — DARK METALLIC CHARCOAL (silver cards pop on this) */
+/* Overlay containers — DARK GLASS with metallic charcoal + faint blue glow at top */
 #sc-pw-overlay, #sc-call-overlay {
   position: fixed !important;
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
@@ -38,9 +44,10 @@
   display: none !important;
   align-items: center !important;
   justify-content: center !important;
-  margin: 0 !important; padding: 16px !important;
+  margin: 0 !important; padding: 24px !important;
   background:
-    radial-gradient(ellipse at 50% 30%, #2a2a2e 0%, #1a1a1d 50%, #0a0a0d 100%) !important;
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(103,232,249,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 40%, #2a2f36 0%, #16191e 55%, #08090c 100%) !important;
   color: #1a1a1f !important;
   box-sizing: border-box !important;
   overflow: auto !important;
@@ -53,7 +60,7 @@
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
   margin: 0 !important; padding: 0 !important;
   border: 0 !important;
-  font-size: 13px !important; font-weight: 400 !important;
+  font-size: 14px !important; font-weight: 400 !important;
   vertical-align: baseline !important;
   background: transparent !important;
   color: inherit !important;
@@ -90,154 +97,157 @@
   align-items: center !important; justify-content: center !important;
 }
 
-/* ===== CARDS — 3D SILVER GRADIENT (v12 theme) ===== */
-/* Multi-stop silver gradient with brushed-metal feel. Layered inset shadows
-   create the 3D bevel: top-left highlight + bottom-right shadow + chrome ring. */
+/* ===== CARDS — GLASSY 3D SILVER (v13) — LARGER ~220px ===== */
+/* Frosted glass over dark bg + silver-chrome bevel + subtle cyan glow at edges */
 #sc-pw-overlay .sc3d-card, #sc-call-overlay .sc3d-card-call {
   position: relative !important;
   width: 100% !important;
-  max-width: 160px !important;
-  padding: 14px 11px 11px !important;
-  border-radius: 12px !important;
-  border: 1px solid #6a6a6e !important;
+  max-width: 220px !important;
+  padding: 20px 16px 16px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(220,225,232,0.55) !important;
   background:
     linear-gradient(135deg,
-      #f8f8fa 0%,
-      #e0e0e4 18%,
-      #c8c8cc 40%,
-      #b0b0b4 60%,
-      #98989c 80%,
-      #808084 100%) !important;
+      rgba(250,252,255,0.85) 0%,
+      rgba(232,236,244,0.75) 22%,
+      rgba(210,216,226,0.70) 45%,
+      rgba(190,196,208,0.70) 65%,
+      rgba(170,176,188,0.75) 85%,
+      rgba(150,156,168,0.80) 100%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
   box-shadow:
-    /* Outer drop shadow — floats off the dark bg */
-    0 16px 32px -8px rgba(0,0,0,0.85),
-    0 8px 16px -4px rgba(0,0,0,0.65),
-    0 4px 8px -2px rgba(0,0,0,0.45),
-    /* Top edge highlight (3D pop) */
-    inset 0 2px 1px rgba(255,255,255,0.95),
-    /* Bottom edge shadow (3D depth) */
-    inset 0 -3px 2px rgba(0,0,0,0.35),
-    /* Left highlight */
-    inset 2px 0 1px rgba(255,255,255,0.4),
-    /* Right shadow */
-    inset -2px 0 1px rgba(0,0,0,0.25),
+    /* Outer drop shadow with subtle blue glow */
+    0 24px 48px -12px rgba(0,0,0,0.85),
+    0 12px 24px -6px rgba(0,0,0,0.65),
+    0 6px 12px -3px rgba(0,0,0,0.45),
+    0 0 32px -4px rgba(103,232,249,0.18),
+    /* Top edge bright highlight */
+    inset 0 2px 2px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
+    /* Bottom edge shadow */
+    inset 0 -4px 3px rgba(0,0,0,0.30),
+    /* Side bevels */
+    inset 2px 0 2px rgba(255,255,255,0.55),
+    inset -2px 0 2px rgba(0,0,0,0.20),
     /* Chrome ring */
-    inset 0 0 0 1px rgba(180,180,190,0.5) !important;
+    inset 0 0 0 1px rgba(220,225,232,0.6) !important;
   color: #1a1a1f !important;
 }
-#sc-pw-overlay .sc3d-card { max-width: 150px !important; }
+#sc-pw-overlay .sc3d-card { max-width: 210px !important; }
 #sc-call-overlay .sc3d-card-call {
-  max-width: 170px !important;
-  border-color: #5a5a5e !important;
+  max-width: 240px !important;
+  border-color: rgba(232,236,244,0.65) !important;
   box-shadow:
-    0 20px 40px -8px rgba(0,0,0,0.9),
-    0 10px 20px -4px rgba(0,0,0,0.7),
-    0 5px 10px -2px rgba(0,0,0,0.5),
-    inset 0 2px 1px rgba(255,255,255,0.95),
-    inset 0 -3px 2px rgba(0,0,0,0.4),
-    inset 2px 0 1px rgba(255,255,255,0.45),
-    inset -2px 0 1px rgba(0,0,0,0.3),
-    inset 0 0 0 1px rgba(180,180,190,0.6) !important;
+    0 28px 56px -12px rgba(0,0,0,0.9),
+    0 14px 28px -6px rgba(0,0,0,0.7),
+    0 7px 14px -3px rgba(0,0,0,0.5),
+    0 0 40px -4px rgba(103,232,249,0.22),
+    inset 0 2px 2px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -4px 3px rgba(0,0,0,0.35),
+    inset 2px 0 2px rgba(255,255,255,0.6),
+    inset -2px 0 2px rgba(0,0,0,0.25),
+    inset 0 0 0 1px rgba(232,236,244,0.7) !important;
 }
 
 /* Title (kept hidden per v10 request) */
-#sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title {
-  display: none !important;
-}
-#sc-pw-overlay .sc3d-subtitle, #sc-call-overlay .sc3d-subtitle {
-  display: none !important;
-}
+#sc-pw-overlay .sc3d-title, #sc-call-overlay .sc3d-title { display: none !important; }
+#sc-pw-overlay .sc3d-subtitle, #sc-call-overlay .sc3d-subtitle { display: none !important; }
 
-/* Password input — RECESSED GROOVE in silver (engraved look) */
-#sc-pw-overlay .sc3d-input-wrap { display: block !important; position: relative !important; margin-bottom: 7px !important; }
+/* Password input — RECESSED DARK GLASS GROOVE with cyan focus glow */
+#sc-pw-overlay .sc3d-input-wrap { display: block !important; position: relative !important; margin-bottom: 10px !important; }
 #sc-pw-overlay .sc3d-input {
   display: block !important; width: 100% !important;
-  padding: 6px 7px !important;
-  font-size: 10px !important;
+  padding: 9px 12px !important;
+  font-size: 13px !important;
   font-family: 'JetBrains Mono', monospace !important;
-  color: #1a1a1f !important;
-  background: linear-gradient(180deg, #4a4a4e 0%, #3a3a3e 100%) !important;
-  border: 1px solid #2a2a2e !important;
-  border-radius: 6px !important;
+  color: #e8ecf2 !important;
+  background: linear-gradient(180deg, rgba(50,55,62,0.85) 0%, rgba(38,42,48,0.90) 100%) !important;
+  border: 1px solid rgba(120,128,140,0.45) !important;
+  border-radius: 10px !important;
   outline: none !important;
   letter-spacing: 0.5px !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   box-shadow:
-    inset 0 2px 3px rgba(0,0,0,0.7),
-    inset 0 -1px 0 rgba(255,255,255,0.05),
-    0 1px 0 rgba(255,255,255,0.4) !important;
+    inset 0 3px 5px rgba(0,0,0,0.7),
+    inset 0 -1px 0 rgba(255,255,255,0.06),
+    0 1px 0 rgba(255,255,255,0.5) !important;
 }
 #sc-pw-overlay .sc3d-input:focus {
-  border-color: #d4a345 !important;
-  background: linear-gradient(180deg, #3a3a3e 0%, #2a2a2e 100%) !important;
+  border-color: #67e8f9 !important;
+  background: linear-gradient(180deg, rgba(40,45,52,0.95) 0%, rgba(28,32,38,0.95) 100%) !important;
   box-shadow:
-    inset 0 2px 3px rgba(0,0,0,0.7),
-    0 0 0 1px rgba(212,163,69,0.5),
-    0 0 6px rgba(212,163,69,0.3),
-    0 1px 0 rgba(255,255,255,0.4) !important;
+    inset 0 3px 5px rgba(0,0,0,0.7),
+    0 0 0 2px rgba(103,232,249,0.45),
+    0 0 14px rgba(103,232,249,0.55),
+    0 1px 0 rgba(255,255,255,0.5) !important;
 }
-#sc-pw-overlay .sc3d-input::placeholder { color: rgba(200,200,210,0.5) !important; letter-spacing: 0.3px !important; font-size: 8px !important; }
+#sc-pw-overlay .sc3d-input::placeholder { color: rgba(200,210,220,0.55) !important; letter-spacing: 0.3px !important; font-size: 11px !important; }
 
-/* Code input (for Join) — same recessed groove style */
+/* Code input (for Join) — same recessed glass groove */
 #sc-call-overlay .sc3d-code-input {
   display: block !important; width: 100% !important;
-  padding: 6px 7px !important;
-  font-size: 10px !important;
+  padding: 9px 12px !important;
+  font-size: 13px !important;
   font-family: 'JetBrains Mono', monospace !important;
-  color: #1a1a1f !important;
-  background: linear-gradient(180deg, #4a4a4e 0%, #3a3a3e 100%) !important;
-  border: 1px solid #2a2a2e !important;
-  border-radius: 6px !important;
+  color: #e8ecf2 !important;
+  background: linear-gradient(180deg, rgba(50,55,62,0.85) 0%, rgba(38,42,48,0.90) 100%) !important;
+  border: 1px solid rgba(120,128,140,0.45) !important;
+  border-radius: 10px !important;
   outline: none !important;
-  letter-spacing: 2px !important;
+  letter-spacing: 2.5px !important;
   text-align: center !important;
   text-transform: uppercase !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   box-shadow:
-    inset 0 2px 3px rgba(0,0,0,0.7),
-    inset 0 -1px 0 rgba(255,255,255,0.05),
-    0 1px 0 rgba(255,255,255,0.4) !important;
+    inset 0 3px 5px rgba(0,0,0,0.7),
+    inset 0 -1px 0 rgba(255,255,255,0.06),
+    0 1px 0 rgba(255,255,255,0.5) !important;
 }
 #sc-call-overlay .sc3d-code-input:focus {
-  border-color: #d4a345 !important;
+  border-color: #67e8f9 !important;
   box-shadow:
-    inset 0 2px 3px rgba(0,0,0,0.7),
-    0 0 0 1px rgba(212,163,69,0.5),
-    0 0 6px rgba(212,163,69,0.3),
-    0 1px 0 rgba(255,255,255,0.4) !important;
+    inset 0 3px 5px rgba(0,0,0,0.7),
+    0 0 0 2px rgba(103,232,249,0.45),
+    0 0 14px rgba(103,232,249,0.55),
+    0 1px 0 rgba(255,255,255,0.5) !important;
 }
-#sc-call-overlay .sc3d-code-input::placeholder { font-size: 7px !important; letter-spacing: 1px !important; color: rgba(200,200,210,0.5) !important; }
+#sc-call-overlay .sc3d-code-input::placeholder { font-size: 10px !important; letter-spacing: 1.5px !important; color: rgba(200,210,220,0.55) !important; }
 
 /* Error / status — engraved text on silver */
 #sc-pw-overlay .sc3d-error {
   display: block !important; text-align: center !important;
-  font-size: 7px !important; color: #8b1a1a !important;
-  margin: 0 0 5px !important; min-height: 8px !important; font-weight: 700 !important;
+  font-size: 10px !important; color: #b91c1c !important;
+  margin: 0 0 8px !important; min-height: 12px !important; font-weight: 700 !important;
   text-shadow: 0 1px 0 rgba(255,255,255,0.6) !important;
 }
 #sc-call-overlay .sc3d-status {
   display: block !important; text-align: center !important;
-  font-size: 7px !important; color: #4a4a52 !important;
-  margin: 5px 0 2px !important; min-height: 9px !important; font-weight: 600 !important;
+  font-size: 10px !important; color: #3a3a42 !important;
+  margin: 8px 0 4px !important; min-height: 13px !important; font-weight: 600 !important;
   text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
 }
-#sc-call-overlay .sc3d-status.sc-busy { color: #7a4a0a !important; }
-#sc-call-overlay .sc3d-status.sc-ok { color: #1a5a2a !important; }
-#sc-call-overlay .sc3d-status.sc-err { color: #8b1a1a !important; }
+#sc-call-overlay .sc3d-status.sc-busy { color: #92400e !important; }
+#sc-call-overlay .sc3d-status.sc-ok { color: #166534 !important; }
+#sc-call-overlay .sc3d-status.sc-err { color: #b91c1c !important; }
 
-/* ===== 3D SILVER BUTTONS (v12) ===== */
-/* Chrome silver base. Beveled edges with strong inset highlights.
-   Press = button pushes IN (translateY +1px + deeper inset shadow). */
+/* ===== GLASSY SILVER BUTTONS (v13) — LARGER, GLOWING ===== */
+/* Frosted silver glass + colored glow aura + 3D bevel. Text sized to match buttons. */
 #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
-  gap: 3px !important;
+  gap: 5px !important;
   width: 100% !important;
-  padding: 6px 8px !important;
-  font-size: 8px !important; font-weight: 700 !important;
+  padding: 10px 14px !important;
+  font-size: 12px !important; font-weight: 700 !important;
   font-family: 'Space Grotesk', sans-serif !important;
-  letter-spacing: 0.3px !important;
+  letter-spacing: 0.4px !important;
   color: #1a1a1f !important;
-  border: 1px solid #5a5a5e !important;
-  border-radius: 7px !important;
+  border: 1px solid rgba(120,128,140,0.55) !important;
+  border-radius: 12px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
@@ -247,172 +257,219 @@
   transition: none !important;
   animation: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
   background: linear-gradient(180deg,
-    #fafafc 0%,
-    #e2e2e6 25%,
-    #c8c8cc 55%,
-    #a8a8ac 85%,
-    #8a8a8e 100%) !important;
+    rgba(252,254,255,0.92) 0%,
+    rgba(232,238,246,0.88) 25%,
+    rgba(208,216,228,0.85) 55%,
+    rgba(180,190,204,0.85) 85%,
+    rgba(150,160,174,0.90) 100%) !important;
   box-shadow:
-    /* Outer drop shadow */
-    0 2px 4px rgba(0,0,0,0.5),
-    0 1px 2px rgba(0,0,0,0.4),
-    /* Top highlight (3D pop) */
-    inset 0 1px 1px rgba(255,255,255,1),
+    /* Outer drop shadow + cyan ambient glow */
+    0 4px 8px rgba(0,0,0,0.55),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 14px -2px rgba(103,232,249,0.35),
+    /* Top highlight */
+    inset 0 2px 1px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
     /* Bottom shadow */
-    inset 0 -2px 2px rgba(0,0,0,0.35),
-    /* Left highlight */
-    inset 1px 0 1px rgba(255,255,255,0.5),
-    /* Right shadow */
-    inset -1px 0 1px rgba(0,0,0,0.25),
+    inset 0 -3px 2px rgba(0,0,0,0.30),
+    /* Side bevels */
+    inset 1px 0 1px rgba(255,255,255,0.55),
+    inset -1px 0 1px rgba(0,0,0,0.20),
     /* Chrome ring */
-    inset 0 0 0 1px rgba(200,200,210,0.4) !important;
+    inset 0 0 0 1px rgba(220,228,240,0.5) !important;
 }
 #sc-pw-overlay .sc3d-btn:active, #sc-call-overlay .sc3d-btn:active {
   transform: translateY(1px) !important;
   background: linear-gradient(180deg,
-    #8a8a8e 0%,
-    #a8a8ac 30%,
-    #c8c8cc 60%,
-    #e2e2e6 90%,
-    #fafafc 100%) !important;
+    rgba(150,160,174,0.92) 0%,
+    rgba(180,190,204,0.88) 30%,
+    rgba(208,216,228,0.85) 60%,
+    rgba(232,238,246,0.88) 90%,
+    rgba(252,254,255,0.92) 100%) !important;
   box-shadow:
-    inset 0 3px 5px rgba(0,0,0,0.6),
-    inset 0 1px 2px rgba(0,0,0,0.5),
-    inset 0 -1px 0 rgba(255,255,255,0.2),
-    inset 0 0 0 1px rgba(80,80,90,0.5) !important;
+    inset 0 4px 6px rgba(0,0,0,0.55),
+    inset 0 2px 3px rgba(0,0,0,0.45),
+    inset 0 -1px 0 rgba(255,255,255,0.25),
+    inset 0 0 0 1px rgba(80,88,100,0.55),
+    0 0 8px -2px rgba(103,232,249,0.25) !important;
 }
 #sc-pw-overlay .sc3d-btn:disabled, #sc-call-overlay .sc3d-btn:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
 
-/* Purple (Unlock / Create) — amethyst silver tint: silver base with purple wash */
+/* Purple (Unlock / Create) — glassy amethyst with strong purple glow */
 #sc-pw-overlay .sc3d-btn-purple, #sc-call-overlay .sc3d-btn-purple {
   background: linear-gradient(180deg,
-    #e8e4f0 0%,
-    #c4b8d8 25%,
-    #a89cc0 55%,
-    #8a7ca8 85%,
-    #6e5e90 100%) !important;
-  border-color: #4a3a6a !important;
-  color: #1a1a2a !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+    rgba(240,232,255,0.92) 0%,
+    rgba(208,188,240,0.88) 22%,
+    rgba(176,148,220,0.85) 50%,
+    rgba(140,108,190,0.88) 78%,
+    rgba(108,76,158,0.92) 100%) !important;
+  border-color: rgba(108,76,158,0.65) !important;
+  color: #1a0e2e !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
   box-shadow:
-    0 2px 4px rgba(60,40,90,0.5),
-    0 1px 2px rgba(0,0,0,0.4),
-    inset 0 1px 1px rgba(255,255,255,0.9),
-    inset 0 -2px 2px rgba(40,30,60,0.4),
-    inset 1px 0 1px rgba(255,255,255,0.4),
-    inset -1px 0 1px rgba(40,30,60,0.3),
-    inset 0 0 0 1px rgba(180,160,210,0.5) !important;
+    0 4px 8px rgba(60,30,100,0.55),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 18px -2px rgba(167,139,250,0.65),
+    inset 0 2px 1px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -3px 2px rgba(50,30,80,0.40),
+    inset 1px 0 1px rgba(255,255,255,0.5),
+    inset -1px 0 1px rgba(50,30,80,0.30),
+    inset 0 0 0 1px rgba(200,180,240,0.6) !important;
 }
 #sc-pw-overlay .sc3d-btn-purple:hover, #sc-call-overlay .sc3d-btn-purple:hover {
   background: linear-gradient(180deg,
-    #f0ecf8 0%,
-    #d4c8e8 25%,
-    #b8acc8 55%,
-    #9c8cb0 85%,
-    #806898 100%) !important;
+    rgba(248,242,255,0.95) 0%,
+    rgba(220,200,248,0.90) 22%,
+    rgba(188,164,232,0.88) 50%,
+    rgba(152,120,202,0.90) 78%,
+    rgba(120,84,170,0.95) 100%) !important;
+  box-shadow:
+    0 4px 8px rgba(60,30,100,0.6),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 24px -2px rgba(167,139,250,0.85),
+    inset 0 2px 1px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -3px 2px rgba(50,30,80,0.40),
+    inset 1px 0 1px rgba(255,255,255,0.55),
+    inset -1px 0 1px rgba(50,30,80,0.30),
+    inset 0 0 0 1px rgba(200,180,240,0.7) !important;
 }
 
-/* Emerald (Join) — patina silver tint */
+/* Emerald (Join) — glassy patina with strong emerald glow */
 #sc-call-overlay .sc3d-btn-emerald {
   background: linear-gradient(180deg,
-    #e0f0e4 0%,
-    #b0d8b8 25%,
-    #88c098 55%,
-    #68a878 85%,
-    #4a8858 100%) !important;
-  border-color: #2a5a38 !important;
-  color: #0a2a14 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+    rgba(232,252,240,0.92) 0%,
+    rgba(184,232,210,0.88) 22%,
+    rgba(140,208,180,0.85) 50%,
+    rgba(96,176,140,0.88) 78%,
+    rgba(60,128,98,0.92) 100%) !important;
+  border-color: rgba(40,98,68,0.65) !important;
+  color: #062818 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
   box-shadow:
-    0 2px 4px rgba(20,60,30,0.5),
-    0 1px 2px rgba(0,0,0,0.4),
-    inset 0 1px 1px rgba(255,255,255,0.9),
-    inset 0 -2px 2px rgba(20,50,30,0.4),
-    inset 1px 0 1px rgba(255,255,255,0.4),
-    inset -1px 0 1px rgba(20,50,30,0.3),
-    inset 0 0 0 1px rgba(160,200,170,0.5) !important;
+    0 4px 8px rgba(20,80,40,0.55),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 18px -2px rgba(52,211,153,0.65),
+    inset 0 2px 1px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -3px 2px rgba(20,60,30,0.40),
+    inset 1px 0 1px rgba(255,255,255,0.5),
+    inset -1px 0 1px rgba(20,60,30,0.30),
+    inset 0 0 0 1px rgba(180,220,200,0.6) !important;
 }
 #sc-call-overlay .sc3d-btn-emerald:hover {
   background: linear-gradient(180deg,
-    #e8f8ec 0%,
-    #c0e4c8 25%,
-    #98d0a8 55%,
-    #78b888 85%,
-    #5a9868 100%) !important;
+    rgba(240,255,248,0.95) 0%,
+    rgba(200,240,220,0.90) 22%,
+    rgba(156,220,192,0.88) 50%,
+    rgba(112,188,152,0.90) 78%,
+    rgba(76,144,108,0.95) 100%) !important;
+  box-shadow:
+    0 4px 8px rgba(20,80,40,0.6),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 24px -2px rgba(52,211,153,0.85),
+    inset 0 2px 1px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -3px 2px rgba(20,60,30,0.40),
+    inset 1px 0 1px rgba(255,255,255,0.55),
+    inset -1px 0 1px rgba(20,60,30,0.30),
+    inset 0 0 0 1px rgba(180,220,200,0.7) !important;
 }
 
-/* Red (Cancel) — crimson silver tint */
+/* Red (Cancel) — glassy crimson with red glow */
 #sc-call-overlay .sc3d-btn-red {
   background: linear-gradient(180deg,
-    #f8e0e0 0%,
-    #e0a8a8 25%,
-    #c87878 55%,
-    #a85050 85%,
-    #883838 100%) !important;
-  border-color: #5a1a1a !important;
+    rgba(255,238,238,0.92) 0%,
+    rgba(240,188,188,0.88) 22%,
+    rgba(220,148,148,0.85) 50%,
+    rgba(192,100,100,0.88) 78%,
+    rgba(160,60,60,0.92) 100%) !important;
+  border-color: rgba(110,20,20,0.65) !important;
   color: #2a0808 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.45) !important;
   box-shadow:
-    0 2px 4px rgba(80,20,20,0.5),
-    0 1px 2px rgba(0,0,0,0.4),
-    inset 0 1px 1px rgba(255,255,255,0.85),
-    inset 0 -2px 2px rgba(60,15,15,0.4),
-    inset 1px 0 1px rgba(255,255,255,0.4),
-    inset -1px 0 1px rgba(60,15,15,0.3),
-    inset 0 0 0 1px rgba(220,160,160,0.5) !important;
+    0 4px 8px rgba(90,20,20,0.55),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 18px -2px rgba(248,113,113,0.65),
+    inset 0 2px 1px rgba(255,255,255,0.95),
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -3px 2px rgba(60,15,15,0.40),
+    inset 1px 0 1px rgba(255,255,255,0.45),
+    inset -1px 0 1px rgba(60,15,15,0.30),
+    inset 0 0 0 1px rgba(230,180,180,0.6) !important;
 }
 #sc-call-overlay .sc3d-btn-red:hover {
   background: linear-gradient(180deg,
-    #fce8e8 0%,
-    #e8b8b8 25%,
-    #d08888 55%,
-    #b86060 85%,
-    #984848 100%) !important;
+    rgba(255,242,242,0.95) 0%,
+    rgba(248,200,200,0.90) 22%,
+    rgba(228,164,164,0.88) 50%,
+    rgba(200,116,116,0.90) 78%,
+    rgba(168,76,76,0.95) 100%) !important;
+  box-shadow:
+    0 4px 8px rgba(90,20,20,0.6),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 24px -2px rgba(248,113,113,0.85),
+    inset 0 2px 1px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -3px 2px rgba(60,15,15,0.40),
+    inset 1px 0 1px rgba(255,255,255,0.5),
+    inset -1px 0 1px rgba(60,15,15,0.30),
+    inset 0 0 0 1px rgba(230,180,180,0.7) !important;
 }
 
-/* Ghost — silver on silver (subtle) */
+/* Ghost — subtle silver glass */
 #sc-call-overlay .sc3d-btn-ghost {
   background: linear-gradient(180deg,
-    #d8d8dc 0%,
-    #b8b8bc 50%,
-    #98989c 100%) !important;
-  color: #3a3a40 !important;
-  border-color: #6a6a6e !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+    rgba(220,224,232,0.78) 0%,
+    rgba(196,200,210,0.75) 50%,
+    rgba(168,172,182,0.78) 100%) !important;
+  color: #3a3a42 !important;
+  border-color: rgba(110,114,124,0.55) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
   box-shadow:
-    0 1px 2px rgba(0,0,0,0.4),
-    inset 0 1px 1px rgba(255,255,255,0.85),
-    inset 0 -1px 1px rgba(0,0,0,0.3),
-    inset 0 0 0 1px rgba(180,180,190,0.4) !important;
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 10px -2px rgba(103,232,249,0.20),
+    inset 0 1px 1px rgba(255,255,255,0.95),
+    inset 0 -2px 2px rgba(0,0,0,0.25),
+    inset 0 0 0 1px rgba(200,204,214,0.45) !important;
 }
 #sc-call-overlay .sc3d-btn-ghost:hover {
   background: linear-gradient(180deg,
-    #e0e0e4 0%,
-    #c0c0c4 50%,
-    #a0a0a4 100%) !important;
+    rgba(232,236,244,0.82) 0%,
+    rgba(208,212,222,0.78) 50%,
+    rgba(180,184,194,0.82) 100%) !important;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 14px -2px rgba(103,232,249,0.35),
+    inset 0 1px 1px rgba(255,255,255,0.95),
+    inset 0 -2px 2px rgba(0,0,0,0.25),
+    inset 0 0 0 1px rgba(200,204,214,0.55) !important;
 }
 
-/* ===== IN-CALL CONTROL GRID (v12 silver) ===== */
+/* ===== IN-CALL CONTROL GRID (v13 — LARGER, GLASSY, GLOWING) ===== */
 #sc-call-overlay .sc3d-controls {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
-  gap: 4px !important;
-  margin-top: 7px !important;
+  gap: 6px !important;
+  margin-top: 10px !important;
 }
-/* Each control button = polished silver pill with deep 3D press */
+/* Each control button = glassy silver pill with strong glow when active */
 #sc-call-overlay .sc3d-ctrl-btn {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important; justify-content: center !important;
-  gap: 2px !important;
-  padding: 5px 2px !important;
-  font-size: 6px !important; font-weight: 700 !important;
+  gap: 3px !important;
+  padding: 9px 3px !important;
+  font-size: 8px !important; font-weight: 700 !important;
   letter-spacing: 0.2px !important;
-  color: #2a2a30 !important;
-  border: 1px solid #5a5a5e !important;
-  border-radius: 8px !important;
+  color: #2a2a32 !important;
+  border: 1px solid rgba(120,128,140,0.55) !important;
+  border-radius: 12px !important;
   cursor: pointer !important;
   transform: translateY(0) !important;
   user-select: none !important;
@@ -422,313 +479,364 @@
   transition: none !important;
   animation: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
   background: linear-gradient(180deg,
-    #f0f0f4 0%,
-    #d8d8dc 30%,
-    #b8b8bc 60%,
-    #98989c 90%,
-    #808084 100%) !important;
+    rgba(250,252,255,0.88) 0%,
+    rgba(224,230,240,0.85) 30%,
+    rgba(196,204,218,0.82) 60%,
+    rgba(168,176,190,0.85) 90%,
+    rgba(140,148,162,0.88) 100%) !important;
   box-shadow:
-    0 2px 3px rgba(0,0,0,0.5),
-    0 1px 1px rgba(0,0,0,0.3),
-    inset 0 1px 1px rgba(255,255,255,1),
-    inset 0 -2px 2px rgba(0,0,0,0.35),
-    inset 1px 0 1px rgba(255,255,255,0.4),
-    inset -1px 0 1px rgba(0,0,0,0.25),
-    inset 0 0 0 1px rgba(190,190,200,0.4) !important;
+    0 3px 5px rgba(0,0,0,0.55),
+    0 1px 2px rgba(0,0,0,0.35),
+    0 0 12px -3px rgba(103,232,249,0.30),
+    inset 0 2px 1px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -3px 2px rgba(0,0,0,0.30),
+    inset 1px 0 1px rgba(255,255,255,0.5),
+    inset -1px 0 1px rgba(0,0,0,0.20),
+    inset 0 0 0 1px rgba(210,218,230,0.5) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn i {
-  font-size: 9px !important;
-  color: #2a2a30 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  font-size: 13px !important;
+  color: #2a2a32 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn:active {
   transform: translateY(1px) !important;
   background: linear-gradient(180deg,
-    #808084 0%,
-    #98989c 30%,
-    #b8b8bc 60%,
-    #d8d8dc 90%,
-    #f0f0f4 100%) !important;
+    rgba(140,148,162,0.88) 0%,
+    rgba(168,176,190,0.85) 30%,
+    rgba(196,204,218,0.82) 60%,
+    rgba(224,230,240,0.85) 90%,
+    rgba(250,252,255,0.88) 100%) !important;
   box-shadow:
-    inset 0 3px 5px rgba(0,0,0,0.55),
-    inset 0 1px 2px rgba(0,0,0,0.5),
-    inset 0 -1px 0 rgba(255,255,255,0.2),
-    inset 0 0 0 1px rgba(80,80,90,0.5) !important;
+    inset 0 4px 6px rgba(0,0,0,0.55),
+    inset 0 2px 3px rgba(0,0,0,0.45),
+    inset 0 -1px 0 rgba(255,255,255,0.20),
+    inset 0 0 0 1px rgba(80,88,100,0.55) !important;
 }
-/* Active route (currently selected Earpiece or Speaker) — WARM GOLD-TINTED SILVER */
+/* Active route (Ear/Speaker selected) — WARM GOLD glow on glassy gold-silver */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active {
   background: linear-gradient(180deg,
-    #faf0d8 0%,
-    #e8d4a0 25%,
-    #d4b878 50%,
-    #b89858 75%,
-    #987838 100%) !important;
-  color: #2a1a08 !important;
-  border-color: #5a4018 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+    rgba(254,248,224,0.92) 0%,
+    rgba(248,228,176,0.88) 22%,
+    rgba(240,206,128,0.85) 50%,
+    rgba(220,170,80,0.88) 78%,
+    rgba(190,134,48,0.92) 100%) !important;
+  color: #3a2408 !important;
+  border-color: rgba(140,90,20,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,255,240,0.55) !important;
   box-shadow:
-    0 2px 4px rgba(80,60,20,0.5),
-    0 1px 2px rgba(0,0,0,0.4),
-    inset 0 1px 1px rgba(255,255,240,1),
-    inset 0 -2px 2px rgba(60,40,10,0.4),
-    inset 1px 0 1px rgba(255,255,240,0.5),
-    inset -1px 0 1px rgba(60,40,10,0.3),
-    inset 0 0 0 1px rgba(220,200,140,0.6),
-    0 0 8px rgba(212,163,69,0.4) !important;
+    0 3px 6px rgba(100,70,20,0.55),
+    0 1px 2px rgba(0,0,0,0.40),
+    0 0 22px -2px rgba(251,191,36,0.85),
+    inset 0 2px 1px rgba(255,255,240,1),
+    inset 0 1px 0 rgba(255,255,240,1),
+    inset 0 -3px 2px rgba(80,55,15,0.40),
+    inset 1px 0 1px rgba(255,255,240,0.55),
+    inset -1px 0 1px rgba(80,55,15,0.30),
+    inset 0 0 0 1px rgba(240,220,160,0.7) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-active i {
-  color: #2a1a08 !important;
-  text-shadow: 0 1px 0 rgba(255,255,240,0.5) !important;
+  color: #3a2408 !important;
+  text-shadow: 0 1px 0 rgba(255,255,240,0.55) !important;
 }
-/* Muted state — red-tinted silver */
+/* Speaker-OFF state (NEW in v13) — when speaker is force-muted, button glows RED */
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-off {
+  background: linear-gradient(180deg,
+    rgba(255,238,238,0.92) 0%,
+    rgba(248,200,200,0.88) 22%,
+    rgba(232,160,160,0.85) 50%,
+    rgba(208,118,118,0.88) 78%,
+    rgba(180,80,80,0.92) 100%) !important;
+  color: #3a0808 !important;
+  border-color: rgba(120,30,30,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
+  box-shadow:
+    0 3px 6px rgba(90,20,20,0.55),
+    0 1px 2px rgba(0,0,0,0.40),
+    0 0 22px -2px rgba(248,113,113,0.85),
+    inset 0 2px 1px rgba(255,240,240,0.95),
+    inset 0 1px 0 rgba(255,240,240,0.9),
+    inset 0 -3px 2px rgba(60,15,15,0.40),
+    inset 1px 0 1px rgba(255,240,240,0.45),
+    inset -1px 0 1px rgba(60,15,15,0.30),
+    inset 0 0 0 1px rgba(230,180,180,0.6) !important;
+}
+#sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-off i {
+  color: #3a0808 !important;
+  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
+}
+/* Muted state — glassy crimson (kept) */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted {
   background: linear-gradient(180deg,
-    #f8e0e0 0%,
-    #e0a8a8 25%,
-    #c87878 50%,
-    #a85050 75%,
-    #883838 100%) !important;
-  color: #2a0808 !important;
-  border-color: #5a1a1a !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+    rgba(255,238,238,0.92) 0%,
+    rgba(240,188,188,0.88) 22%,
+    rgba(220,148,148,0.85) 50%,
+    rgba(192,100,100,0.88) 78%,
+    rgba(160,60,60,0.92) 100%) !important;
+  color: #3a0808 !important;
+  border-color: rgba(110,20,20,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
   box-shadow:
-    0 2px 3px rgba(80,20,20,0.5),
-    0 1px 1px rgba(0,0,0,0.3),
-    inset 0 1px 1px rgba(255,255,255,0.85),
-    inset 0 -2px 2px rgba(60,15,15,0.4),
-    inset 1px 0 1px rgba(255,255,255,0.4),
-    inset -1px 0 1px rgba(60,15,15,0.3),
-    inset 0 0 0 1px rgba(220,160,160,0.5) !important;
+    0 3px 5px rgba(90,20,20,0.55),
+    0 1px 2px rgba(0,0,0,0.35),
+    0 0 18px -3px rgba(248,113,113,0.65),
+    inset 0 2px 1px rgba(255,240,240,0.95),
+    inset 0 1px 0 rgba(255,240,240,0.9),
+    inset 0 -3px 2px rgba(60,15,15,0.40),
+    inset 1px 0 1px rgba(255,240,240,0.45),
+    inset -1px 0 1px rgba(60,15,15,0.30),
+    inset 0 0 0 1px rgba(230,180,180,0.55) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-muted i {
-  color: #2a0808 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+  color: #3a0808 !important;
+  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
 }
-/* Hang-up — always red (kept semantic) */
+/* Hang-up — always red, strong glow */
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup {
   background: linear-gradient(180deg,
-    #f8e0e0 0%,
-    #e0a8a8 25%,
-    #c87878 55%,
-    #a85050 85%,
-    #883838 100%) !important;
-  color: #2a0808 !important;
-  border-color: #5a1a1a !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+    rgba(255,238,238,0.92) 0%,
+    rgba(240,188,188,0.88) 22%,
+    rgba(220,148,148,0.85) 50%,
+    rgba(192,100,100,0.88) 78%,
+    rgba(160,60,60,0.92) 100%) !important;
+  color: #3a0808 !important;
+  border-color: rgba(110,20,20,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
   box-shadow:
-    0 2px 4px rgba(80,20,20,0.6),
-    0 1px 2px rgba(0,0,0,0.4),
-    inset 0 1px 1px rgba(255,255,255,0.85),
-    inset 0 -2px 2px rgba(60,15,15,0.4),
-    inset 1px 0 1px rgba(255,255,255,0.4),
-    inset -1px 0 1px rgba(60,15,15,0.3),
-    inset 0 0 0 1px rgba(220,160,160,0.5) !important;
+    0 3px 6px rgba(90,20,20,0.6),
+    0 1px 2px rgba(0,0,0,0.40),
+    0 0 20px -2px rgba(248,113,113,0.85),
+    inset 0 2px 1px rgba(255,240,240,0.95),
+    inset 0 1px 0 rgba(255,240,240,0.9),
+    inset 0 -3px 2px rgba(60,15,15,0.40),
+    inset 1px 0 1px rgba(255,240,240,0.45),
+    inset -1px 0 1px rgba(60,15,15,0.30),
+    inset 0 0 0 1px rgba(230,180,180,0.6) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup i {
-  color: #2a0808 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+  color: #3a0808 !important;
+  text-shadow: 0 1px 0 rgba(255,240,240,0.5) !important;
 }
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup:active {
   background: linear-gradient(180deg,
-    #883838 0%,
-    #a85050 30%,
-    #c87878 60%,
-    #e0a8a8 90%,
-    #f8e0e0 100%) !important;
+    rgba(160,60,60,0.92) 0%,
+    rgba(192,100,100,0.88) 30%,
+    rgba(220,148,148,0.85) 60%,
+    rgba(240,188,188,0.88) 90%,
+    rgba(255,238,238,0.92) 100%) !important;
   box-shadow:
-    inset 0 3px 5px rgba(60,15,15,0.6),
-    inset 0 1px 2px rgba(60,15,15,0.5),
-    inset 0 -1px 0 rgba(255,255,255,0.2),
-    inset 0 0 0 1px rgba(80,20,20,0.5) !important;
+    inset 0 4px 6px rgba(60,15,15,0.55),
+    inset 0 2px 3px rgba(60,15,15,0.45),
+    inset 0 -1px 0 rgba(255,240,240,0.20),
+    inset 0 0 0 1px rgba(80,20,20,0.55) !important;
 }
 
-/* Close X — silver pill that turns red on hover */
+/* Close X — glassy silver pill, turns red on hover */
 #sc-pw-overlay .sc3d-close, #sc-call-overlay .sc3d-close {
   position: absolute !important;
-  top: 5px !important; right: 5px !important;
-  width: 14px !important; height: 14px !important;
+  top: 8px !important; right: 8px !important;
+  width: 20px !important; height: 20px !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 50% !important;
-  background: linear-gradient(180deg, #e0e0e4 0%, #b0b0b4 50%, #808084 100%) !important;
-  border: 1px solid #5a5a5e !important;
-  color: #2a2a30 !important;
+  background: linear-gradient(180deg, rgba(232,236,244,0.85) 0%, rgba(176,184,196,0.85) 50%, rgba(120,128,140,0.88) 100%) !important;
+  border: 1px solid rgba(110,118,130,0.55) !important;
+  color: #2a2a32 !important;
   cursor: pointer !important;
-  font-size: 6px !important;
+  font-size: 9px !important;
   z-index: 5 !important;
   padding: 0 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
   box-shadow:
-    0 1px 2px rgba(0,0,0,0.5),
+    0 2px 3px rgba(0,0,0,0.50),
+    0 0 8px -2px rgba(103,232,249,0.30),
     inset 0 1px 1px rgba(255,255,255,1),
-    inset 0 -1px 1px rgba(0,0,0,0.3),
-    inset 0 0 0 1px rgba(180,180,190,0.4) !important;
+    inset 0 -1px 1px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(200,206,216,0.5) !important;
 }
 #sc-pw-overlay .sc3d-close:hover, #sc-call-overlay .sc3d-close:hover {
-  background: linear-gradient(180deg, #f8d8d8 0%, #d88888 50%, #a85050 100%) !important;
-  color: #2a0808 !important;
-  border-color: #5a1a1a !important;
+  background: linear-gradient(180deg, rgba(255,224,224,0.92) 0%, rgba(232,150,150,0.90) 50%, rgba(180,70,70,0.92) 100%) !important;
+  color: #3a0808 !important;
+  border-color: rgba(110,20,20,0.65) !important;
+  box-shadow:
+    0 2px 3px rgba(90,20,20,0.55),
+    0 0 14px -2px rgba(248,113,113,0.75),
+    inset 0 1px 1px rgba(255,240,240,0.95),
+    inset 0 -1px 1px rgba(60,15,15,0.35),
+    inset 0 0 0 1px rgba(230,180,180,0.6) !important;
 }
 #sc-pw-overlay .sc3d-close:active, #sc-call-overlay .sc3d-close:active {
   box-shadow: inset 0 3px 5px rgba(0,0,0,0.6) !important;
 }
 
-/* ===== NOTIFICATION BANNER (v12 silver inlay with frosted-glass effect) ===== */
+/* ===== NOTIFICATION BANNER (v13 — GLASSY PURPLE FROST with purple glow) ===== */
 #sc-call-overlay .sc3d-banner {
   display: none !important;
   position: relative !important;
-  margin: 0 0 7px 0 !important;
-  padding: 5px 6px !important;
-  border-radius: 7px !important;
+  margin: 0 0 10px 0 !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
   background: linear-gradient(135deg,
-    rgba(232,228,240,0.95) 0%,
-    rgba(212,200,220,0.92) 50%,
-    rgba(196,184,208,0.88) 100%) !important;
-  border: 1px solid #8a7ca8 !important;
+    rgba(232,224,248,0.78) 0%,
+    rgba(212,200,232,0.72) 50%,
+    rgba(192,180,216,0.70) 100%) !important;
+  border: 1px solid rgba(167,139,250,0.55) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.9),
-    inset 0 -1px 0 rgba(0,0,0,0.2),
-    inset 0 0 0 1px rgba(200,180,220,0.4),
-    0 2px 4px rgba(80,60,120,0.3) !important;
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -1px 0 rgba(0,0,0,0.18),
+    inset 0 0 0 1px rgba(200,188,230,0.45),
+    0 2px 6px rgba(80,60,120,0.35),
+    0 0 18px -4px rgba(167,139,250,0.45) !important;
 }
 #sc-call-overlay .sc3d-banner.sc-banner-show { display: block !important; }
 #sc-call-overlay .sc3d-banner-label {
   display: flex !important;
   align-items: center !important;
-  gap: 3px !important;
-  font-size: 5px !important;
+  gap: 4px !important;
+  font-size: 7px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.3px !important;
+  letter-spacing: 0.4px !important;
   text-transform: uppercase !important;
-  color: #4a3a6a !important;
-  margin-bottom: 3px !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.6) !important;
+  color: #4a2a8a !important;
+  margin-bottom: 4px !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.65) !important;
 }
 #sc-call-overlay .sc3d-banner-label i {
-  font-size: 6px !important;
-  color: #5a4a7a !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.6) !important;
+  font-size: 8px !important;
+  color: #5a3a9a !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.65) !important;
 }
 #sc-call-overlay .sc3d-banner-row {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 4px !important;
+  gap: 6px !important;
 }
 #sc-call-overlay .sc3d-banner-code {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 10px !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
-  letter-spacing: 1.5px !important;
-  color: #2a1a4a !important;
+  letter-spacing: 2px !important;
+  color: #2a1a5a !important;
   user-select: all !important;
   flex: 1 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.7) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.75) !important;
 }
 #sc-call-overlay .sc3d-banner-copy {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 15px !important;
-  height: 15px !important;
-  border-radius: 5px !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 7px !important;
   cursor: pointer !important;
-  background: linear-gradient(180deg, #d8c8e8 0%, #a88cc8 50%, #785898 100%) !important;
-  color: #1a0a2a !important;
-  font-size: 6px !important;
-  border: 1px solid #4a3a6a !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  background: linear-gradient(180deg, rgba(220,200,248,0.92) 0%, rgba(168,140,220,0.90) 50%, rgba(120,88,168,0.92) 100%) !important;
+  color: #1a0a2e !important;
+  font-size: 9px !important;
+  border: 1px solid rgba(108,76,158,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
   box-shadow:
-    0 1px 2px rgba(60,40,90,0.4),
-    inset 0 1px 1px rgba(255,255,255,0.9),
-    inset 0 -1px 1px rgba(40,30,60,0.3) !important;
+    0 2px 3px rgba(60,40,100,0.45),
+    0 0 12px -3px rgba(167,139,250,0.65),
+    inset 0 1px 1px rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(50,30,80,0.35) !important;
 }
 #sc-call-overlay .sc3d-banner-copy:hover {
-  background: linear-gradient(180deg, #e8d8f8 0%, #b89cd8 50%, #8868a8 100%) !important;
+  background: linear-gradient(180deg, rgba(232,212,255,0.95) 0%, rgba(184,156,232,0.92) 50%, rgba(136,104,184,0.95) 100%) !important;
+  box-shadow:
+    0 2px 3px rgba(60,40,100,0.50),
+    0 0 18px -3px rgba(167,139,250,0.85),
+    inset 0 1px 1px rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(50,30,80,0.35) !important;
 }
 #sc-call-overlay .sc3d-banner-copy:active {
-  box-shadow: inset 0 3px 5px rgba(40,30,60,0.6) !important;
+  box-shadow: inset 0 3px 5px rgba(50,30,80,0.6) !important;
 }
 #sc-call-overlay .sc3d-banner-copy.sc-copied {
-  background: linear-gradient(180deg, #c8e8d0 0%, #88c098 50%, #58a068 100%) !important;
-  color: #0a2a14 !important;
-  border-color: #2a5a38 !important;
+  background: linear-gradient(180deg, rgba(220,248,232,0.92) 0%, rgba(152,220,180,0.90) 50%, rgba(96,176,140,0.92) 100%) !important;
+  color: #062818 !important;
+  border-color: rgba(40,98,68,0.65) !important;
 }
 #sc-call-overlay .sc3d-banner-dismiss {
   position: absolute !important;
-  top: 3px !important;
-  right: 3px !important;
-  width: 9px !important;
-  height: 9px !important;
+  top: 5px !important;
+  right: 5px !important;
+  width: 14px !important;
+  height: 14px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   border-radius: 50% !important;
-  background: linear-gradient(180deg, #d8d8dc 0%, #a8a8ac 50%, #78787c 100%) !important;
-  color: #3a3a40 !important;
+  background: linear-gradient(180deg, rgba(232,236,244,0.82) 0%, rgba(176,184,196,0.82) 50%, rgba(120,128,140,0.85) 100%) !important;
+  color: #3a3a42 !important;
   cursor: pointer !important;
-  font-size: 5px !important;
-  border: 1px solid #5a5a5e !important;
+  font-size: 7px !important;
+  border: 1px solid rgba(110,118,130,0.55) !important;
   padding: 0 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
   box-shadow:
-    inset 0 1px 1px rgba(255,255,255,0.9),
-    inset 0 -1px 1px rgba(0,0,0,0.3) !important;
+    inset 0 1px 1px rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(0,0,0,0.30),
+    0 1px 2px rgba(0,0,0,0.35) !important;
 }
 #sc-call-overlay .sc3d-banner-dismiss:hover {
-  background: linear-gradient(180deg, #f8d8d8 0%, #d88888 50%, #a85050 100%) !important;
-  color: #2a0808 !important;
-  border-color: #5a1a1a !important;
+  background: linear-gradient(180deg, rgba(255,224,224,0.92) 0%, rgba(232,150,150,0.90) 50%, rgba(180,70,70,0.92) 100%) !important;
+  color: #3a0808 !important;
+  border-color: rgba(110,20,20,0.65) !important;
 }
 
-/* Icon badge — CHROME CIRCULAR MEDALLION with concentric ring shadow */
+/* Icon badge — GLASSY CHROME MEDALLION with cyan glow */
 #sc-pw-overlay .sc3d-icon-badge, #sc-call-overlay .sc3d-icon-badge {
-  width: 26px !important; height: 26px !important;
-  margin: 0 auto 6px !important;
+  width: 40px !important; height: 40px !important;
+  margin: 0 auto 10px !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
   border-radius: 50% !important;
   background:
     radial-gradient(circle at 35% 30%,
-      #fafafc 0%,
-      #e0e0e4 25%,
-      #c0c0c4 50%,
-      #98989c 75%,
-      #707074 100%) !important;
-  border: 1px solid #5a5a5e !important;
+      rgba(252,254,255,0.95) 0%,
+      rgba(228,234,244,0.88) 25%,
+      rgba(196,204,218,0.82) 50%,
+      rgba(154,162,176,0.82) 75%,
+      rgba(110,118,132,0.85) 100%) !important;
+  border: 1px solid rgba(120,128,140,0.55) !important;
   box-shadow:
-    /* Outer ring shadow */
-    0 3px 6px rgba(0,0,0,0.6),
-    0 1px 2px rgba(0,0,0,0.4),
-    /* Concentric ring highlight on top */
+    0 4px 8px rgba(0,0,0,0.55),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 18px -4px rgba(103,232,249,0.45),
     inset 0 2px 2px rgba(255,255,255,1),
-    inset 0 -2px 2px rgba(0,0,0,0.35),
-    /* Chrome ring */
-    inset 0 0 0 2px rgba(190,190,200,0.5),
-    inset 0 0 0 3px rgba(0,0,0,0.15) !important;
-  font-size: 11px !important;
-  color: #2a2a30 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+    inset 0 -2px 2px rgba(0,0,0,0.30),
+    inset 0 0 0 2px rgba(200,206,216,0.55),
+    inset 0 0 0 3px rgba(0,0,0,0.12) !important;
+  font-size: 16px !important;
+  color: #2a2a32 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
 }
 #sc-call-overlay .sc3d-icon-badge.sc-call-active {
   background:
     radial-gradient(circle at 35% 30%,
-      #f0faf0 0%,
-      #c0e0c8 25%,
-      #88c098 50%,
-      #589868 75%,
-      #387848 100%) !important;
-  border-color: #2a5a38 !important;
-  color: #0a2a14 !important;
+      rgba(232,252,240,0.95) 0%,
+      rgba(192,232,210,0.88) 25%,
+      rgba(140,208,180,0.82) 50%,
+      rgba(96,168,132,0.82) 75%,
+      rgba(56,118,86,0.85) 100%) !important;
+  border-color: rgba(40,98,68,0.65) !important;
+  color: #062818 !important;
   box-shadow:
-    0 3px 6px rgba(20,60,30,0.6),
-    0 1px 2px rgba(0,0,0,0.4),
+    0 4px 8px rgba(20,80,40,0.55),
+    0 2px 4px rgba(0,0,0,0.40),
+    0 0 22px -4px rgba(52,211,153,0.65),
     inset 0 2px 2px rgba(255,255,255,1),
-    inset 0 -2px 2px rgba(20,50,30,0.35),
-    inset 0 0 0 2px rgba(160,200,170,0.5),
-    inset 0 0 0 3px rgba(0,0,0,0.15) !important;
+    inset 0 -2px 2px rgba(20,60,30,0.30),
+    inset 0 0 0 2px rgba(180,220,200,0.55),
+    inset 0 0 0 3px rgba(0,0,0,0.12) !important;
 }
 
 /* FontAwesome icons */
@@ -748,145 +856,262 @@
 
 /* Button row (Create/Join) */
 #sc-call-overlay .sc3d-btn-row {
-  display: flex !important; gap: 5px !important; margin-top: 6px !important;
+  display: flex !important; gap: 7px !important; margin-top: 9px !important;
 }
 #sc-call-overlay .sc3d-btn-row .sc3d-btn { flex: 1 !important; }
 
-/* Timer — engraved monospace on silver */
+/* Timer — engraved monospace on silver with cyan glow */
 #sc-call-overlay .sc3d-timer {
   display: block !important; text-align: center !important;
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 12px !important; font-weight: 700 !important;
+  font-size: 17px !important; font-weight: 700 !important;
   color: #1a1a1f !important;
-  letter-spacing: 1px !important;
-  margin: 3px 0 1px !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.7), 0 -1px 0 rgba(0,0,0,0.2) !important;
+  letter-spacing: 1.5px !important;
+  margin: 5px 0 2px !important;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.85),
+    0 -1px 0 rgba(0,0,0,0.25),
+    0 0 12px rgba(103,232,249,0.35) !important;
 }
 
-/* Avatar — CHROME medallion with metallic ring */
+/* Avatar — GLASSY CHROME MEDALLION with metallic ring + cyan glow */
 #sc-call-overlay .sc3d-avatar {
-  width: 28px !important; height: 28px !important;
-  margin: 3px auto 4px !important;
+  width: 42px !important; height: 42px !important;
+  margin: 5px auto 6px !important;
   border-radius: 50% !important;
   background:
     radial-gradient(circle at 35% 30%,
-      #fafafc 0%,
-      #d8d8dc 25%,
-      #b0b0b4 50%,
-      #88888c 75%,
-      #5a5a5e 100%) !important;
-  border: 1px solid #4a4a4e !important;
+      rgba(252,254,255,0.95) 0%,
+      rgba(224,230,240,0.88) 25%,
+      rgba(184,192,206,0.82) 50%,
+      rgba(138,146,160,0.85) 75%,
+      rgba(96,104,118,0.88) 100%) !important;
+  border: 1px solid rgba(110,118,130,0.55) !important;
   display: flex !important;
   align-items: center !important; justify-content: center !important;
-  font-size: 11px !important;
-  color: #2a2a30 !important;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+  font-size: 17px !important;
+  color: #2a2a32 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
   box-shadow:
-    0 0 0 2px rgba(180,180,190,0.4),
-    0 0 0 3px rgba(0,0,0,0.3),
-    0 2px 6px rgba(0,0,0,0.5),
+    0 0 0 2px rgba(200,206,216,0.45),
+    0 0 0 3px rgba(0,0,0,0.30),
+    0 3px 8px rgba(0,0,0,0.50),
+    0 0 18px -4px rgba(103,232,249,0.40),
     inset 0 2px 2px rgba(255,255,255,1),
-    inset 0 -2px 2px rgba(0,0,0,0.35) !important;
+    inset 0 -2px 2px rgba(0,0,0,0.30) !important;
   position: relative !important;
 }
 
-/* ===== CODE DISPLAY (v12 — RECESSED DARK GROOVE inside silver card, engraved look) ===== */
+/* ===== CODE DISPLAY (v13 — RECESSED DARK GLASS GROOVE with gold-amber engraved text + glow) ===== */
 #sc-call-overlay .sc3d-code-section {
   display: block !important;
-  margin-top: 7px !important;
-  padding: 4px 5px !important;
-  border-radius: 6px !important;
-  background: linear-gradient(180deg, #2a2a2e 0%, #1a1a1d 100%) !important;
-  border: 1px solid #1a1a1d !important;
+  margin-top: 10px !important;
+  padding: 7px 9px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(180deg, rgba(28,32,38,0.92) 0%, rgba(18,21,26,0.95) 100%) !important;
+  border: 1px solid rgba(60,68,80,0.65) !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   box-shadow:
-    inset 0 2px 3px rgba(0,0,0,0.8),
-    inset 0 -1px 0 rgba(255,255,255,0.05),
-    0 1px 0 rgba(255,255,255,0.5) !important;
+    inset 0 3px 5px rgba(0,0,0,0.85),
+    inset 0 -1px 0 rgba(255,255,255,0.06),
+    0 1px 0 rgba(255,255,255,0.55),
+    0 0 14px -4px rgba(103,232,249,0.30) !important;
 }
 #sc-call-overlay .sc3d-code-label {
   display: block !important;
-  font-size: 4px !important; font-weight: 700 !important;
-  letter-spacing: 0.8px !important;
-  color: #d4a345 !important;
+  font-size: 6px !important; font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  color: #fbbf24 !important;
   text-transform: uppercase !important;
-  margin-bottom: 2px !important; text-align: center !important;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.6) !important;
+  margin-bottom: 3px !important; text-align: center !important;
+  text-shadow: 0 0 6px rgba(251,191,36,0.55), 0 1px 0 rgba(0,0,0,0.6) !important;
 }
 #sc-call-overlay .sc3d-code-row {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 3px !important;
+  gap: 5px !important;
 }
 #sc-call-overlay .sc3d-code-value {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 7px !important; font-weight: 700 !important;
-  letter-spacing: 1px !important;
-  color: #f0c060 !important;
+  font-size: 11px !important; font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  color: #fbbf24 !important;
   user-select: all !important;
   flex: 1 !important;
   text-align: center !important;
-  text-shadow: 0 0 4px rgba(240,192,96,0.4), 0 1px 0 rgba(0,0,0,0.6) !important;
+  text-shadow: 0 0 8px rgba(251,191,36,0.55), 0 0 14px rgba(251,191,36,0.35), 0 1px 0 rgba(0,0,0,0.7) !important;
 }
 #sc-call-overlay .sc3d-code-copy {
   display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
-  width: 12px !important; height: 12px !important;
-  border-radius: 4px !important;
+  width: 18px !important; height: 18px !important;
+  border-radius: 6px !important;
   cursor: pointer !important;
-  background: linear-gradient(180deg, #d4b878 0%, #b89858 50%, #987838 100%) !important;
-  color: #2a1a08 !important;
-  font-size: 5px !important;
-  border: 1px solid #5a4018 !important;
-  text-shadow: 0 1px 0 rgba(255,255,240,0.5) !important;
+  background: linear-gradient(180deg, rgba(248,228,176,0.92) 0%, rgba(220,170,80,0.90) 50%, rgba(190,134,48,0.92) 100%) !important;
+  color: #3a2408 !important;
+  font-size: 8px !important;
+  border: 1px solid rgba(140,90,20,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,255,240,0.55) !important;
   box-shadow:
-    inset 0 1px 1px rgba(255,255,240,0.9),
-    inset 0 -1px 1px rgba(60,40,10,0.4),
-    0 1px 2px rgba(60,40,10,0.4) !important;
+    0 2px 3px rgba(100,70,20,0.45),
+    0 0 12px -3px rgba(251,191,36,0.65),
+    inset 0 1px 1px rgba(255,255,240,0.95),
+    inset 0 -1px 1px rgba(80,55,15,0.40) !important;
 }
 #sc-call-overlay .sc3d-code-copy:hover {
-  background: linear-gradient(180deg, #e8d098 0%, #c8a868 50%, #a88848 100%) !important;
+  background: linear-gradient(180deg, rgba(252,236,196,0.95) 0%, rgba(232,184,96,0.92) 50%, rgba(202,148,58,0.95) 100%) !important;
+  box-shadow:
+    0 2px 3px rgba(100,70,20,0.50),
+    0 0 18px -3px rgba(251,191,36,0.85),
+    inset 0 1px 1px rgba(255,255,240,0.95),
+    inset 0 -1px 1px rgba(80,55,15,0.40) !important;
 }
 #sc-call-overlay .sc3d-code-copy:active {
-  box-shadow: inset 0 3px 5px rgba(60,40,10,0.6) !important;
+  box-shadow: inset 0 3px 5px rgba(80,55,15,0.6) !important;
 }
 #sc-call-overlay .sc3d-code-copy.sc-copied {
-  background: linear-gradient(180deg, #c8e8d0 0%, #88c098 50%, #58a068 100%) !important;
-  color: #0a2a14 !important;
-  border-color: #2a5a38 !important;
+  background: linear-gradient(180deg, rgba(220,248,232,0.92) 0%, rgba(152,220,180,0.90) 50%, rgba(96,176,140,0.92) 100%) !important;
+  color: #062818 !important;
+  border-color: rgba(40,98,68,0.65) !important;
+  box-shadow:
+    0 2px 3px rgba(20,80,40,0.45),
+    0 0 14px -3px rgba(52,211,153,0.75),
+    inset 0 1px 1px rgba(255,255,240,0.95),
+    inset 0 -1px 1px rgba(20,60,30,0.40) !important;
 }
 /* Hint hidden (v10 user request) */
-#sc-call-overlay .sc3d-code-hint {
-  display: none !important;
-}
+#sc-call-overlay .sc3d-code-hint { display: none !important; }
 
 /* Steps */
 #sc-call-overlay .sc3d-step { display: none !important; }
 #sc-call-overlay .sc3d-step.sc-active { display: block !important; }
 
 /* Hint hidden (v10 user request) */
-#sc-pw-overlay .sc3d-hint, #sc-call-overlay .sc3d-hint {
-  display: none !important;
-}
+#sc-pw-overlay .sc3d-hint, #sc-call-overlay .sc3d-hint { display: none !important; }
 #sc-call-overlay .sc3d-hint strong { color: #4a4a52 !important; font-weight: 700 !important; }
 
 /* Disclaimer trigger */
-#sc-disclaimer-trigger {
-  cursor: pointer !important;
+#sc-disclaimer-trigger { cursor: pointer !important; position: relative !important; }
+#sc-disclaimer-trigger:hover { color: #67e8f9 !important; }
+
+/* ===== NEW v13: ENTER CALL CONFIRMATION MODAL (small floating window) ===== */
+/* Slides up from below the join section. Shows the prefetched code + Enter Call button. */
+#sc-call-overlay .sc3d-enter-modal {
+  display: none !important;
   position: relative !important;
+  margin-top: 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg,
+    rgba(232,252,240,0.85) 0%,
+    rgba(192,232,210,0.78) 50%,
+    rgba(152,212,180,0.78) 100%) !important;
+  border: 1px solid rgba(52,211,153,0.55) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -1px 0 rgba(0,0,0,0.18),
+    inset 0 0 0 1px rgba(180,220,200,0.45),
+    0 4px 12px rgba(20,80,40,0.35),
+    0 0 22px -4px rgba(52,211,153,0.55) !important;
 }
-#sc-disclaimer-trigger:hover {
-  color: #d4a345 !important;
+#sc-call-overlay .sc3d-enter-modal.sc-enter-show { display: block !important; }
+#sc-call-overlay .sc3d-enter-label {
+  display: block !important;
+  font-size: 7px !important; font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  color: #062818 !important;
+  text-align: center !important;
+  margin-bottom: 5px !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.65) !important;
+}
+#sc-call-overlay .sc3d-enter-code {
+  display: block !important;
+  text-align: center !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 18px !important; font-weight: 700 !important;
+  letter-spacing: 3px !important;
+  color: #062818 !important;
+  margin-bottom: 8px !important;
+  user-select: all !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.75), 0 0 12px rgba(52,211,153,0.45) !important;
+}
+#sc-call-overlay .sc3d-enter-btn {
+  display: inline-flex !important;
+  align-items: center !important; justify-content: center !important;
+  gap: 5px !important;
+  width: 100% !important;
+  padding: 9px 12px !important;
+  font-size: 11px !important; font-weight: 700 !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  letter-spacing: 0.4px !important;
+  color: #062818 !important;
+  border: 1px solid rgba(40,98,68,0.65) !important;
+  border-radius: 11px !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
+  background: linear-gradient(180deg,
+    rgba(232,252,240,0.95) 0%,
+    rgba(152,220,180,0.92) 25%,
+    rgba(108,196,148,0.90) 55%,
+    rgba(72,168,116,0.92) 80%,
+    rgba(40,128,84,0.95) 100%) !important;
+  box-shadow:
+    0 4px 8px rgba(20,80,40,0.55),
+    0 2px 4px rgba(0,0,0,0.35),
+    0 0 22px -2px rgba(52,211,153,0.85),
+    inset 0 2px 1px rgba(255,255,255,1),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -3px 2px rgba(20,60,30,0.40),
+    inset 1px 0 1px rgba(255,255,255,0.5),
+    inset -1px 0 1px rgba(20,60,30,0.30),
+    inset 0 0 0 1px rgba(180,220,200,0.65) !important;
+}
+#sc-call-overlay .sc3d-enter-btn:active {
+  transform: translateY(1px) !important;
+  background: linear-gradient(180deg,
+    rgba(40,128,84,0.95) 0%,
+    rgba(72,168,116,0.92) 30%,
+    rgba(108,196,148,0.90) 60%,
+    rgba(152,220,180,0.92) 90%,
+    rgba(232,252,240,0.95) 100%) !important;
+  box-shadow:
+    inset 0 4px 6px rgba(20,60,30,0.55),
+    inset 0 2px 3px rgba(20,60,30,0.45),
+    inset 0 -1px 0 rgba(255,255,255,0.20),
+    inset 0 0 0 1px rgba(40,98,68,0.55) !important;
+}
+#sc-call-overlay .sc3d-enter-cancel {
+  display: block !important;
+  width: 100% !important;
+  margin-top: 5px !important;
+  padding: 5px 8px !important;
+  font-size: 9px !important; font-weight: 600 !important;
+  color: #4a4a52 !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55) !important;
 }
 
-/* Mobile — keep compact sizes on mobile too */
+/* Mobile — keep slightly larger sizes on mobile too */
 @media (max-width: 480px) {
-  #sc-pw-overlay .sc3d-card { max-width: 140px !important; padding: 12px 9px 9px !important; }
-  #sc-call-overlay .sc3d-card-call { max-width: 155px !important; padding: 12px 9px 9px !important; }
-  #sc-call-overlay .sc3d-code-value { font-size: 6px !important; letter-spacing: 0.8px !important; }
-  #sc-call-overlay .sc3d-timer { font-size: 10px !important; }
-  #sc-call-overlay .sc3d-ctrl-btn { padding: 4px 1px !important; font-size: 5px !important; }
-  #sc-call-overlay .sc3d-ctrl-btn i { font-size: 8px !important; }
+  #sc-pw-overlay .sc3d-card { max-width: 200px !important; padding: 16px 12px 12px !important; }
+  #sc-call-overlay .sc3d-card-call { max-width: 220px !important; padding: 16px 12px 12px !important; }
+  #sc-call-overlay .sc3d-code-value { font-size: 9px !important; letter-spacing: 1.2px !important; }
+  #sc-call-overlay .sc3d-timer { font-size: 14px !important; }
+  #sc-call-overlay .sc3d-ctrl-btn { padding: 7px 2px !important; font-size: 7px !important; }
+  #sc-call-overlay .sc3d-ctrl-btn i { font-size: 11px !important; }
+  #sc-pw-overlay .sc3d-input, #sc-call-overlay .sc3d-code-input { font-size: 11px !important; padding: 7px 9px !important; }
+  #sc-pw-overlay .sc3d-btn, #sc-call-overlay .sc3d-btn { font-size: 10px !important; padding: 8px 11px !important; }
+  #sc-call-overlay .sc3d-enter-code { font-size: 15px !important; }
+  #sc-call-overlay .sc3d-enter-btn { font-size: 10px !important; padding: 7px 9px !important; }
 }
 </style>
 <!-- ===== END SECRET CALL HEAD ===== -->
@@ -3526,6 +3751,23 @@
   var joinInputVisible = false;
   // Audio route state: 'earpiece' (FORCED on call connect) or 'speaker' (only on user click)
   var audioRoute = 'earpiece';
+  // === v13: Speaker toggle mute state ===
+  // User request: 'Tapping once on speaker option must close speaker and no call sounds
+  // must be allowed to come out of speaker: when tapped on speaker button once it must
+  // Forcefully stop every call sounds to go to speaker. Second tap reallows sounds to use speaker.'
+  // So: speakerMuted=true means ALL audio is muted (no sound from speaker OR earpiece).
+  // speakerMuted=false means audio plays normally through the current route.
+  // Initial state: false (audio plays on connect). Tapping Speaker button toggles this.
+  var speakerMuted = false;
+  // === v13: Enter Call modal state ===
+  // User request: 'When a call is created and code is generated, the newly created call
+  // code must be automatically fetched when clicked on "join" button: newly created call
+  // code must be automatically filled in join section, and a new small window must open
+  // saying "Enter Call". When clicked on "Enter Call" button, call must be connected.'
+  // So: tapping Join (when a code is already created in this session) auto-fills the input
+  // AND opens a small 'Enter Call' confirmation window. Tapping 'Enter Call' inside that
+  // window actually places the call.
+  var enterModalVisible = false;
   var remoteAudioEl = null;
   var setSinkSupported = (typeof HTMLMediaElement !== 'undefined') &&
                          (typeof HTMLMediaElement.prototype.setSinkId === 'function');
@@ -3607,6 +3849,9 @@
     isHost = false; isMuted = false;
     audioRoute = 'earpiece';
     activeRoutingMethod = 'none';
+    // === v13: reset new state vars ===
+    speakerMuted = false;
+    hideEnterCallModal();
   }
 
   // === v11: Web Audio API routing (iOS earpiece fix) ===
@@ -3947,8 +4192,12 @@
   function updateRouteButtons() {
     var epBtn = $('sc-btn-earpiece');
     var spBtn = $('sc-btn-speaker');
-    if (epBtn) epBtn.classList.toggle('sc-ctrl-active', audioRoute === 'earpiece');
-    if (spBtn) spBtn.classList.toggle('sc-ctrl-active', audioRoute === 'speaker');
+    if (epBtn) epBtn.classList.toggle('sc-ctrl-active', audioRoute === 'earpiece' && !speakerMuted);
+    // v13: Speaker button shows 'off' red state when muted, 'active' gold state when unmuted+selected
+    if (spBtn) {
+      spBtn.classList.toggle('sc-ctrl-off', speakerMuted);
+      spBtn.classList.toggle('sc-ctrl-active', audioRoute === 'speaker' && !speakerMuted);
+    }
   }
 
   function closeCallWindow() {
@@ -3974,9 +4223,18 @@
       mb.classList.remove('sc-ctrl-muted');
       mb.innerHTML = '<i class="fas fa-microphone"></i><span>Mute</span>';
     }
+    // === v13: reset speaker button visual state ===
+    var spBtn = $('sc-btn-speaker');
+    if (spBtn) {
+      spBtn.classList.remove('sc-ctrl-off');
+      spBtn.classList.remove('sc-ctrl-active');
+    }
     joinInputVisible = false;
     var wrap = $('sc-join-input-wrap');
     if (wrap) wrap.style.display = 'none';
+    // === v13: clear join input so next Join click starts fresh ===
+    var joinInp = $('sc-join-code-input');
+    if (joinInp) joinInp.value = '';
   }
 
   function handleCancel() {
@@ -4028,17 +4286,81 @@
       setStatus('sc-status-incall', 'No call audio yet.', 'sc-err');
       return;
     }
+    // === v13: switching to earpiece unmutes speaker (clears the toggle-mute state) ===
+    speakerMuted = false;
+    if (remoteAudioEl) remoteAudioEl.muted = false;
     routeLocked = false; // unlock so forceEarpiece can run
     forceEarpiece(remoteAudioEl);
+    updateRouteButtons();
   }
 
+  // === v13: Speaker button now TOGGLES mute on every tap ===
+  // First tap: forcefully mute ALL call audio (no sound from speaker OR earpiece).
+  // Second tap: re-allow audio (unmute + ensure route is set to speaker if supported).
+  // This matches the user's request: 'Tapping once on speaker option must close speaker
+  // and no call sounds must be allowed to come out of speaker.'
   function handleSpeaker() {
-    console.log('[sc] SPEAKER clicked, remoteAudioEl:', !!remoteAudioEl);
+    console.log('[sc] SPEAKER clicked (toggle), remoteAudioEl:', !!remoteAudioEl,
+                'speakerMuted (before):', speakerMuted);
     if (!remoteAudioEl) {
       setStatus('sc-status-incall', 'No call audio yet.', 'sc-err');
       return;
     }
-    forceSpeaker(remoteAudioEl);
+    speakerMuted = !speakerMuted;
+    console.log('[sc] SPEAKER toggle: speakerMuted =', speakerMuted);
+    if (speakerMuted) {
+      // === MUTE: forcefully stop every call sound ===
+      // Mute the <audio> element directly (works on all platforms).
+      remoteAudioEl.muted = true;
+      // Also tear down the Web Audio path on iOS so the Voice Chat session stops carrying audio.
+      // We DON'T close the AudioContext (we need it for re-allow later) — we just disconnect
+      // the source node so no audio reaches the destination.
+      if (webAudioSource) {
+        try { webAudioSource.disconnect(); } catch(e){}
+        console.log('[sc] Web Audio source disconnected (speaker muted)');
+      }
+      audioRoute = 'speaker'; // track that user is now in speaker mode (but muted)
+      var incallStatus = $('sc-status-incall');
+      if (incallStatus) {
+        incallStatus.textContent = 'Speaker OFF — call muted';
+        incallStatus.className = 'sc3d-status sc-err';
+      }
+      updateRouteButtons();
+    } else {
+      // === UNMUTE: re-allow call sounds through speaker ===
+      remoteAudioEl.muted = false;
+      // Re-connect Web Audio path on iOS (was disconnected during mute)
+      if (webAudioSupported && webAudioCtx && webAudioActive === false && localStream) {
+        // Note: setupWebAudioRouting needs the REMOTE stream, not local. We re-establish it
+        // from remoteAudioEl.srcObject if available.
+        var rs = remoteAudioEl.srcObject;
+        if (rs) {
+          try {
+            webAudioSource = webAudioCtx.createMediaStreamSource(rs);
+            webAudioSource.connect(webAudioCtx.destination);
+            webAudioActive = true;
+            console.log('[sc] Web Audio source re-connected (speaker un-muted)');
+          } catch(e) {
+            console.warn('[sc] Web Audio re-connect failed:', e);
+          }
+        }
+      }
+      // Try to switch to actual speaker (loudspeaker) via setSinkId if supported
+      if (setSinkSupported) {
+        forceSpeaker(remoteAudioEl);
+      } else {
+        // iOS: Web Audio Voice Chat session routes to earpiece. Can't force loudspeaker
+        // from web, but at least audio is unmuted and audible.
+        audioRoute = 'speaker';
+        activeRoutingMethod = webAudioActive ? 'webaudio' : 'none';
+        var incallStatus2 = $('sc-status-incall');
+        if (incallStatus2) {
+          incallStatus2.textContent = 'Speaker ON (iOS: use Control Center for loudspeaker)';
+          incallStatus2.className = 'sc3d-status sc-busy';
+        }
+        updateRouteButtons();
+      }
+    }
   }
 
   function resetPwForm() {
@@ -4195,22 +4517,96 @@
     });
   }
 
+  // === v13: Join flow redesigned per user request ===
+  // User: 'When a call is created and code is generated, the newly created call code must
+  // be automatically fetched when clicked on "join" button: newly created call code must be
+  // automatically filled in join section, and a new small window must open saying "Enter Call".
+  // When clicked on "Enter Call" button, call must be connected.'
+  //
+  // New flow:
+  //  1) User clicks Join button. If a code was created earlier in this session (currentCode),
+  //     auto-fill the join input with that code AND open a small 'Enter Call' modal showing
+  //     the code + an 'Enter Call' button. User can still edit the code in the input.
+  //  2) If NO code was created yet (user just opened the call window and tapped Join),
+  //     just show the join input as before — user types a code manually.
+  //  3) When user taps 'Enter Call' inside the modal, validate the code and actually place the call.
   function handleJoinClick() {
+    console.log('[sc] JOIN clicked, currentCode:', currentCode, 'joinInputVisible:', joinInputVisible);
+    // Show the join input if not yet visible
     if (!joinInputVisible) {
       joinInputVisible = true;
       var wrap = $('sc-join-input-wrap');
       if (wrap) wrap.style.display = 'block';
       var inp = $('sc-join-code-input');
-      if (inp) setTimeout(function(){ inp.focus(); }, 50);
+      // === v13: AUTO-FILL the join input with the most recently-created call code ===
+      if (inp && currentCode) {
+        inp.value = currentCode;
+        console.log('[sc] auto-filled join input with currentCode:', currentCode);
+      }
+      if (inp) setTimeout(function(){ inp.focus(); inp.select(); }, 50);
+    }
+    // === v13: If we have a code (auto-filled or previously typed), open the Enter Call modal ===
+    var inputEl = $('sc-join-code-input');
+    var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
+    if (code.length === 6) {
+      // Show the Enter Call modal with this code
+      showEnterCallModal(code);
+    } else {
+      // No code yet — just focus the input and prompt user
+      setStatus('sc-status-choose', 'Enter a 6-character code.', 'sc-busy');
+      if (inputEl) inputEl.focus();
+    }
+  }
+
+  // === v13: Show the Enter Call confirmation modal ===
+  // Populates the modal with the prefetched code and makes it visible.
+  function showEnterCallModal(code) {
+    if (!code || code.length !== 6) return;
+    console.log('[sc] showEnterCallModal:', code);
+    var modal = $('sc-enter-modal');
+    var codeEl = $('sc-enter-code');
+    if (!modal || !codeEl) {
+      // Elements may not be injected yet — retry
+      setTimeout(function(){ showEnterCallModal(code); }, 50);
       return;
     }
+    codeEl.textContent = code;
+    modal.classList.add('sc-enter-show');
+    enterModalVisible = true;
+    // Re-assert in case hydration wipes it
+    setTimeout(function(){
+      var m = $('sc-enter-modal');
+      var c = $('sc-enter-code');
+      if (m) m.classList.add('sc-enter-show');
+      if (c) c.textContent = code;
+    }, 50);
+    setTimeout(function(){
+      var m = $('sc-enter-modal');
+      var c = $('sc-enter-code');
+      if (m) m.classList.add('sc-enter-show');
+      if (c) c.textContent = code;
+    }, 200);
+  }
+
+  // === v13: Hide the Enter Call modal ===
+  function hideEnterCallModal() {
+    var modal = $('sc-enter-modal');
+    if (modal) modal.classList.remove('sc-enter-show');
+    enterModalVisible = false;
+  }
+
+  // === v13: Handle 'Enter Call' button click inside the modal — actually places the call ===
+  function handleEnterCall() {
+    console.log('[sc] ENTER CALL clicked');
     var inputEl = $('sc-join-code-input');
     var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
     if (code.length !== 6) {
       setStatus('sc-status-choose', 'Enter a 6-character code.', 'sc-err');
+      hideEnterCallModal();
       if (inputEl) inputEl.focus();
       return;
     }
+    hideEnterCallModal();
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
     isHost = false;
     currentCode = code;
@@ -4243,6 +4639,12 @@
         else setStatus('sc-status-joining', 'Error: ' + msg, 'sc-err');
       });
     });
+  }
+
+  // === v13: Handle 'Cancel' link inside the Enter Call modal ===
+  function handleEnterCancel() {
+    console.log('[sc] ENTER CALL cancelled');
+    hideEnterCallModal();
   }
 
   function enterInCall() {
@@ -4336,6 +4738,9 @@
     bindButton('sc-code-copy', handleCopyCode);
     bindButton('sc-banner-dismiss', handleBannerDismiss);
     bindButton('sc-banner-copy', handleBannerCopy);
+    // === v13: Enter Call modal buttons ===
+    bindButton('sc-enter-call', handleEnterCall);
+    bindButton('sc-enter-cancel', handleEnterCancel);
   }
 
   // Click-outside-to-close (capture phase)
@@ -4370,7 +4775,13 @@
     var jo = $('sc-call-overlay');
     if (jo && jo.classList.contains('sc-open')) {
       var jin = $('sc-join-code-input');
-      if (jin && document.activeElement === jin) { e.preventDefault(); handleJoinClick(); }
+      if (jin && document.activeElement === jin) {
+        e.preventDefault();
+        // v13: If Enter Call modal is visible, Enter key places the call directly.
+        // Otherwise, Enter key opens the Enter Call modal (same as clicking Join again).
+        if (enterModalVisible) handleEnterCall();
+        else handleJoinClick();
+      }
     }
   });
 
@@ -4416,6 +4827,12 @@
         <div class="sc3d-status" id="sc-status-choose"></div>\
         <div class="sc3d-input-wrap" id="sc-join-input-wrap" style="display:none;margin-top:5px;">\
           <input type="text" id="sc-join-code-input" class="sc3d-code-input" placeholder="CODE" maxlength="6" autocomplete="off" autocapitalize="off" spellcheck="false">\
+        </div>\
+        <div class="sc3d-enter-modal" id="sc-enter-modal">\
+          <div class="sc3d-enter-label">Enter Call</div>\
+          <div class="sc3d-enter-code" id="sc-enter-code">------</div>\
+          <button class="sc3d-enter-btn" id="sc-enter-call" type="button"><i class="fas fa-phone"></i> Enter Call</button>\
+          <button class="sc3d-enter-cancel" id="sc-enter-cancel" type="button">Cancel</button>\
         </div>\
       </div>\
 \
