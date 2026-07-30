@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ===== SECRET CALL v14: INSET 3D GLASS SILVER (press-INTO-surface buttons) ===== */
+/* ===== SECRET CALL v15: ONE SINGLE CODE BOX EVERYWHERE (no duplicates) ===== */
 /* User request:
    - "All Buttons are looking bumpy" → redesigned as INSET 3D buttons that sit inside a
      recessed groove and PRESS INTO the surface on :active (gradient reverses + top
@@ -895,6 +895,100 @@
 }
 /* Hint hidden (v10 user request) */
 #sc-call-overlay .sc3d-code-hint { display: none !important; }
+
+/* ===== v15: SINGLE CODE BOX IN CHOOSE STEP (replaces banner + bottom section) =====
+   This is the ONLY code box the user sees after Create. It is hidden by default
+   and shown ONLY when currentCode is set AND the Enter Call modal is NOT showing.
+   When user clicks Join, this box is hidden and the Enter Call modal takes over
+   so only ONE code box is visible at any time. */
+#sc-call-overlay .sc3d-current-code {
+  display: none !important;
+  margin-top: 10px !important;
+  padding: 9px 11px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(180deg, rgba(28,32,38,0.92) 0%, rgba(18,21,26,0.95) 100%) !important;
+  border: 1px solid rgba(60,68,80,0.65) !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    inset 0 3px 5px rgba(0,0,0,0.85),
+    inset 0 -1px 0 rgba(255,255,255,0.06),
+    0 1px 0 rgba(255,255,255,0.55),
+    0 0 14px -4px rgba(103,232,249,0.30) !important;
+}
+#sc-call-overlay .sc3d-current-code.sc-code-show { display: block !important; }
+#sc-call-overlay .sc3d-current-code-label {
+  display: block !important;
+  font-size: 7px !important; font-weight: 700 !important;
+  letter-spacing: 1.2px !important;
+  color: #fbbf24 !important;
+  text-transform: uppercase !important;
+  margin-bottom: 4px !important; text-align: center !important;
+  text-shadow: 0 0 6px rgba(251,191,36,0.55), 0 1px 0 rgba(0,0,0,0.6) !important;
+}
+#sc-call-overlay .sc3d-current-code-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+#sc-call-overlay .sc3d-current-code-value {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 14px !important; font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  color: #fbbf24 !important;
+  user-select: all !important;
+  flex: 1 !important;
+  text-align: center !important;
+  text-shadow: 0 0 8px rgba(251,191,36,0.55), 0 0 14px rgba(251,191,36,0.35), 0 1px 0 rgba(0,0,0,0.7) !important;
+}
+#sc-call-overlay .sc3d-current-code-copy {
+  display: inline-flex !important;
+  align-items: center !important; justify-content: center !important;
+  width: 22px !important; height: 22px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  background: linear-gradient(180deg, rgba(244,247,251,0.94) 0%, rgba(220,226,236,0.90) 35%, rgba(192,200,214,0.88) 70%, rgba(160,170,184,0.92) 100%) !important;
+  color: #1a1a1f !important;
+  font-size: 9px !important;
+  border: 1px solid rgba(110,118,130,0.65) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 8px -3px rgba(103,232,249,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(200,206,216,0.55) !important;
+}
+#sc-call-overlay .sc3d-current-code-copy:hover {
+  background: linear-gradient(180deg, rgba(248,250,253,0.96) 0%, rgba(224,230,240,0.92) 35%, rgba(196,204,218,0.90) 70%, rgba(164,174,188,0.94) 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 12px -3px rgba(103,232,249,0.40),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 1px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(220,228,240,0.65) !important;
+}
+#sc-call-overlay .sc3d-current-code-copy:active {
+  transform: translateY(1px) !important;
+  background: linear-gradient(180deg, rgba(150,160,174,0.94) 0%, rgba(178,188,202,0.90) 30%, rgba(210,218,230,0.88) 65%, rgba(238,244,250,0.92) 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.45),
+    inset 0 2px 3px rgba(0,0,0,0.55),
+    inset 0 -1px 0 rgba(255,255,255,0.35),
+    inset 0 0 0 1px rgba(80,88,100,0.55) !important;
+}
+#sc-call-overlay .sc3d-current-code-copy.sc-copied {
+  color: #08402a !important;
+  border-color: rgba(40,98,68,0.65) !important;
+  background: linear-gradient(180deg, rgba(232,248,240,0.94) 0%, rgba(196,224,206,0.90) 35%, rgba(156,196,172,0.88) 70%, rgba(116,158,134,0.92) 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.45),
+    0 0 12px -3px rgba(52,211,153,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 -1px 1px rgba(20,60,30,0.30),
+    inset 0 0 0 1px rgba(180,220,200,0.55) !important;
+}
 
 /* Steps */
 #sc-call-overlay .sc3d-step { display: none !important; }
@@ -4304,11 +4398,13 @@
     }
   }
 
-  // Helper: instantly set the code in the lower box, with retries to beat hydration
+  // v15: Helper to instantly set the code in the SINGLE code box (sc-current-code-value)
+  // and make the wrapper visible. Replaces the old setCodeDisplay that targeted sc-code-value.
+  // Retries beat hydration races (same pattern as before).
   function setCodeDisplay(code) {
     if (!code) return;
     var setIt = function() {
-      var el = $('sc-code-value');
+      var el = $('sc-current-code-value');
       if (el) {
         el.textContent = code;
         return true;
@@ -4320,70 +4416,22 @@
     setTimeout(setIt, 50);
     setTimeout(setIt, 150);
     setTimeout(setIt, 300);
-  }
-
-  // ===== NOTIFICATION BANNER (v9) — "New Call Code Created: XXXXXX" =====
-  // Banner shows the code prominently at the top of the call card.
-  // Visible to host (when they create) and joiner (when they enter code).
-  // Auto-hides when call connects; can be dismissed manually.
-  function showBanner(code) {
-    if (!code) return;
-    console.log('[sc] showBanner:', code);
-    var banner = $('sc-code-banner');
-    var codeEl = $('sc-banner-code');
-    if (!banner || !codeEl) {
-      // Retry — elements may not be injected yet
-      setTimeout(function(){ showBanner(code); }, 50);
-      return;
-    }
-    codeEl.textContent = code;
-    banner.classList.add('sc-banner-show');
-    // Re-assert in case hydration wipes it
-    setTimeout(function(){
-      var b = $('sc-code-banner');
-      var c = $('sc-banner-code');
-      if (b) b.classList.add('sc-banner-show');
-      if (c) c.textContent = code;
-    }, 50);
-    setTimeout(function(){
-      var b = $('sc-code-banner');
-      var c = $('sc-banner-code');
-      if (b) b.classList.add('sc-banner-show');
-      if (c) c.textContent = code;
-    }, 200);
-  }
-
-  function hideBanner() {
-    var banner = $('sc-code-banner');
-    if (banner) banner.classList.remove('sc-banner-show');
-  }
-
-  function handleBannerDismiss() {
-    console.log('[sc] banner dismissed');
-    hideBanner();
-  }
-
-  function handleBannerCopy() {
-    var code = currentCode;
-    if (!code) return;
-    console.log('[sc] banner copy:', code);
-    var done = function() {
-      var btn = $('sc-banner-copy');
-      if (btn) {
-        btn.classList.add('sc-copied');
-        btn.innerHTML = '<i class="fas fa-check"></i>';
-        setTimeout(function(){
-          btn.classList.remove('sc-copied');
-          btn.innerHTML = '<i class="fas fa-copy"></i>';
-        }, 1200);
-      }
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(done).catch(function(){ fallbackCopy(code); done(); });
-    } else {
-      fallbackCopy(code); done();
+    // Also show the wrapper (will be re-asserted in injectUI based on enterModalVisible)
+    var wrap = $('sc-current-code');
+    if (wrap && !wrap.classList.contains('sc-code-show')) {
+      wrap.classList.add('sc-code-show');
     }
   }
+
+  // ===== v15: BANNER REMOVED =====
+  // The notification banner (sc3d-banner) has been REMOVED in v15 to ensure only ONE
+  // code box is visible on screen at any time. The functions below are kept as no-ops
+  // so existing call sites (handleCreate, enterInCall, teardown) still work without
+  // throwing errors. They do nothing.
+  function showBanner(code) { /* v15: no-op — banner removed */ }
+  function hideBanner() { /* v15: no-op — banner removed */ }
+  function handleBannerDismiss() { /* v15: no-op — banner removed */ }
+  function handleBannerCopy() { /* v15: no-op — banner removed */ }
 
   function handleCreate() {
     if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
@@ -4451,22 +4499,8 @@
   //  3) When user taps 'Enter Call' inside the modal, validate the code and actually place the call.
   function handleJoinClick() {
     console.log('[sc] JOIN clicked, currentCode:', currentCode, 'joinInputVisible:', joinInputVisible);
-    // Show the join input if not yet visible
-    if (!joinInputVisible) {
-      joinInputVisible = true;
-      var wrap = $('sc-join-input-wrap');
-      if (wrap) wrap.style.display = 'block';
-      var inp = $('sc-join-code-input');
-      // === v13: AUTO-FILL the join input with the most recently-created call code ===
-      if (inp && currentCode) {
-        inp.value = currentCode;
-        console.log('[sc] auto-filled join input with currentCode:', currentCode);
-      }
-      if (inp) setTimeout(function(){ inp.focus(); inp.select(); }, 50);
-    }
-    // === v14: determine the code to use for the Enter Call modal ===
+    // === v15: determine the code to use for the Enter Call modal ===
     // Priority: (1) value currently in the join input, (2) currentCode (just-created code).
-    // This fixes the v13 bug where the modal wouldn't open if the input was empty.
     var inputEl = $('sc-join-code-input');
     var code = inputEl ? inputEl.value.trim().toUpperCase() : '';
     if (code.length !== 6 && currentCode && currentCode.length === 6) {
@@ -4474,14 +4508,24 @@
       code = currentCode;
       if (inputEl) {
         inputEl.value = currentCode;
-        console.log('[sc] v14: back-filled join input with currentCode (was empty):', currentCode);
+        console.log('[sc] v15: back-filled join input with currentCode (was empty):', currentCode);
       }
     }
     if (code.length === 6) {
-      // Show the Enter Call modal with this code
+      // === v15: We have a valid code → hide the join input, open the Enter Call modal ===
+      // This ensures only ONE code box (the modal) is visible at a time.
+      joinInputVisible = false;
+      var wrap = $('sc-join-input-wrap');
+      if (wrap) wrap.style.display = 'none';
       showEnterCallModal(code);
     } else {
-      // No code yet — just focus the input and prompt user
+      // No valid code yet → show the join input so the user can type a code
+      if (!joinInputVisible) {
+        joinInputVisible = true;
+        var wrap2 = $('sc-join-input-wrap');
+        if (wrap2) wrap2.style.display = 'block';
+        if (inputEl) setTimeout(function(){ inputEl.focus(); inputEl.select(); }, 50);
+      }
       setStatus('sc-status-choose', 'Enter a 6-character code.', 'sc-busy');
       if (inputEl) inputEl.focus();
     }
@@ -4594,7 +4638,7 @@
     showStep('incall');
     setStatus('sc-status-incall', 'Connected — routing to earpiece…', 'sc-busy');
     startTimer();
-    // Hide the "New Call Code Created" banner once call connects
+    // v15: banner removed — nothing to hide here. Kept as a defensive no-op.
     hideBanner();
     // Force earpiece routing on call connect (user's explicit requirement)
     // playRemote() already calls forceEarpiece after play resolves,
@@ -4613,11 +4657,13 @@
     }, 1500);
   }
 
+  // v15: Copy button now lives inside the SINGLE code box (sc-current-code-copy).
+  // Replaces the old handleCopyCode that targeted sc-code-copy.
   function handleCopyCode() {
     var code = currentCode;
     if (!code) return;
     var done = function() {
-      var btn = $('sc-code-copy');
+      var btn = $('sc-current-code-copy');
       if (btn) {
         btn.classList.add('sc-copied');
         btn.innerHTML = '<i class="fas fa-check"></i>';
@@ -4678,9 +4724,9 @@
     bindButton('sc-btn-speaker', handleSpeaker);
     bindButton('sc-btn-cancel-create', handleCancel);
     bindButton('sc-btn-cancel-join', handleCancel);
-    bindButton('sc-code-copy', handleCopyCode);
-    bindButton('sc-banner-dismiss', handleBannerDismiss);
-    bindButton('sc-banner-copy', handleBannerCopy);
+    // v15: bind the SINGLE code-copy button (was sc-code-copy + sc-banner-copy)
+    bindButton('sc-current-code-copy', handleCopyCode);
+    // v15: banner buttons removed (banner element no longer exists)
     // === v13: Enter Call modal buttons ===
     bindButton('sc-enter-call', handleEnterCall);
     bindButton('sc-enter-cancel', handleEnterCancel);
@@ -4752,12 +4798,11 @@
     <div class="sc3d-card-call" id="sc-call-card">\
       <button class="sc3d-close" id="sc-call-close" aria-label="Close" type="button"><i class="fas fa-times"></i></button>\
 \
-      <div class="sc3d-banner" id="sc-code-banner">\
-        <button class="sc3d-banner-dismiss" id="sc-banner-dismiss" aria-label="Dismiss" type="button"><i class="fas fa-times"></i></button>\
-        <div class="sc3d-banner-label"><i class="fas fa-bell"></i> New Call Code Created</div>\
-        <div class="sc3d-banner-row">\
-          <div class="sc3d-banner-code" id="sc-banner-code">------</div>\
-          <button class="sc3d-banner-copy" id="sc-banner-copy" aria-label="Copy code" type="button"><i class="fas fa-copy"></i></button>\
+      <div class="sc3d-current-code" id="sc-current-code">\
+        <div class="sc3d-current-code-label">Call Code</div>\
+        <div class="sc3d-current-code-row">\
+          <div class="sc3d-current-code-value" id="sc-current-code-value">------</div>\
+          <button class="sc3d-current-code-copy" id="sc-current-code-copy" aria-label="Copy code" type="button"><i class="fas fa-copy"></i></button>\
         </div>\
       </div>\
 \
@@ -4811,14 +4856,6 @@
           <button class="sc3d-ctrl-btn sc-ctrl-hangup" id="sc-btn-hangup" type="button"><i class="fas fa-phone-slash"></i><span>Hang Up</span></button>\
         </div>\
       </div>\
-\
-      <div class="sc3d-code-section">\
-        <div class="sc3d-code-label">Call Code</div>\
-        <div class="sc3d-code-row">\
-          <div class="sc3d-code-value" id="sc-code-value">------</div>\
-          <button class="sc3d-code-copy" id="sc-code-copy" aria-label="Copy code" type="button"><i class="fas fa-copy"></i></button>\
-        </div>\
-      </div>\
     </div>\
   </div>\
 </div>';
@@ -4837,39 +4874,46 @@
       var d2 = document.createElement('div'); d2.innerHTML = CALL_HTML;
       while (d2.firstChild) document.body.appendChild(d2.firstChild);
     }
-    // Always re-assert current code in lower box (beats hydration race)
+    // v15: Re-assert the SINGLE code box (sc-current-code-value).
+    // The old sc-code-value / sc-banner-code re-asserts are GONE because those
+    // elements no longer exist in the DOM (banner + bottom section removed).
     if (currentCode) {
-      var codeEl = $('sc-code-value');
+      var codeEl = $('sc-current-code-value');
       if (codeEl && codeEl.textContent !== currentCode) {
         codeEl.textContent = currentCode;
       }
-      // Also re-assert the banner code text if banner is showing
-      var bannerCodeEl = $('sc-banner-code');
-      if (bannerCodeEl && bannerCodeEl.textContent !== currentCode) {
-        bannerCodeEl.textContent = currentCode;
-      }
     }
-    // Re-assert banner visibility: show if host is creating/joining with a code,
-    // hide if call is connected (incall step) or no code
-    var banner = $('sc-code-banner');
-    if (banner) {
+    // v15: Show sc-current-code ONLY when:
+    //   - currentCode is set (a code was created/entered in this session), AND
+    //   - the Enter Call modal is NOT visible (avoid showing TWO code boxes at once), AND
+    //   - we are NOT in the incall step (the in-call screen has no code box).
+    // This guarantees only ONE code box is visible on screen at any time.
+    var currentCodeBox = $('sc-current-code');
+    if (currentCodeBox) {
       var incallStep = $('sc-step-incall');
       var inCallActive = incallStep && incallStep.classList.contains('sc-active');
-      if (currentCode && isHost && !inCallActive && !activeCall) {
-        banner.classList.add('sc-banner-show');
-      } else if (!currentCode || inCallActive) {
-        banner.classList.remove('sc-banner-show');
+      var shouldShowCodeBox = currentCode && !enterModalVisible && !inCallActive;
+      if (shouldShowCodeBox) {
+        if (!currentCodeBox.classList.contains('sc-code-show')) {
+          currentCodeBox.classList.add('sc-code-show');
+        }
+      } else {
+        if (currentCodeBox.classList.contains('sc-code-show')) {
+          currentCodeBox.classList.remove('sc-code-show');
+        }
       }
     }
     var wrap = $('sc-join-input-wrap');
-    if (wrap) wrap.style.display = joinInputVisible ? 'block' : 'none';
+    // v15: Hide the join input when the Enter Call modal is showing — avoids
+    // showing TWO code displays (the input + the modal) at the same time.
+    if (wrap) wrap.style.display = (joinInputVisible && !enterModalVisible) ? 'block' : 'none';
     // === v14: Re-assert Enter Call modal state (hydration-proof fix for v13 bug) ===
     // v13 bug: the modal's sc-enter-show class and code text were only set inside
     // showEnterCallModal() — they were NOT re-asserted on poll ticks. When hydration
     // replaced the modal element, the class was lost and the modal stayed hidden.
     // v14 fix: on every poll tick, if enterModalVisible is true, ensure the modal has
     // sc-enter-show AND its code text matches enterModalCode. This makes the modal
-    // survive any hydration/race condition (same pattern as sc-code-value / banner).
+    // survive any hydration/race condition (same pattern as sc-current-code-value).
     var enterModal = $('sc-enter-modal');
     if (enterModal) {
       if (enterModalVisible && enterModalCode) {
