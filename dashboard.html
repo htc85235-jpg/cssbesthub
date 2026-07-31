@@ -30,7 +30,6 @@ html, body {
   background: #eef0f5;
   font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   color: #1d4ed8;
-  text-shadow: 0 0 6px rgba(59, 130, 246, 0.65), 0 0 12px rgba(59, 130, 246, 0.35);
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
 }
@@ -82,6 +81,7 @@ body {
   box-shadow:
     inset 3px 3px 6px rgba(163, 177, 198, 0.55),
     inset -3px -3px 6px rgba(255, 255, 255, 0.95);
+  text-shadow: none;
 }
 
 .header h1 {
@@ -90,7 +90,6 @@ body {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin-bottom: 4px;
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.85), 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
 .header p {
@@ -129,7 +128,6 @@ body {
   letter-spacing: 0.5px;
   outline: none;
   font-family: 'JetBrains Mono', monospace;
-  text-shadow: 0 0 6px rgba(59, 130, 246, 0.7);
   box-shadow:
     inset 4px 4px 8px rgba(163, 177, 198, 0.55),
     inset -4px -4px 8px rgba(255, 255, 255, 0.9);
@@ -163,12 +161,11 @@ body {
   outline: none;
   background: #eef0f5;
   color: #1d4ed8;
-  text-shadow: 0 0 6px rgba(59, 130, 246, 0.65);
   font-family: inherit;
   box-shadow:
     5px 5px 10px rgba(163, 177, 198, 0.55),
     -5px -5px 10px rgba(255, 255, 255, 0.9);
-  transition: color 0.15s, text-shadow 0.15s;
+  transition: color 0.15s;
   width: 100%;
   margin-bottom: 10px;
 }
@@ -179,7 +176,6 @@ body {
 
 .btn:hover {
   color: #2563eb;
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.85), 0 0 18px rgba(59, 130, 246, 0.45);
 }
 
 .btn:active {
@@ -187,7 +183,6 @@ body {
     inset 4px 4px 8px rgba(163, 177, 198, 0.6),
     inset -4px -4px 8px rgba(255, 255, 255, 0.9);
   color: #2563eb;
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.85);
 }
 
 .btn:disabled {
@@ -322,7 +317,6 @@ body {
   justify-content: center;
   font-size: 44px;
   color: #1d4ed8;
-  text-shadow: 0 0 14px rgba(59, 130, 246, 0.85);
   position: relative;
   box-shadow:
     6px 6px 14px rgba(163, 177, 198, 0.6),
@@ -369,7 +363,6 @@ body {
   letter-spacing: 2px;
   text-transform: uppercase;
   margin-bottom: 6px;
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.85), 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
 .incoming-card .caller-name {
@@ -377,7 +370,6 @@ body {
   font-weight: 700;
   margin-bottom: 4px;
   color: #2563eb;
-  text-shadow: 0 0 12px rgba(59, 130, 246, 0.9), 0 0 24px rgba(59, 130, 246, 0.5);
 }
 
 .incoming-card .caller-source {
@@ -433,13 +425,11 @@ body {
 
 .call-action-btn.answer {
   color: #10b981;
-  text-shadow: 0 0 12px rgba(16, 185, 129, 0.85);
   animation: answerPulse 1.2s ease-in-out infinite;
 }
 
 .call-action-btn.decline {
   color: #ef4444;
-  text-shadow: 0 0 12px rgba(239, 68, 68, 0.85);
 }
 
 @keyframes answerPulse {
@@ -463,7 +453,6 @@ body {
   letter-spacing: 4px;
   margin: 16px 0 8px;
   color: #2563eb;
-  text-shadow: 0 0 12px rgba(59, 130, 246, 0.85), 0 0 24px rgba(59, 130, 246, 0.4);
 }
 
 .incall-status {
@@ -519,12 +508,10 @@ body {
 
 .ctrl-btn.hangup {
   color: #ef4444;
-  text-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
 }
 
 .ctrl-btn.hangup:active {
   color: #dc2626;
-  text-shadow: 0 0 10px rgba(239, 68, 68, 0.85);
 }
 
 /* ===== TOAST ===== */
@@ -535,7 +522,6 @@ body {
   transform: translateX(-50%) translateY(40px);
   background: #eef0f5;
   color: #1d4ed8;
-  text-shadow: 0 0 6px rgba(59, 130, 246, 0.7);
   padding: 12px 20px;
   border-radius: 14px;
   font-size: 12px;
@@ -557,8 +543,8 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-.toast.sc-err  { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
-.toast.sc-ok   { color: #10b981; text-shadow: 0 0 6px rgba(16, 185, 129, 0.6); }
+.toast.sc-err  { color: #ef4444; }
+.toast.sc-ok   { color: #10b981; }
 
 /* ===== UTILITY ===== */
 .hidden { display: none !important; }
@@ -601,22 +587,13 @@ audio { display: none; }
       </div>
 
       <div class="input-wrap">
-        <div class="input-label">Device ID <span style="opacity:0.5;">(required)</span></div>
-        <input type="text" class="input" id="login-device-id" placeholder="Enter any unique ID, e.g. poat-001" autocomplete="off" />
-      </div>
-
-      <div class="input-wrap">
-        <div class="input-label">Admin Token <span style="opacity:0.5;">(optional)</span></div>
-        <input type="password" class="input" id="login-admin-token" placeholder="Leave blank if unsure" autocomplete="off" />
+        <div class="input-label">Device ID</div>
+        <input type="text" class="input" id="login-device-id" placeholder="Enter Device ID" autocomplete="off" />
       </div>
 
       <button class="btn" id="btn-login">
         <i class="fas fa-arrow-right-to-bracket"></i> Connect
       </button>
-
-      <div class="info-box">
-        Enter any unique Device ID (this becomes your dashboard's identity). The website's Emergency Call button will ring THIS dashboard. Keep this tab open and your phone unlocked to receive calls.
-      </div>
     </div>
 
     <!-- ============== SCREEN 2: IDLE / LISTENING ============== -->
@@ -654,7 +631,7 @@ audio { display: none; }
     <!-- ============== SCREEN 3: IN-CALL ============== -->
     <div class="screen" id="screen-incall">
       <div class="header">
-        <div class="logo-badge" style="color: #10b981; text-shadow: 0 0 12px rgba(16,185,129,0.85);"><i class="fas fa-phone-volume"></i></div>
+        <div class="logo-badge" style="color: #10b981;"><i class="fas fa-phone-volume"></i></div>
         <h1>In Call</h1>
         <p id="incall-caller">Unknown</p>
       </div>
@@ -723,7 +700,6 @@ var VIBRATION_PATTERN = [0, 1000, 400, 1000, 400, 1000, 400, 1000, 400];
 
 // ---- State ----
 var state = {
-  adminToken: '',
   deviceId: '',
   lastSeq: 0,
   polling: false,
@@ -736,6 +712,7 @@ var state = {
   localStream: null,
   remoteStream: null,
   audioCtx: null,        // Web Audio API context for ringtone
+  masterGain: null,      // master GainNode (max volume)
   ringtoneTimer: null,   // setInterval handle for ringtone loop
   callStartTs: 0,
   callTimerHandle: null,
@@ -769,6 +746,7 @@ function showToast(msg, kind) {
 // ===================================================================
 // RINGTONE — Web Audio API synthesized iPhone-Marimba-style loop
 // Plays a pleasant arpeggio that loops every ~3 seconds.
+// MAX VOLUME: master GainNode at 1.0 + DynamicsCompressor to prevent clipping.
 // ===================================================================
 function ensureAudioCtx() {
   if (!state.audioCtx) {
@@ -777,6 +755,7 @@ function ensureAudioCtx() {
       state.audioCtx = new AC();
     } catch (e) {
       console.warn('[POAT] Web Audio API not supported:', e.message);
+      return null;
     }
   }
   // Resume if suspended (mobile browsers require user gesture)
@@ -786,7 +765,36 @@ function ensureAudioCtx() {
   return state.audioCtx;
 }
 
-// Play a single marimba-like note with envelope
+// Get (or lazily create) a master GainNode + DynamicsCompressor chain
+// connected to ctx.destination. All oscillators route through this so we can
+// maximize perceived loudness without clipping.
+function getMasterBus(ctx) {
+  if (state.masterGain && state.masterGain.ctx === ctx) {
+    return state.masterGain;
+  }
+  // Master gain — pushed ABOVE unity (1.0) for max loudness. The compressor
+  // downstream will tame any clipping.
+  var master = ctx.createGain();
+  master.gain.value = 1.0;
+
+  // Compressor — aggressive limiter to prevent clipping while keeping
+  // perceived loudness very high.
+  var comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -10;
+  comp.knee.value = 0;
+  comp.ratio.value = 20;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.25;
+
+  master.connect(comp);
+  comp.connect(ctx.destination);
+
+  state.masterGain = master;
+  state.masterGain.ctx = ctx; // remember which ctx it belongs to
+  return master;
+}
+
+// Play a single marimba-like note with envelope — louder than before (0.6 peak)
 function playNote(ctx, freq, startTime, duration, gainPeak) {
   var osc = ctx.createOscillator();
   var gain = ctx.createGain();
@@ -794,10 +802,10 @@ function playNote(ctx, freq, startTime, duration, gainPeak) {
   osc.frequency.value = freq;
   // Marimba-like envelope: fast attack, exponential decay
   gain.gain.setValueAtTime(0.0001, startTime);
-  gain.gain.exponentialRampToValueAtTime(gainPeak || 0.35, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(gainPeak || 0.6, startTime + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(getMasterBus(ctx));
   osc.start(startTime);
   osc.stop(startTime + duration + 0.05);
 }
@@ -806,7 +814,6 @@ function playNote(ctx, freq, startTime, duration, gainPeak) {
 function playRingtonePhrase(ctx) {
   var now = ctx.currentTime + 0.01;
   // iPhone-Marimba-inspired descending-then-ascending arpeggio in A-minor
-  // Notes (Hz): A4=440, C5=523.25, E5=659.25, A5=880, E5, C5, A4
   var notes = [
     { f: 440.00, t: 0.00, d: 0.30 }, // A4
     { f: 523.25, t: 0.30, d: 0.30 }, // C5
@@ -817,10 +824,10 @@ function playRingtonePhrase(ctx) {
     { f: 440.00, t: 1.95, d: 0.50 }, // A4 (longer closing)
   ];
   notes.forEach(function(n) {
-    playNote(ctx, n.f, now + n.t, n.d, 0.35);
+    playNote(ctx, n.f, now + n.t, n.d, 0.6);
   });
-  // Add a higher harmonic on the accented note for richness
-  playNote(ctx, 1760, now + 0.90, 0.30, 0.12);
+  // Add a higher harmonic on the accented note for richness (extra loudness)
+  playNote(ctx, 1760, now + 0.90, 0.30, 0.25);
   // Total phrase length ≈ 2.55s + silence ≈ 3.2s
   return 3200;
 }
@@ -841,22 +848,48 @@ function stopRingtone() {
     clearInterval(state.ringtoneTimer);
     state.ringtoneTimer = null;
   }
-  // Optionally close audio context to cut any remaining sound
+  // Close audio context to cut any remaining sound immediately
   if (state.audioCtx) {
     try { state.audioCtx.close(); } catch(e) {}
     state.audioCtx = null;
+    state.masterGain = null;
   }
 }
 
-// Vibrate (Android Chrome only) — loops until stopped
+// ===================================================================
+// VIBRATION — uses navigator.vibrate with a single LONG pattern
+// (looping short patterns cancels itself because each new navigator.vibrate()
+// call cancels the previous one).
+// ===================================================================
 function startVibration() {
-  if (!navigator.vibrate) return;
-  // navigator.vibrate accepts a pattern; on most browsers it loops only if you call it again.
-  // We loop it manually.
-  try { navigator.vibrate(VIBRATION_PATTERN); } catch(e) {}
+  if (!navigator.vibrate) {
+    console.warn('[POAT] navigator.vibrate not supported on this browser');
+    return;
+  }
+  // Build a long vibration pattern that lasts ~30 seconds:
+  // vibrate 1000ms, pause 500ms, repeat 20 times = 30,000ms total
+  var pattern = [0];
+  for (var i = 0; i < 20; i++) {
+    pattern.push(1000); // vibrate
+    pattern.push(500);  // pause
+  }
+  // Total ≈ 30s. navigator.vibrate() plays the whole pattern as one shot.
+  try {
+    var ok = navigator.vibrate(pattern);
+    console.log('[POAT] vibrate started, returned:', ok);
+  } catch(e) {
+    console.warn('[POAT] vibrate failed:', e.message);
+  }
+  // Re-trigger every 28 seconds in case the call is still ringing after the
+  // first 30-second pattern finishes.
   state._vibrateTimer = setInterval(function() {
-    try { navigator.vibrate(VIBRATION_PATTERN); } catch(e) {}
-  }, 5200); // pattern length is ~5.2s
+    if ($('incoming-overlay').classList.contains('sc-open')) {
+      try { navigator.vibrate(pattern); } catch(e) {}
+    } else {
+      clearInterval(state._vibrateTimer);
+      state._vibrateTimer = null;
+    }
+  }, 28000);
 }
 
 function stopVibration() {
@@ -873,29 +906,23 @@ function stopVibration() {
 // LOGIN
 // ===================================================================
 function handleLogin() {
-  var adminToken = $('login-admin-token').value.trim();
   var deviceId = $('login-device-id').value.trim();
 
-  // adminToken is optional (only used for future admin features)
-  // deviceId is required
-  if (!deviceId) {
-    showToast('Enter device ID', 'err');
+  // Hardcoded credential check — only Poat001 is accepted
+  if (deviceId !== 'Poat001') {
+    showToast('Wrong Credentials', 'err');
     return;
   }
 
-  // Save to localStorage for convenience
-  try {
-    if (adminToken) localStorage.setItem('poat-admin-token', adminToken);
-    localStorage.setItem('poat-device-id', deviceId);
-  } catch(e) {}
-
-  state.adminToken = adminToken;
   state.deviceId = deviceId;
   state.lastSeq = Date.now(); // only receive commands issued AFTER login
 
+  // Save to localStorage for convenience
+  try {
+    localStorage.setItem('poat-device-id', deviceId);
+  } catch(e) {}
+
   // Register this dashboard with the backend by POSTing to /api/status.
-  // This sets deviceStatus.deviceId + lastSeen so emergency-call.js will
-  // enqueue show_call commands for THIS deviceId.
   registerDevice().then(function() {
     showToast('Connected — listening', 'ok');
     enterIdle();
@@ -949,10 +976,8 @@ function handleLogout() {
     state.localStream.getTracks().forEach(function(t) { try { t.stop(); } catch(e){} });
     state.localStream = null;
   }
-  state.adminToken = '';
   state.deviceId = '';
   try {
-    localStorage.removeItem('poat-admin-token');
     localStorage.removeItem('poat-device-id');
   } catch(e) {}
   showScreen('login');
@@ -1286,7 +1311,7 @@ function bindEvents() {
   $('action-decline').addEventListener('click', declineIncomingCall);
 
   // Allow Enter key in login inputs to submit
-  ['login-admin-token', 'login-device-id'].forEach(function(id) {
+  ['login-device-id'].forEach(function(id) {
     $(id).addEventListener('keydown', function(e) {
       if (e.key === 'Enter' || e.keyCode === 13) handleLogin();
     });
@@ -1320,9 +1345,7 @@ function init() {
   bindEvents();
   // Prefill from localStorage
   try {
-    var at = localStorage.getItem('poat-admin-token');
     var di = localStorage.getItem('poat-device-id');
-    if (at) $('login-admin-token').value = at;
     if (di) $('login-device-id').value = di;
   } catch(e) {}
   // Register a Service Worker for future PWA support (optional, ignore if it fails)

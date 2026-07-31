@@ -4384,19 +4384,9 @@
     }
     console.log('[sc] Emergency Call button pressed');
 
-    // Confirm with user (prevent accidental presses)
-    var ok = window.confirm(
-      'Send an EMERGENCY CALL to your dashboard?\n\n' +
-      'The dashboard will ring loudly. Once answered, you can talk.\n\n' +
-      'Make sure the dashboard tab is open on your phone.'
-    );
-    if (!ok) {
-      console.log('[sc] Emergency call cancelled by user');
-      return;
-    }
-
+    // v22: NO confirmation prompt — start calling immediately.
     emergencyCallInFlight = true;
-    setEmergencyStatus('Sending emergency call…', 'sc-busy');
+    setEmergencyStatus('Connecting', 'sc-busy');
 
     // Generate a unique call ID — this becomes the PeerJS peer ID (the website is host)
     var callId = 'emg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
@@ -4424,7 +4414,7 @@
 
       peer.on('open', function(id) {
         console.log('[sc] Emergency peer open as host:', id);
-        setEmergencyStatus('Calling dashboard…', 'sc-busy');
+        setEmergencyStatus('Connecting', 'sc-busy');
 
         // 3) POST to backend → enqueues show_call command for dashboard
         var body = JSON.stringify({
@@ -4440,7 +4430,7 @@
         }).then(function(result) {
           if (result.ok && result.data.status === 'sent') {
             console.log('[sc] Emergency push sent:', result.data);
-            setEmergencyStatus('Calling! Waiting for answer…', 'sc-busy');
+            setEmergencyStatus('Connecting', 'sc-busy');
             // After 60 seconds with no answer, give up
             setTimeout(function() {
               if (emergencyCallInFlight) {
