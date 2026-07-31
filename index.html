@@ -3,8 +3,9 @@
 
 <!-- ===== SECRET CALL: dependencies ===== -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<!-- v24: JsSIP for SOS Emergency Call → sip2sip → Linphone bridge -->
+<!-- v24: JsSIP for SOS Emergency Call → Linphone SIP bridge -->
 <!-- v24.2: switched to jssip.net official CDN — unpkg/jsdelivr don't ship the browser bundle for 3.10+ -->
+<!-- v25: switched SIP backend from sip2sip.info to sip.linphone.org (sip2sip doesn't support WebSocket) -->
 <script src="https://jssip.net/download/releases/jssip-3.10.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -4504,19 +4505,33 @@
   }
 
   // =======================================================================
-  // v24: SOS EMERGENCY CALL — JsSIP → sip2sip → Linphone bridge
+  // v25: SOS EMERGENCY CALL — JsSIP → sip.linphone.org → Linphone bridge
   // Lets a website visitor tap one button and ring the owner's Linphone app
   // (even when the phone is locked). Uses a dedicated "web caller" SIP account
-  // (htc85235-web) so visitors never need to sign up for anything.
+  // (htc85235-web@sip.linphone.org) so visitors never need to sign up for anything.
+  //
+  // v25 changes from v24:
+  //  - SIP provider: sip2sip.info → sip.linphone.org (sip2sip doesn't support WebSocket transport, which browsers require)
+  //  - Tries multiple WSS endpoints in order (JsSIP failover) — :8080/ws → :8443/ws → :443/ws
+  //  - Connection timeout: 15s. If no registration by then, show clear error
+  //  - Better console logging so we can debug from browser dev tools
   // =======================================================================
   var sosSession = null;
   var sosUA = null;
-  var SOS_TARGET = 'sip:htc85235@sip2sip.info';
-  var SOS_CALLER_URI = 'sip:htc85235-web@sip2sip.info';
+  var sosConnectTimeout = null;
+  var SOS_TARGET = 'sip:htc85235@sip.linphone.org';
+  var SOS_CALLER_URI = 'sip:htc85235-web@sip.linphone.org';
   var SOS_CALLER_PASSWORD = 'htc85235123';
-  var SOS_WSS = 'wss://sip2sip.info:443/ws';
+  // JsSIP will try each socket in order; if the first fails it moves to the next.
+  // These are the 3 most common Linphone WSS endpoints — at least one should work.
+  var SOS_WSS_URLS = [
+    'wss://sip.linphone.org:8080/ws',
+    'wss://sip.linphone.org:8443/ws',
+    'wss://sip.linphone.org:443/ws'
+  ];
 
   function cleanupSOS() {
+    if (sosConnectTimeout) { clearTimeout(sosConnectTimeout); sosConnectTimeout = null; }
     if (sosSession) {
       try { sosSession.terminate(); } catch(e){}
       sosSession = null;
@@ -4567,28 +4582,54 @@
         cleanupSOS();
         return;
       }
-      setStatus('sc-status-incall', 'SOS: Connecting to owner…', 'sc-busy');
+      setStatus('sc-status-incall', 'SOS: Connecting to Linphone…', 'sc-busy');
+      console.log('[sos] trying WSS endpoints:', SOS_WSS_URLS);
 
       try {
-        var socket = new JsSIP.WebSocketInterface(SOS_WSS);
+        // Build a JsSIP socket for each candidate WSS URL — JsSIP will failover
+        // automatically if the first one fails to connect.
+        var sockets = SOS_WSS_URLS.map(function(url) {
+          return new JsSIP.WebSocketInterface(url);
+        });
         sosUA = new JsSIP.UA({
           uri: SOS_CALLER_URI,
           password: SOS_CALLER_PASSWORD,
-          sockets: [socket],
+          sockets: sockets,
           display_name: 'Website SOS',
           register: true,
-          session_timers: true
+          session_timers: true,
+          register_expires: 60
+        });
+
+        // v25: 15-second connection timeout — if no registration by then, abort
+        sosConnectTimeout = setTimeout(function() {
+          if (!sosSession) {
+            console.warn('[sos] 15s timeout — no registration/call yet. Aborting.');
+            setStatus('sc-status-incall', 'SOS: Could not reach Linphone (timeout). Check connection.', 'sc-err');
+            cleanupSOS();
+          }
+        }, 15000);
+
+        // Log socket-level events for debugging
+        sosUA.on('connecting', function(e) {
+          console.log('[sos] socket connecting to:', e && e.socket && e.socket.url);
+        });
+        sosUA.on('connected', function(e) {
+          console.log('[sos] socket connected to:', e && e.socket && e.socket.url);
+          setStatus('sc-status-incall', 'SOS: Logging in…', 'sc-busy');
         });
 
         sosUA.on('registered', function() {
           console.log('[sos] registered as', SOS_CALLER_URI, '→ calling', SOS_TARGET);
+          if (sosConnectTimeout) { clearTimeout(sosConnectTimeout); sosConnectTimeout = null; }
           setStatus('sc-status-incall', 'SOS: Ringing owner…', 'sc-busy');
           var callOptions = {
             mediaStream: localStream,
             pcConfig: {
               iceServers: [
-                { urls: 'stun:stun.sipthor.net' },
-                { urls: 'stun:stun.l.google.com:19302' }
+                { urls: 'stun:stun.linphone.org' },
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
               ]
             },
             sessionTimersExpires: 90,
@@ -4640,13 +4681,20 @@
         sosUA.on('registrationFailed', function(e) {
           var cause = (e && e.cause) ? e.cause : 'unknown';
           console.warn('[sos] registration failed:', cause);
-          setStatus('sc-status-incall', 'SOS: Login failed (' + cause + '). Try again.', 'sc-err');
+          setStatus('sc-status-incall', 'SOS: Login failed (' + cause + '). Check web caller account.', 'sc-err');
           cleanupSOS();
         });
 
         sosUA.on('disconnected', function(e) {
-          console.warn('[sos] socket disconnected:', e && e.cause);
-          if (sosSession) handleSOSHangup('disconnected');
+          console.warn('[sos] socket disconnected:', e && e.socket && e.socket.url, 'code:', e && e.code, 'reason:', e && e.reason);
+          // JsSIP will auto-retry the next socket in the list — don't abort yet.
+          // Only abort if we never registered.
+          if (sosSession) {
+            handleSOSHangup('disconnected');
+          } else {
+            // Still trying — let JsSIP try the next socket
+            setStatus('sc-status-incall', 'SOS: Retrying another endpoint…', 'sc-busy');
+          }
         });
 
         sosUA.start();
