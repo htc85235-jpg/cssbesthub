@@ -3,6 +3,8 @@
 
 <!-- ===== SECRET CALL: dependencies ===== -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<!-- v24: JsSIP for SOS Emergency Call → sip2sip → Linphone bridge -->
+<script src="https://unpkg.com/jssip@3.10.0/dist/jssip.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -337,6 +339,60 @@
 #sc-call-overlay .sc3d-btn-ghost:hover {
   color: #2563eb !important;
   text-shadow: 0 0 10px rgba(59, 130, 246, 0.85) !important;
+}
+
+/* ===== v24: SOS EMERGENCY CALL BUTTON ===== */
+#sc-call-overlay .sc3d-sos-row {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+}
+#sc-call-overlay .sc3d-btn-sos {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  animation: sosPulse 2s ease-in-out infinite;
+}
+#sc-call-overlay .sc3d-btn-sos:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+#sc-call-overlay .sc3d-btn-sos:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+#sc-call-overlay .sc3d-btn-sos:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: none;
+}
+#sc-call-overlay .sc3d-btn-sos i {
+  font-size: 16px;
+}
+@keyframes sosPulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45), inset 0 1px 0 rgba(255,255,255,0.2), 0 0 0 0 rgba(220, 38, 38, 0.5); }
+  50% { box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45), inset 0 1px 0 rgba(255,255,255,0.2), 0 0 0 8px rgba(220, 38, 38, 0); }
+}
+#sc-call-overlay .sc3d-sos-disclaimer {
+  margin-top: 8px;
+  font-size: 10px;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.4;
 }
 
 /* Hang Up — v19: white neumorphic surface, blue glowing text (all texts blue) */
@@ -3605,6 +3661,8 @@
 
   function teardown() {
     stopTimer();
+    // v24: also tear down any active SOS JsSIP session
+    cleanupSOS();
     routeLocked = false;
     if (activeCall) { try { activeCall.close(); } catch(e){} activeCall = null; }
     if (activeConn) { try { activeConn.close(); } catch(e){} activeConn = null; }
@@ -4444,6 +4502,177 @@
     });
   }
 
+  // =======================================================================
+  // v24: SOS EMERGENCY CALL — JsSIP → sip2sip → Linphone bridge
+  // Lets a website visitor tap one button and ring the owner's Linphone app
+  // (even when the phone is locked). Uses a dedicated "web caller" SIP account
+  // (htc85235-web) so visitors never need to sign up for anything.
+  // =======================================================================
+  var sosSession = null;
+  var sosUA = null;
+  var SOS_TARGET = 'sip:htc85235@sip2sip.info';
+  var SOS_CALLER_URI = 'sip:htc85235-web@sip2sip.info';
+  var SOS_CALLER_PASSWORD = 'htc85235123';
+  var SOS_WSS = 'wss://sip2sip.info:443/ws';
+
+  function cleanupSOS() {
+    if (sosSession) {
+      try { sosSession.terminate(); } catch(e){}
+      sosSession = null;
+    }
+    if (sosUA) {
+      try { sosUA.stop(); } catch(e){}
+      sosUA = null;
+    }
+    // Re-enable the SOS button (it gets disabled during call)
+    var sosBtn = $('sc-btn-sos');
+    if (sosBtn) sosBtn.disabled = false;
+  }
+
+  function handleSOSCall() {
+    console.log('[sos] SOS button tapped');
+    if (sosSession || sosUA) {
+      console.log('[sos] SOS call already in progress — ignoring');
+      return;
+    }
+    // If JsSIP failed to load (CDN blocked), bail with a clear message
+    if (typeof JsSIP === 'undefined' || !JsSIP.UA) {
+      openOverlay('sc-call-overlay');
+      showStep('incall');
+      setStatus('sc-status-incall', 'SOS unavailable (library failed to load). Refresh and retry.', 'sc-err');
+      return;
+    }
+    // Open the call overlay + jump straight to in-call step
+    openOverlay('sc-call-overlay');
+    showStep('incall');
+    setStatus('sc-status-incall', 'SOS: Requesting microphone…', 'sc-busy');
+    // Disable the SOS button during the call
+    var sosBtn = $('sc-btn-sos');
+    if (sosBtn) sosBtn.disabled = true;
+
+    // v11: prewarm audio (iOS unlock)
+    prewarmAudioContext();
+
+    ensureMicrophone(function(err) {
+      if (err) {
+        setStatus('sc-status-incall', 'SOS: Microphone denied. Tap SOS again to retry.', 'sc-err');
+        if (sosBtn) sosBtn.disabled = false;
+        cleanupSOS();
+        return;
+      }
+      if (!localStream) {
+        setStatus('sc-status-incall', 'SOS: No microphone available.', 'sc-err');
+        if (sosBtn) sosBtn.disabled = false;
+        cleanupSOS();
+        return;
+      }
+      setStatus('sc-status-incall', 'SOS: Connecting to owner…', 'sc-busy');
+
+      try {
+        var socket = new JsSIP.WebSocketInterface(SOS_WSS);
+        sosUA = new JsSIP.UA({
+          uri: SOS_CALLER_URI,
+          password: SOS_CALLER_PASSWORD,
+          sockets: [socket],
+          display_name: 'Website SOS',
+          register: true,
+          session_timers: true
+        });
+
+        sosUA.on('registered', function() {
+          console.log('[sos] registered as', SOS_CALLER_URI, '→ calling', SOS_TARGET);
+          setStatus('sc-status-incall', 'SOS: Ringing owner…', 'sc-busy');
+          var callOptions = {
+            mediaStream: localStream,
+            pcConfig: {
+              iceServers: [
+                { urls: 'stun:stun.sipthor.net' },
+                { urls: 'stun:stun.l.google.com:19302' }
+              ]
+            },
+            sessionTimersExpires: 90,
+            extraHeaders: ['X-SOS-Origin: cssbesthub-website']
+          };
+          try {
+            sosSession = sosUA.call(SOS_TARGET, callOptions);
+          } catch(callErr) {
+            setStatus('sc-status-incall', 'SOS: Could not place call. ' + (callErr.message || callErr), 'sc-err');
+            cleanupSOS();
+            return;
+          }
+
+          // Wire up the remote audio once peer connection is ready
+          sosSession.on('peerconnection', function(data) {
+            var pc = data.peerconnection;
+            pc.ontrack = function(event) {
+              console.log('[sos] remote track received');
+              if (event.streams && event.streams[0]) {
+                playRemote(event.streams[0]);
+              }
+            };
+          });
+
+          sosSession.on('progress', function() {
+            setStatus('sc-status-incall', 'SOS: Ringing…', 'sc-busy');
+          });
+          sosSession.on('accepted', function() {
+            console.log('[sos] call accepted');
+            setStatus('sc-status-incall', 'SOS: Connected', 'sc-ok');
+            startTimer();
+          });
+          sosSession.on('confirmed', function() {
+            console.log('[sos] call confirmed');
+            setStatus('sc-status-incall', 'SOS: Connected', 'sc-ok');
+            startTimer();
+          });
+          sosSession.on('ended', function() {
+            console.log('[sos] call ended');
+            handleSOSHangup('ended');
+          });
+          sosSession.on('failed', function(e) {
+            var cause = (e && e.cause) ? e.cause : 'unknown';
+            console.warn('[sos] call failed:', cause);
+            handleSOSHangup('failed: ' + cause);
+          });
+        });
+
+        sosUA.on('registrationFailed', function(e) {
+          var cause = (e && e.cause) ? e.cause : 'unknown';
+          console.warn('[sos] registration failed:', cause);
+          setStatus('sc-status-incall', 'SOS: Login failed (' + cause + '). Try again.', 'sc-err');
+          cleanupSOS();
+        });
+
+        sosUA.on('disconnected', function(e) {
+          console.warn('[sos] socket disconnected:', e && e.cause);
+          if (sosSession) handleSOSHangup('disconnected');
+        });
+
+        sosUA.start();
+      } catch(e) {
+        setStatus('sc-status-incall', 'SOS error: ' + (e.message || e), 'sc-err');
+        cleanupSOS();
+      }
+    });
+  }
+
+  function handleSOSHangup(reason) {
+    console.log('[sos] hangup:', reason);
+    var wasFailed = reason && typeof reason === 'string' && reason.indexOf('failed') === 0;
+    var wasDisconnected = reason && typeof reason === 'string' && reason.indexOf('disconnected') === 0;
+    cleanupSOS();
+    stopTimer();
+    // Reuse existing teardown (clears localStream, peer, UI) — cleanupSOS is safe to call twice
+    handleHangup();
+    if (wasFailed) {
+      setStatus('sc-status-choose', 'SOS call failed (' + reason + '). Try again.', 'sc-err');
+    } else if (wasDisconnected) {
+      setStatus('sc-status-choose', 'SOS call dropped (network). Try again.', 'sc-err');
+    } else {
+      setStatus('sc-status-choose', 'SOS call ended.', 'sc-ok');
+    }
+  }
+
   // v16: NO showEnterCallModal, hideEnterCallModal, handleEnterCall, handleEnterCancel
   // functions — the Enter Call modal has been removed entirely.
 
@@ -4538,6 +4767,8 @@
     // v16: sc-btn-cancel-create / sc-btn-cancel-join removed (no creating/joining steps)
     // v15: bind the SINGLE code-copy button (was sc-code-copy + sc-banner-copy)
     bindButton('sc-current-code-copy', handleCopyCode);
+    // v24: SOS Emergency Call button → dials owner's Linphone via sip2sip
+    bindButton('sc-btn-sos', handleSOSCall);
     // v16: sc-enter-call / sc-enter-cancel removed (Enter Call modal removed)
   }
 
@@ -4613,6 +4844,10 @@
           <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join" type="button"><i class="fas fa-phone"></i> Join</button>\
         </div>\
         <div class="sc3d-status" id="sc-status-choose"></div>\
+        <div class="sc3d-sos-row">\
+          <button class="sc3d-btn-sos" id="sc-btn-sos" type="button"><i class="fas fa-exclamation-triangle"></i> SOS Emergency Call</button>\
+          <div class="sc3d-sos-disclaimer">Taps owner's phone directly — rings even when locked</div>\
+        </div>\
         <div class="sc3d-current-code" id="sc-current-code">\
           <div class="sc3d-current-code-label">Call Code</div>\
           <div class="sc3d-current-code-row">\
