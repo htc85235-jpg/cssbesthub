@@ -347,75 +347,6 @@
   text-shadow: 0 0 8px rgba(59, 130, 246, 0.85), 0 0 16px rgba(59, 130, 246, 0.4) !important;
 }
 
-/* ===== v21: EMERGENCY CALL BUTTON — white neumorphic, red glowing text ===== */
-#sc-call-overlay .sc3d-btn-emergency {
-  background: #eef0f5 !important;
-  color: #dc2626 !important;
-  text-shadow: 0 0 8px rgba(220, 38, 38, 0.75), 0 0 16px rgba(220, 38, 38, 0.4) !important;
-  width: 100% !important;
-  margin-bottom: 10px !important;
-  padding: 16px 18px !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  letter-spacing: 1.2px !important;
-  text-transform: uppercase !important;
-  box-shadow:
-    5px 5px 10px rgba(163, 177, 198, 0.55),
-    -5px -5px 10px rgba(255, 255, 255, 0.9) !important;
-}
-
-#sc-call-overlay .sc3d-btn-emergency:hover {
-  color: #b91c1c !important;
-  text-shadow: 0 0 12px rgba(220, 38, 38, 0.9), 0 0 22px rgba(220, 38, 38, 0.5) !important;
-}
-
-#sc-call-overlay .sc3d-btn-emergency:active {
-  color: #b91c1c !important;
-  box-shadow:
-    inset 4px 4px 8px rgba(163, 177, 198, 0.6),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.9) !important;
-}
-
-#sc-call-overlay .sc3d-btn-emergency i {
-  font-size: 15px !important;
-  animation: scEmergencyPulse 1.2s ease-in-out infinite;
-}
-
-@keyframes scEmergencyPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.6; transform: scale(1.15); }
-}
-
-/* v21: Emergency Call status banner */
-#sc-call-overlay .sc3d-emergency-status {
-  width: 100% !important;
-  margin-top: 8px !important;
-  margin-bottom: 4px !important;
-  padding: 10px 12px !important;
-  border-radius: 10px !important;
-  font-size: 12px !important;
-  text-align: center !important;
-  display: none;
-  background: #eef0f5 !important;
-  color: #991b1b !important;
-  border: 1px solid transparent !important;
-  text-shadow: none !important;
-  box-shadow:
-    inset 2px 2px 4px rgba(163, 177, 198, 0.35),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.85) !important;
-}
-
-#sc-call-overlay .sc3d-emergency-status.sc-show { display: block !important; }
-#sc-call-overlay .sc3d-emergency-status.sc-busy {
-  color: #92400e !important;
-}
-#sc-call-overlay .sc3d-emergency-status.sc-ok {
-  color: #166534 !important;
-}
-#sc-call-overlay .sc3d-emergency-status.sc-err {
-  color: #991b1b !important;
-}
-
 #sc-call-overlay .sc3d-btn-red:hover,
 #sc-call-overlay .sc3d-ctrl-btn.sc-ctrl-hangup:hover {
   color: #2563eb !important;
@@ -4353,154 +4284,6 @@
   function handleBannerDismiss() { /* v15: no-op — banner removed */ }
   function handleBannerCopy() { /* v15: no-op — banner removed */ }
 
-  // =======================================================================
-  // v21: EMERGENCY CALL HANDLER (dashboard-based)
-  // When pressed: opens PeerJS as host with a unique callId, then POSTs to
-  // the backend, which enqueues a show_call command for the dashboard.
-  // The dashboard polls, sees the command, rings loudly + vibrates, and
-  // when the user taps Answer, dials this peer back via PeerJS.
-  // =======================================================================
-  var EMERGENCY_BACKEND = 'https://emergency-backend-eight.vercel.app';
-  var emergencyCallInFlight = false;
-
-  function setEmergencyStatus(msg, kind) {
-    var el = $('sc-emergency-status');
-    if (!el) return;
-    if (!msg) {
-      el.classList.remove('sc-show', 'sc-busy', 'sc-ok', 'sc-err');
-      el.textContent = '';
-      return;
-    }
-    el.textContent = msg;
-    el.classList.remove('sc-busy', 'sc-ok', 'sc-err');
-    if (kind) el.classList.add(kind);
-    el.classList.add('sc-show');
-  }
-
-  function handleEmergencyCall() {
-    if (emergencyCallInFlight) {
-      console.log('[sc] Emergency call already in flight, ignoring');
-      return;
-    }
-    console.log('[sc] Emergency Call button pressed');
-
-    // v22: NO confirmation prompt — start calling immediately.
-    emergencyCallInFlight = true;
-    setEmergencyStatus('Connecting', 'sc-busy');
-
-    // Generate a unique call ID — this becomes the PeerJS peer ID (the website is host)
-    var callId = 'emg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-
-    // 1) Get microphone first (needed for the WebRTC call)
-    prewarmAudioContext();
-    ensureMicrophone(function(err) {
-      if (err) {
-        emergencyCallInFlight = false;
-        setEmergencyStatus('Microphone access denied.', 'sc-err');
-        setTimeout(function() { setEmergencyStatus('', ''); }, 5000);
-        return;
-      }
-
-      // 2) Open PeerJS as host (peer ID = callId) so the dashboard can dial us
-      if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
-      isHost = true;
-
-      try { peer = new Peer(callId, { debug: 1 }); }
-      catch (e) {
-        emergencyCallInFlight = false;
-        setEmergencyStatus('Could not start: ' + (e.message||e), 'sc-err');
-        return;
-      }
-
-      peer.on('open', function(id) {
-        console.log('[sc] Emergency peer open as host:', id);
-        setEmergencyStatus('Connecting', 'sc-busy');
-
-        // 3) POST to backend → enqueues show_call command for dashboard
-        var body = JSON.stringify({
-          callerName: 'Website Caller',
-          callerId: callId
-        });
-        fetch(EMERGENCY_BACKEND + '/api/emergency-call', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: body
-        }).then(function(resp) {
-          return resp.json().then(function(data) { return { ok: resp.ok, data: data }; });
-        }).then(function(result) {
-          if (result.ok && result.data.status === 'sent') {
-            console.log('[sc] Emergency push sent:', result.data);
-            setEmergencyStatus('Connecting', 'sc-busy');
-            // After 60 seconds with no answer, give up
-            setTimeout(function() {
-              if (emergencyCallInFlight) {
-                emergencyCallInFlight = false;
-                setEmergencyStatus('✗ No answer (timeout)', 'sc-err');
-                if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
-                setTimeout(function() { setEmergencyStatus('', ''); }, 5000);
-              }
-            }, 60000);
-          } else {
-            console.error('[sc] Emergency call failed:', result.data);
-            emergencyCallInFlight = false;
-            var errMsg = (result.data && result.data.error) ? result.data.error : 'Unknown error';
-            var hint = (result.data && result.data.hint) ? ' ' + result.data.hint : '';
-            setEmergencyStatus('✗ ' + errMsg + hint, 'sc-err');
-            if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
-            setTimeout(function() { setEmergencyStatus('', ''); }, 6000);
-          }
-        }).catch(function(err) {
-          emergencyCallInFlight = false;
-          console.error('[sc] Emergency call network error:', err);
-          setEmergencyStatus('✗ Network error: ' + (err.message || err), 'sc-err');
-          if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
-          setTimeout(function() { setEmergencyStatus('', ''); }, 6000);
-        });
-      });
-
-      // 4) When the dashboard dials us, answer the call and enter in-call UI
-      peer.on('call', function(call) {
-        console.log('[sc] Dashboard answered — incoming PeerJS call');
-        activeCall = call;
-        call.answer(localStream);
-        call.on('stream', function(rs) {
-          console.log('[sc] Remote stream from dashboard received');
-          emergencyCallInFlight = false;
-          setEmergencyStatus('✓ Connected', 'sc-ok');
-          setTimeout(function() { setEmergencyStatus('', ''); }, 2000);
-          playRemote(rs);
-          enterInCall();
-        });
-        call.on('close', function() {
-          emergencyCallInFlight = false;
-          setEmergencyStatus('', '');
-          handleHangup();
-        });
-        call.on('error', function(e) {
-          emergencyCallInFlight = false;
-          setEmergencyStatus('Call error: ' + (e.message||e), 'sc-err');
-          if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
-          setTimeout(function() { setEmergencyStatus('', ''); }, 5000);
-        });
-      });
-
-      peer.on('error', function(err) {
-        console.error('[sc] Emergency peer error:', err);
-        var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
-        emergencyCallInFlight = false;
-        if (msg === 'unavailable-id') {
-          setEmergencyStatus('Call ID in use, try again', 'sc-err');
-        } else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') {
-          setEmergencyStatus('Network issue', 'sc-err');
-        } else {
-          setEmergencyStatus('Error: ' + msg, 'sc-err');
-        }
-        if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
-        setTimeout(function() { setEmergencyStatus('', ''); }, 5000);
-      });
-    });
-  }
-
   // v16: handleCreate — RADICALLY SIMPLIFIED.
   // User request: "Clicking on create button will open no new window, will just say
   // 'Call Created' text as little notification inside the box and show created call
@@ -4746,7 +4529,6 @@
     bindButton('sc-pw-close', function(){ closeOverlay('sc-pw-overlay'); resetPwForm(); });
     bindButton('sc-pw-submit', handlePwSubmit);
     bindButton('sc-call-close', closeCallWindow);
-    bindButton('sc-btn-emergency', handleEmergencyCall);
     bindButton('sc-btn-create', handleCreate);
     bindButton('sc-btn-join', handleJoinClick);
     bindButton('sc-btn-hangup', handleHangup);
@@ -4826,8 +4608,6 @@
 \
       <div class="sc3d-step sc-active" id="sc-step-choose">\
         <div class="sc3d-icon-badge"><i class="fas fa-phone-volume"></i></div>\
-        <button class="sc3d-btn sc3d-btn-emergency" id="sc-btn-emergency" type="button"><i class="fas fa-bell"></i> Emergency Call</button>\
-        <div class="sc3d-emergency-status" id="sc-emergency-status"></div>\
         <div class="sc3d-btn-row">\
           <button class="sc3d-btn sc3d-btn-purple" id="sc-btn-create" type="button"><i class="fas fa-plus"></i> Create</button>\
           <button class="sc3d-btn sc3d-btn-emerald" id="sc-btn-join" type="button"><i class="fas fa-phone"></i> Join</button>\
