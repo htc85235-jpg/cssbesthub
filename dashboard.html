@@ -1,1007 +1,1338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Private Dashboard</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#eef0f5" />
+<title>POAT Dashboard — Emergency Call Receiver</title>
+<link rel="icon" href="/cssbesthub/logo.svg" />
+<link rel="apple-touch-icon" href="/cssbesthub/logo.svg" />
+
+<!-- ===== Dependencies (same as Secret Call Box) ===== -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;}
+/* ===================================================================
+   POAT DASHBOARD — WHITE NEUMORPHISM UI (matches Secret Call Box)
+   Background: #eef0f5
+   Text: blue #1d4ed8 with glow
+   Extruded shadows: 5px 5px 10px rgba(163,177,198,.55), -5px -5px 10px rgba(255,255,255,.9)
+   Inset shadows:    inset 4px 4px 8px rgba(163,177,198,.6), inset -4px -4px 8px rgba(255,255,255,.9)
+   =================================================================== */
 
-/* Login */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
-.login-box{background:#1a1d27;border-radius:16px;padding:40px 32px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
-.login-box h1{font-size:20px;margin-bottom:8px;text-align:center;}
-.login-box p{font-size:12px;color:#64748b;text-align:center;margin-bottom:24px;}
-.login-box input{width:100%;padding:12px 16px;border-radius:10px;border:1px solid #2d3348;background:#12141c;color:#e2e8f0;font-size:14px;outline:none;margin-bottom:16px;}
-.login-box input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
-.login-box button{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:transform 0.1s,box-shadow 0.2s;}
-.login-box button:active{transform:scale(0.97);}
-.login-error{color:#f87171;font-size:12px;text-align:center;margin-top:12px;display:none;}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Dashboard */
-.dash-wrap{display:none;padding:16px;max-width:640px;margin:0 auto;}
-.dash-wrap.active{display:block;}
-
-/* Header */
-.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #1e2233;}
-.dash-header h1{font-size:18px;display:flex;align-items:center;gap:8px;}
-.dash-header h1 span{font-size:22px;}
-.logout-btn{background:none;border:1px solid #334155;color:#94a3b8;padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer;transition:all 0.15s;}
-.logout-btn:hover{border-color:#f87171;color:#f87171;}
-
-/* Write Count Cards Row */
-.wc-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
-.wc-card{background:linear-gradient(145deg,#1a1f2e,#151923);border-radius:14px;padding:16px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.3);border:1px solid #1e2538;flex:1;min-width:240px;}
-.wc-card .wc-title{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.wc-card .wc-title .wc-badge{font-size:8px;padding:1px 5px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
-.wc-card .wc-badge.live{background:#1e3a5f;color:#60a5fa;}
-.wc-card .wc-badge.calc{background:#3b1f4e;color:#c084fc;}
-.wc-card .wc-numbers{display:flex;align-items:baseline;gap:4px;margin-bottom:10px;}
-.wc-card .wc-used{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;color:#fde68a;text-shadow:0 0 12px rgba(253,230,138,0.3);}
-.wc-card .wc-sep{font-size:16px;color:#475569;font-weight:300;}
-.wc-card .wc-limit{font-size:14px;color:#64748b;font-weight:600;}
-.wc-card .wc-bar-track{width:100%;height:5px;background:#1e2233;border-radius:3px;overflow:hidden;}
-.wc-card .wc-bar-fill{height:100%;border-radius:3px;transition:width 0.6s ease,background 0.3s;background:linear-gradient(90deg,#22c55e,#84cc16);}
-.wc-card .wc-bar-fill.warn{background:linear-gradient(90deg,#f59e0b,#f97316);}
-.wc-card .wc-bar-fill.danger{background:linear-gradient(90deg,#ef4444,#dc2626);}
-.wc-card .wc-remaining{font-size:10px;color:#475569;margin-top:6px;}
-.wc-card .wc-source{font-size:8px;color:#334155;margin-top:3px;}
-.wc-card .wc-breakdown{font-size:9px;color:#475569;margin-top:6px;line-height:1.5;}
-.wc-card .wc-breakdown span{color:#94a3b8;}
-.wc-refresh-btn{background:none;border:1px solid #334155;color:#64748b;padding:3px 8px;border-radius:6px;font-size:9px;cursor:pointer;margin-top:6px;transition:all 0.15s;}
-.wc-refresh-btn:hover{border-color:#6366f1;color:#a5b4fc;}
-
-/* Section */
-.section{margin-bottom:24px;}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
-.section-head h2{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;}
-.section-head .badge{background:#6366f1;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
-.section-head .section-btns{display:flex;gap:6px;}
-.delete-all-btn{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;transition:transform 0.1s,opacity 0.15s;}
-.delete-all-btn:active{transform:scale(0.96);}
-.delete-all-btn:disabled{opacity:0.4;cursor:not-allowed;}
-.delete-all-btn.purple{background:linear-gradient(135deg,#7c3aed,#6d28d9);}
-
-/* Voice Message Card */
-.vmsg-card{background:#14171f;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1px solid #1e2233;transition:all 0.2s;}
-.vmsg-card:hover{border-color:#2d3348;}
-.vmsg-card .vmsg-icon{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1e3a2f,#162b22);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.vmsg-card .vmsg-info{flex:1;min-width:0;}
-.vmsg-card .vmsg-sender{font-size:12px;font-weight:600;color:#a5b4fc;text-transform:capitalize;}
-.vmsg-card .vmsg-meta{font-size:10px;color:#475569;margin-top:2px;display:flex;gap:8px;}
-.vmsg-card .vmsg-dur{color:#6ee7b7;}
-.vmsg-card .vmsg-time{color:#475569;}
-.vmsg-card .vmsg-size{color:#475569;}
-.vmsg-delete{background:none;border:1px solid #3b1520;color:#f87171;width:30px;height:30px;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;}
-.vmsg-delete:hover{background:#3b1520;border-color:#f87171;}
-.vmsg-delete:active{transform:scale(0.9);}
-.vmsg-delete.confirming{background:#dc2626;border-color:#dc2626;color:#fff;font-size:9px;font-weight:700;}
-
-/* Text Messages Section */
-.txt-section-empty{background:#14171f;border-radius:10px;padding:20px;text-align:center;color:#475569;font-size:12px;border:1px solid #1e2233;}
-
-/* Status / Loading */
-.loading{text-align:center;padding:40px;color:#475569;font-size:12px;}
-.spinner{width:24px;height:24px;border:3px solid #1e2233;border-top-color:#6366f1;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* Toast */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e293b;color:#e2e8f0;padding:10px 20px;border-radius:10px;font-size:12px;box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:transform 0.3s ease;z-index:999;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.toast.success{border:1px solid #22c55e33;}
-.toast.error{border:1px solid #ef444433;}
-
-/* Confirm overlay */
-.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:998;padding:20px;}
-.confirm-box{background:#1a1d27;border-radius:14px;padding:24px;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
-.confirm-box h3{font-size:15px;margin-bottom:8px;}
-.confirm-box p{font-size:12px;color:#94a3b8;margin-bottom:20px;line-height:1.5;}
-.confirm-box .confirm-btns{display:flex;gap:10px;justify-content:flex-end;}
-.confirm-box .btn-cancel{background:#2d3348;color:#94a3b8;border:none;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;}
-.confirm-box .btn-confirm{background:#dc2626;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;}
-
-/* Progress bar for bulk ops */
-.bulk-progress{width:100%;height:4px;background:#1e2233;border-radius:2px;margin-top:12px;overflow:hidden;display:none;}
-.bulk-progress.active{display:block;}
-.bulk-progress .bulk-bar{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:2px;transition:width 0.3s;width:0%;}
-.bulk-status{font-size:10px;color:#64748b;margin-top:6px;display:none;}
-.bulk-status.active{display:block;}
-
-/* Responsive */
-@media(max-width:480px){
-  .dash-wrap{padding:12px;}
-  .wc-row{flex-direction:column;}
-  .wc-card{min-width:0;}
-  .wc-card .wc-used{font-size:26px;}
-  .vmsg-card{padding:10px 12px;}
-  .section-head .section-btns{flex-wrap:wrap;}
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  background: #eef0f5;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  color: #1d4ed8;
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.65), 0 0 12px rgba(59, 130, 246, 0.35);
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* ===== STAGE / CARD ===== */
+.stage {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  position: relative;
+  background: #eef0f5;
+  border-radius: 28px;
+  padding: 28px 24px 22px;
+  width: 100%;
+  text-align: center;
+  box-shadow:
+    9px 9px 18px rgba(163, 177, 198, 0.6),
+    -9px -9px 18px rgba(255, 255, 255, 0.9);
+  border: none;
+}
+
+/* ===== HEADER ===== */
+.header {
+  margin-bottom: 22px;
+}
+
+.header .logo-badge {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef0f5;
+  font-size: 26px;
+  box-shadow:
+    inset 3px 3px 6px rgba(163, 177, 198, 0.55),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.95);
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.85), 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.header p {
+  font-size: 12px;
+  letter-spacing: 1px;
+  opacity: 0.75;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ===== INPUTS ===== */
+.input-wrap {
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.input-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #1d4ed8;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+  margin-left: 4px;
+  opacity: 0.7;
+}
+
+.input {
+  width: 100%;
+  background: #eef0f5;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #1d4ed8;
+  letter-spacing: 0.5px;
+  outline: none;
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.7);
+  box-shadow:
+    inset 4px 4px 8px rgba(163, 177, 198, 0.55),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+
+.input::placeholder {
+  color: rgba(37, 99, 235, 0.4);
+  text-shadow: none;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.input:focus {
+  box-shadow:
+    inset 4px 4px 8px rgba(163, 177, 198, 0.65),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  outline: none;
+  background: #eef0f5;
+  color: #1d4ed8;
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.65);
+  font-family: inherit;
+  box-shadow:
+    5px 5px 10px rgba(163, 177, 198, 0.55),
+    -5px -5px 10px rgba(255, 255, 255, 0.9);
+  transition: color 0.15s, text-shadow 0.15s;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.btn:last-child { margin-bottom: 0; }
+
+.btn i { font-size: 13px; }
+
+.btn:hover {
+  color: #2563eb;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.85), 0 0 18px rgba(59, 130, 246, 0.45);
+}
+
+.btn:active {
+  box-shadow:
+    inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+  color: #2563eb;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.85);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow:
+    inset 2px 2px 5px rgba(163, 177, 198, 0.4),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+
+.btn-ghost {
+  background: #eef0f5;
+  font-size: 12px;
+  padding: 10px 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ===== STATUS DOT ===== */
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 16px;
+  margin: 14px 0 18px;
+  border-radius: 14px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: #eef0f5;
+  box-shadow:
+    inset 2px 2px 5px rgba(163, 177, 198, 0.4),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.85);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
+  animation: dotPulse 1.6s ease-in-out infinite;
+}
+
+.status-dot.sc-busy { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.8); }
+.status-dot.sc-ok   { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.8); }
+.status-dot.sc-err  { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.8); }
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ===== INFO BOX ===== */
+.info-box {
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-top: 14px;
+  line-height: 1.6;
+  background: #eef0f5;
+  opacity: 0.7;
+  box-shadow:
+    inset 2px 2px 4px rgba(163, 177, 198, 0.3),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.8);
+}
+
+.info-box code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0;
+  word-break: break-all;
+}
+
+/* ===== SCREEN SWITCHING ===== */
+.screen { display: none; }
+.screen.sc-active { display: block; }
+
+/* ===== INCOMING CALL OVERLAY ===== */
+#incoming-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(238, 240, 245, 0.96);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 16px;
+  animation: overlayFadeIn 0.3s ease;
+}
+
+#incoming-overlay.sc-open { display: flex; }
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.incoming-card {
+  position: relative;
+  background: #eef0f5;
+  border-radius: 32px;
+  padding: 36px 24px 30px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow:
+    12px 12px 24px rgba(163, 177, 198, 0.65),
+    -12px -12px 24px rgba(255, 255, 255, 0.95);
+  animation: cardSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes cardSlideUp {
+  from { transform: translateY(20px) scale(0.95); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Animated caller avatar (neumorphic pulsing circle) */
+.caller-avatar {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #eef0f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  color: #1d4ed8;
+  text-shadow: 0 0 14px rgba(59, 130, 246, 0.85);
+  position: relative;
+  box-shadow:
+    6px 6px 14px rgba(163, 177, 198, 0.6),
+    -6px -6px 14px rgba(255, 255, 255, 0.95),
+    inset 0 0 0 0 rgba(59, 130, 246, 0);
+  animation: avatarPulse 1.4s ease-in-out infinite;
+}
+
+.caller-avatar::before,
+.caller-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid rgba(59, 130, 246, 0.25);
+  animation: ringRipple 1.8s ease-out infinite;
+}
+
+.caller-avatar::after { animation-delay: 0.9s; }
+
+@keyframes avatarPulse {
+  0%, 100% {
+    box-shadow:
+      6px 6px 14px rgba(163, 177, 198, 0.6),
+      -6px -6px 14px rgba(255, 255, 255, 0.95),
+      0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow:
+      6px 6px 14px rgba(163, 177, 198, 0.6),
+      -6px -6px 14px rgba(255, 255, 255, 0.95),
+      0 0 0 14px rgba(59, 130, 246, 0);
+  }
+}
+
+@keyframes ringRipple {
+  0%   { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.incoming-card h2 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.85), 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.incoming-card .caller-name {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #2563eb;
+  text-shadow: 0 0 12px rgba(59, 130, 246, 0.9), 0 0 24px rgba(59, 130, 246, 0.5);
+}
+
+.incoming-card .caller-source {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 28px;
+}
+
+/* Big circular Answer / Decline buttons */
+.call-actions {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 30px;
+  margin-top: 8px;
+}
+
+.call-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.call-action-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: none;
+  background: #eef0f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  box-shadow:
+    6px 6px 12px rgba(163, 177, 198, 0.55),
+    -6px -6px 12px rgba(255, 255, 255, 0.95);
+  transition: all 0.15s;
+}
+
+.call-action-btn:active {
+  box-shadow:
+    inset 4px 4px 10px rgba(163, 177, 198, 0.6),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.9);
+}
+
+.call-action-btn.answer {
+  color: #10b981;
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.85);
+  animation: answerPulse 1.2s ease-in-out infinite;
+}
+
+.call-action-btn.decline {
+  color: #ef4444;
+  text-shadow: 0 0 12px rgba(239, 68, 68, 0.85);
+}
+
+@keyframes answerPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+.call-action-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+/* ===== IN-CALL SCREEN ===== */
+.incall-timer {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  margin: 16px 0 8px;
+  color: #2563eb;
+  text-shadow: 0 0 12px rgba(59, 130, 246, 0.85), 0 0 24px rgba(59, 130, 246, 0.4);
+}
+
+.incall-status {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 22px;
+}
+
+.incall-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.ctrl-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  border: none;
+  border-radius: 16px;
+  background: #eef0f5;
+  color: #1d4ed8;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  box-shadow:
+    5px 5px 10px rgba(163, 177, 198, 0.5),
+    -5px -5px 10px rgba(255, 255, 255, 0.9);
+  transition: all 0.15s;
+}
+
+.ctrl-btn i { font-size: 18px; }
+
+.ctrl-btn span {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.ctrl-btn:active,
+.ctrl-btn.sc-active {
+  box-shadow:
+    inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+  color: #2563eb;
+}
+
+.ctrl-btn.hangup {
+  color: #ef4444;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
+}
+
+.ctrl-btn.hangup:active {
+  color: #dc2626;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.85);
+}
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(40px);
+  background: #eef0f5;
+  color: #1d4ed8;
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.7);
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
+  box-shadow:
+    5px 5px 12px rgba(163, 177, 198, 0.55),
+    -5px -5px 12px rgba(255, 255, 255, 0.9);
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.sc-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.sc-err  { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
+.toast.sc-ok   { color: #10b981; text-shadow: 0 0 6px rgba(16, 185, 129, 0.6); }
+
+/* ===== UTILITY ===== */
+.hidden { display: none !important; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Inline "test call" link in idle screen */
+.test-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.7;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.test-link:hover { opacity: 1; }
+
+/* Audio element hidden */
+audio { display: none; }
 </style>
 </head>
 <body>
 
-<!-- Login -->
-<div class="login-wrap" id="login-wrap">
-  <div class="login-box">
-    <h1>Private Dashboard</h1>
-    <p>Enter password to access</p>
-    <input type="password" id="pw-input" placeholder="Password" autocomplete="off"/>
-    <button id="pw-btn">Unlock</button>
-    <div class="login-error" id="login-error">Wrong password</div>
+<!-- Hidden remote audio element for the call -->
+<audio id="remote-audio" autoplay playsinline></audio>
+
+<div class="stage">
+  <div class="card">
+
+    <!-- ============== SCREEN 1: LOGIN ============== -->
+    <div class="screen sc-active" id="screen-login">
+      <div class="header">
+        <div class="logo-badge"><i class="fas fa-shield-halved"></i></div>
+        <h1>POAT Dashboard</h1>
+        <p>Emergency Call Receiver</p>
+      </div>
+
+      <div class="input-wrap">
+        <div class="input-label">Device ID <span style="opacity:0.5;">(required)</span></div>
+        <input type="text" class="input" id="login-device-id" placeholder="Enter any unique ID, e.g. poat-001" autocomplete="off" />
+      </div>
+
+      <div class="input-wrap">
+        <div class="input-label">Admin Token <span style="opacity:0.5;">(optional)</span></div>
+        <input type="password" class="input" id="login-admin-token" placeholder="Leave blank if unsure" autocomplete="off" />
+      </div>
+
+      <button class="btn" id="btn-login">
+        <i class="fas fa-arrow-right-to-bracket"></i> Connect
+      </button>
+
+      <div class="info-box">
+        Enter any unique Device ID (this becomes your dashboard's identity). The website's Emergency Call button will ring THIS dashboard. Keep this tab open and your phone unlocked to receive calls.
+      </div>
+    </div>
+
+    <!-- ============== SCREEN 2: IDLE / LISTENING ============== -->
+    <div class="screen" id="screen-idle">
+      <div class="header">
+        <div class="logo-badge"><i class="fas fa-tower-broadcast"></i></div>
+        <h1>POAT Dashboard</h1>
+        <p>Listening</p>
+      </div>
+
+      <div class="status-row" id="idle-status">
+        <div class="status-dot sc-ok" id="idle-dot"></div>
+        <span id="idle-status-text">Listening for calls</span>
+      </div>
+
+      <div class="info-box">
+        Device ID:<br/>
+        <code id="idle-device-id">—</code>
+      </div>
+
+      <div class="info-box" style="margin-top: 8px;">
+        Last poll: <span class="mono" id="idle-last-poll">never</span><br/>
+        Calls received: <span class="mono" id="idle-call-count">0</span>
+      </div>
+
+      <button class="btn" id="btn-test-call" style="margin-top: 14px;">
+        <i class="fas fa-vial"></i> Test Ringtone
+      </button>
+
+      <button class="btn btn-ghost" id="btn-logout">
+        <i class="fas fa-arrow-right-from-bracket"></i> Disconnect
+      </button>
+    </div>
+
+    <!-- ============== SCREEN 3: IN-CALL ============== -->
+    <div class="screen" id="screen-incall">
+      <div class="header">
+        <div class="logo-badge" style="color: #10b981; text-shadow: 0 0 12px rgba(16,185,129,0.85);"><i class="fas fa-phone-volume"></i></div>
+        <h1>In Call</h1>
+        <p id="incall-caller">Unknown</p>
+      </div>
+
+      <div class="incall-timer" id="incall-timer">00:00</div>
+      <div class="incall-status" id="incall-status">Connected</div>
+
+      <div class="incall-controls">
+        <button class="ctrl-btn" id="btn-mute">
+          <i class="fas fa-microphone"></i>
+          <span>Mute</span>
+        </button>
+        <button class="ctrl-btn" id="btn-speaker">
+          <i class="fas fa-volume-high"></i>
+          <span>Speaker</span>
+        </button>
+        <button class="ctrl-btn hangup" id="btn-hangup">
+          <i class="fas fa-phone-slash"></i>
+          <span>Hangup</span>
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- Dashboard -->
-<div class="dash-wrap" id="dash-wrap">
-  <div class="dash-header">
-    <h1><span>&#128274;</span> Dashboard</h1>
-    <button class="logout-btn" id="logout-btn">Logout</button>
-  </div>
+<!-- ============== INCOMING CALL OVERLAY ============== -->
+<div id="incoming-overlay">
+  <div class="incoming-card">
+    <div class="caller-avatar"><i class="fas fa-phone-volume"></i></div>
+    <h2>Incoming Call POAT</h2>
+    <div class="caller-name" id="incoming-caller-name">Website Caller</div>
+    <div class="caller-source">From CSS Guide Website</div>
 
-  <!-- Write Count Cards -->
-  <div class="wc-row">
-    <!-- Live Write Count (Cloudflare GraphQL) -->
-    <div class="wc-card" id="wc-card-live">
-      <div class="wc-title">Live Write Count <span class="wc-badge live">LIVE</span></div>
-      <div class="wc-numbers">
-        <span class="wc-used" id="wc-used">--</span>
-        <span class="wc-sep">/</span>
-        <span class="wc-limit">1,000</span>
+    <div class="call-actions">
+      <div class="call-action" id="action-decline">
+        <button class="call-action-btn decline" type="button" aria-label="Decline">
+          <i class="fas fa-phone-slash"></i>
+        </button>
+        <div class="call-action-label">Decline</div>
       </div>
-      <div class="wc-bar-track"><div class="wc-bar-fill" id="wc-bar" style="width:0%"></div></div>
-      <div class="wc-remaining" id="wc-remaining">Loading...</div>
-      <div class="wc-source" id="wc-source"></div>
-      <button class="wc-refresh-btn" id="wc-refresh">Refresh Live</button>
-    </div>
-
-    <!-- Calculated Write Count (Operation-based) -->
-    <div class="wc-card" id="wc-card-calc">
-      <div class="wc-title">Calculated Writes <span class="wc-badge calc">ACCURATE</span></div>
-      <div class="wc-numbers">
-        <span class="wc-used" id="calc-wc-used" style="color:#c4b5fd;text-shadow:0 0 12px rgba(196,181,253,0.3);">0</span>
-        <span class="wc-sep">/</span>
-        <span class="wc-limit">1,000</span>
-      </div>
-      <div class="wc-bar-track"><div class="wc-bar-fill" id="calc-wc-bar" style="width:0%"></div></div>
-      <div class="wc-remaining" id="calc-wc-remaining">0 writes remaining today</div>
-      <div class="wc-breakdown" id="calc-wc-breakdown"><span>Uploads:</span> 0 &times; 3 = 0 &nbsp;|&nbsp; <span>Deletes:</span> 0</div>
-      <div class="wc-source" id="calc-wc-source">Based on operations observed today</div>
-    </div>
-  </div>
-
-  <!-- Voice Messages -->
-  <div class="section" id="voice-section">
-    <div class="section-head">
-      <h2>&#127908; Voice Messages <span class="badge" id="voice-count">0</span></h2>
-      <div class="section-btns">
-        <button class="delete-all-btn purple" id="delete-all-voice-btn">Delete All Voice</button>
+      <div class="call-action" id="action-answer">
+        <button class="call-action-btn answer" type="button" aria-label="Answer">
+          <i class="fas fa-phone"></i>
+        </button>
+        <div class="call-action-label">Answer</div>
       </div>
     </div>
-    <div id="voice-list"><div class="loading"><div class="spinner"></div>Loading voice messages...</div></div>
-    <div class="bulk-progress" id="voice-bulk-progress"><div class="bulk-bar" id="voice-bulk-bar"></div></div>
-    <div class="bulk-status" id="voice-bulk-status"></div>
-  </div>
-
-  <!-- Text Messages -->
-  <div class="section" id="text-section">
-    <div class="section-head">
-      <h2>&#128172; Text Messages <span class="badge" id="text-count">0</span></h2>
-      <div class="section-btns">
-        <button class="delete-all-btn" id="delete-all-text-btn">Delete All Text</button>
-      </div>
-    </div>
-    <div id="text-list"><div class="loading"><div class="spinner"></div>Loading text messages...</div></div>
   </div>
 </div>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
-<!-- Confirm overlay -->
-<div class="confirm-overlay" id="confirm-overlay" style="display:none;"></div>
 
 <script>
-(function(){
-  // ===== CONFIG =====
-  // Password obfuscated — split into char codes, reconstructed at runtime only
-  var _pc = [64,83,108,111,119,68,117,109,98,111,55,56,54];
-  function _rp(){ return String.fromCharCode.apply(null, _pc); }
+/* ===================================================================
+   POAT DASHBOARD — Logic
+   =================================================================== */
 
-  // Worker auth password (same as chat login)
-  var _wc = [115,108,111,119,100,117,109,98,111];
-  function _rwc(){ return String.fromCharCode.apply(null, _wc); }
+// ---- Config ----
+var BACKEND_URL = 'https://emergency-backend-eight.vercel.app';
+var POLL_INTERVAL_MS = 2000;       // poll every 2 seconds
+var POLL_TIMEOUT_MS  = 8000;       // hard timeout per poll
+var HEARTBEAT_INTERVAL_MS = 60000; // refresh device status every 60s
+var VIBRATION_PATTERN = [0, 1000, 400, 1000, 400, 1000, 400, 1000, 400];
 
-  var ENCRYPT_PASSWORD = _rp();
-  var CHAT_PASSWORD = _rwc();
-  var WORKER_URL = 'https://voice-box-worker.htc85235.workers.dev';
-  var GITHUB_REPO = 'htc85235-jpg/cssbesthub-vault';
-  var GITHUB_BRANCH = 'main';
-  var CHAT_FILE = 'chat.json';
-  var AUTO_DELETE_MS = 24 * 60 * 60 * 1000;
+// ---- State ----
+var state = {
+  adminToken: '',
+  deviceId: '',
+  lastSeq: 0,
+  polling: false,
+  pollTimer: null,
+  heartbeatTimer: null,
+  callCount: 0,
+  incomingCall: null,    // { callerName, callId, seq }
+  peer: null,            // PeerJS instance for outgoing call
+  activeCall: null,      // active MediaConnection
+  localStream: null,
+  remoteStream: null,
+  audioCtx: null,        // Web Audio API context for ringtone
+  ringtoneTimer: null,   // setInterval handle for ringtone loop
+  callStartTs: 0,
+  callTimerHandle: null,
+  muted: false,
+};
 
-  var _tk = ['github_pat_','11CIFWJEI0mHffC6IONYQ0_','DMNNFYPSHIw6xh2h7mq1L','CRK6tm2dTnwTOtfRrjl1NZYRNO7M4ZqphnSRMw'];
-  function _gt(){ return _tk.join(''); }
+// ---- DOM helpers ----
+function $(id) { return document.getElementById(id); }
 
-  // ===== STATE =====
-  var isLoggedIn = false;
-  var ownerToken = '';
-  var maxWritesEver = parseInt(localStorage.getItem('dash_maxWrites') || '0');
-  var chatFileSha = null;
-  var voiceMessages = [];
-  var textMessages = [];
-
-  // ===== CALCULATED WRITE COUNTER STATE =====
-  // Seeds from Cloudflare GraphQL (actual writes) then adds precise operation costs.
-  // This ensures it starts with the real number and only increases from there.
-  //
-  // Write costs: Upload = 3 writes (put data + put index + put rate-limit)
-  //              Individual delete = 4 writes (delete data + delete :data + delete key + put index)
-  //              Bulk delete N msgs = 3N+1 writes (3 deletes × N + 1 index put)
-  //              Orphan cleanup = 1 write per orphan key deleted
-  var WRITES_PER_UPLOAD = 3;
-  var WRITES_PER_INDIVIDUAL_DELETE = 4;  // 3 deletes + 1 index put
-  var WRITES_PER_BULK_DELETE_MSG = 3;     // 3 deletes per msg in bulk
-  var WRITES_BULK_INDEX_PUT = 1;          // 1 index put after all bulk deletes
-
-  function todayKey(){ return new Date().toISOString().slice(0, 10); }
-
-  function getCalcState(){
-    var key = 'calcWC_' + todayKey();
-    try {
-      var stored = localStorage.getItem(key);
-      if(stored) return JSON.parse(stored);
-    } catch(e){}
-    return { cfBaseline: -1, uploads: 0, individualDeletes: 0, bulkDeleteMsgs: 0, bulkDeleteOps: 0, orphanCleans: 0 };
-  }
-
-  function saveCalcState(state){
-    var key = 'calcWC_' + todayKey();
-    localStorage.setItem(key, JSON.stringify(state));
-  }
-
-  // Total = Cloudflare baseline (real writes already counted) + operation-tracked writes since baseline was set
-  function calcTotalWrites(state){
-    var baseline = state.cfBaseline >= 0 ? state.cfBaseline : 0;
-    var opWrites = (state.uploads * WRITES_PER_UPLOAD)
-                 + (state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE)
-                 + (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG)
-                 + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT)
-                 + state.orphanCleans;
-    return baseline + opWrites;
-  }
-
-  // Track voice count changes to detect new uploads
-  var lastKnownVoiceCount = 0;
-
-  // ===== DOM =====
-  var loginWrap = document.getElementById('login-wrap');
-  var dashWrap = document.getElementById('dash-wrap');
-  var pwInput = document.getElementById('pw-input');
-  var pwBtn = document.getElementById('pw-btn');
-  var loginError = document.getElementById('login-error');
-  var logoutBtn = document.getElementById('logout-btn');
-  var wcUsed = document.getElementById('wc-used');
-  var wcBar = document.getElementById('wc-bar');
-  var wcRemaining = document.getElementById('wc-remaining');
-  var wcSource = document.getElementById('wc-source');
-  var wcRefresh = document.getElementById('wc-refresh');
-  var voiceList = document.getElementById('voice-list');
-  var voiceCountBadge = document.getElementById('voice-count');
-  var deleteAllVoiceBtn = document.getElementById('delete-all-voice-btn');
-  var voiceBulkProgress = document.getElementById('voice-bulk-progress');
-  var voiceBulkBar = document.getElementById('voice-bulk-bar');
-  var voiceBulkStatus = document.getElementById('voice-bulk-status');
-  var textList = document.getElementById('text-list');
-  var textCountBadge = document.getElementById('text-count');
-  var deleteAllTextBtn = document.getElementById('delete-all-text-btn');
-  var toastEl = document.getElementById('toast');
-  var confirmOverlay = document.getElementById('confirm-overlay');
-  // Calculated write counter DOM
-  var calcWcUsed = document.getElementById('calc-wc-used');
-  var calcWcBar = document.getElementById('calc-wc-bar');
-  var calcWcRemaining = document.getElementById('calc-wc-remaining');
-  var calcWcBreakdown = document.getElementById('calc-wc-breakdown');
-  var calcWcSource = document.getElementById('calc-wc-source');
-
-  // ===== LOGIN =====
-  pwBtn.addEventListener('click', doLogin);
-  pwInput.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-
-  function doLogin(){
-    if(pwInput.value === _rp()){
-      isLoggedIn = true;
-      ownerToken = btoa('owner:' + CHAT_PASSWORD);
-      loginWrap.style.display = 'none';
-      dashWrap.classList.add('active');
-      loadDashboard();
-      // Clear password from input immediately
-      pwInput.value = '';
-    } else {
-      loginError.style.display = 'block';
-      pwInput.value = '';
-      setTimeout(function(){ loginError.style.display = 'none'; }, 3000);
-    }
-  }
-
-  logoutBtn.addEventListener('click', function(){
-    isLoggedIn = false;
-    ownerToken = '';
-    dashWrap.classList.remove('active');
-    loginWrap.style.display = 'flex';
-    pwInput.value = '';
+function showScreen(name) {
+  ['login', 'idle', 'incall'].forEach(function(s) {
+    var el = $('screen-' + s);
+    if (el) el.classList.toggle('sc-active', s === name);
   });
+}
 
-  // ===== LOAD ALL =====
-  async function loadDashboard(){
-    fetchWriteCount();
-    loadVoiceMessages();
-    loadTextMessages();
-    // Initialize calculated write counter display
-    updateCalcWriteCount();
-  }
+function showToast(msg, kind) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast';
+  if (kind) t.classList.add('sc-' + kind);
+  // force reflow so animation restarts
+  void t.offsetWidth;
+  t.classList.add('sc-show');
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(function() {
+    t.classList.remove('sc-show');
+  }, 3000);
+}
 
-  // ===== WRITE COUNT (NEVER DECREASES) =====
-  var writeCountTimer = null;
-
-  async function fetchWriteCount(){
+// ===================================================================
+// RINGTONE — Web Audio API synthesized iPhone-Marimba-style loop
+// Plays a pleasant arpeggio that loops every ~3 seconds.
+// ===================================================================
+function ensureAudioCtx() {
+  if (!state.audioCtx) {
     try {
-      var resp = await fetch(WORKER_URL + '/kv-stats');
-      if(!resp.ok) throw new Error('API error');
-      var data = await resp.json();
-
-      if(data.writes !== undefined && data.writes !== null){
-        var writes = data.writes;
-        // NEVER decrease — only track upward
-        if(writes > maxWritesEver){
-          maxWritesEver = writes;
-          localStorage.setItem('dash_maxWrites', String(maxWritesEver));
-        }
-        displayWriteCount(maxWritesEver, data.source, data.date);
-        // Seed the calculated counter from Cloudflare's real write count
-        seedCalcBaseline(writes);
-      } else {
-        if(maxWritesEver > 0){
-          displayWriteCount(maxWritesEver, 'cached-max', '');
-        } else {
-          wcUsed.textContent = '--';
-          wcRemaining.textContent = 'Write count unavailable';
-          wcSource.textContent = data.note || 'API returned no data';
-        }
-      }
-    } catch(e){
-      if(maxWritesEver > 0){
-        displayWriteCount(maxWritesEver, 'cached-max', '');
-      } else {
-        wcUsed.textContent = '--';
-        wcRemaining.textContent = 'Failed to fetch write count';
-      }
+      var AC = window.AudioContext || window.webkitAudioContext;
+      state.audioCtx = new AC();
+    } catch (e) {
+      console.warn('[POAT] Web Audio API not supported:', e.message);
     }
   }
+  // Resume if suspended (mobile browsers require user gesture)
+  if (state.audioCtx && state.audioCtx.state === 'suspended') {
+    state.audioCtx.resume().catch(function(){});
+  }
+  return state.audioCtx;
+}
 
-  function displayWriteCount(used, source, date){
-    var remaining = Math.max(0, 1000 - used);
-    var pct = Math.min(100, (used / 1000) * 100);
+// Play a single marimba-like note with envelope
+function playNote(ctx, freq, startTime, duration, gainPeak) {
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  // Marimba-like envelope: fast attack, exponential decay
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(gainPeak || 0.35, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.05);
+}
 
-    wcUsed.textContent = used;
-    wcBar.style.width = pct + '%';
-    wcRemaining.textContent = remaining + ' writes remaining today';
+// Schedule one ringtone "phrase" (~3.2 seconds long)
+function playRingtonePhrase(ctx) {
+  var now = ctx.currentTime + 0.01;
+  // iPhone-Marimba-inspired descending-then-ascending arpeggio in A-minor
+  // Notes (Hz): A4=440, C5=523.25, E5=659.25, A5=880, E5, C5, A4
+  var notes = [
+    { f: 440.00, t: 0.00, d: 0.30 }, // A4
+    { f: 523.25, t: 0.30, d: 0.30 }, // C5
+    { f: 659.25, t: 0.60, d: 0.30 }, // E5
+    { f: 880.00, t: 0.90, d: 0.45 }, // A5 (longer, accented)
+    { f: 659.25, t: 1.45, d: 0.25 }, // E5
+    { f: 523.25, t: 1.70, d: 0.25 }, // C5
+    { f: 440.00, t: 1.95, d: 0.50 }, // A4 (longer closing)
+  ];
+  notes.forEach(function(n) {
+    playNote(ctx, n.f, now + n.t, n.d, 0.35);
+  });
+  // Add a higher harmonic on the accented note for richness
+  playNote(ctx, 1760, now + 0.90, 0.30, 0.12);
+  // Total phrase length ≈ 2.55s + silence ≈ 3.2s
+  return 3200;
+}
 
-    if(pct > 95){
-      wcBar.className = 'wc-bar-fill danger';
-      wcUsed.style.color = '#fca5a5';
-      wcUsed.style.textShadow = '0 0 12px rgba(252,165,165,0.4)';
-    } else if(pct > 80){
-      wcBar.className = 'wc-bar-fill warn';
-      wcUsed.style.color = '#fdba74';
-      wcUsed.style.textShadow = '0 0 12px rgba(253,186,116,0.3)';
-    } else {
-      wcBar.className = 'wc-bar-fill';
-      wcUsed.style.color = '#fde68a';
-      wcUsed.style.textShadow = '0 0 12px rgba(253,230,138,0.3)';
-    }
+function startRingtone() {
+  var ctx = ensureAudioCtx();
+  if (!ctx) return;
+  // Play immediately
+  var phraseLen = playRingtonePhrase(ctx);
+  // Loop
+  state.ringtoneTimer = setInterval(function() {
+    try { playRingtonePhrase(ctx); } catch(e) { console.warn(e); }
+  }, phraseLen);
+}
 
-    var sourceLabel = source === 'cloudflare-graphql' ? 'Live from Cloudflare' :
-                      source === 'cached-max' ? 'Cached (max ever seen)' :
-                      source === 'cloudflare-api-error' ? 'API error — showing max' :
-                      source || '';
-    wcSource.textContent = sourceLabel + (date ? ' | Date: ' + date : '');
+function stopRingtone() {
+  if (state.ringtoneTimer) {
+    clearInterval(state.ringtoneTimer);
+    state.ringtoneTimer = null;
+  }
+  // Optionally close audio context to cut any remaining sound
+  if (state.audioCtx) {
+    try { state.audioCtx.close(); } catch(e) {}
+    state.audioCtx = null;
+  }
+}
+
+// Vibrate (Android Chrome only) — loops until stopped
+function startVibration() {
+  if (!navigator.vibrate) return;
+  // navigator.vibrate accepts a pattern; on most browsers it loops only if you call it again.
+  // We loop it manually.
+  try { navigator.vibrate(VIBRATION_PATTERN); } catch(e) {}
+  state._vibrateTimer = setInterval(function() {
+    try { navigator.vibrate(VIBRATION_PATTERN); } catch(e) {}
+  }, 5200); // pattern length is ~5.2s
+}
+
+function stopVibration() {
+  if (state._vibrateTimer) {
+    clearInterval(state._vibrateTimer);
+    state._vibrateTimer = null;
+  }
+  if (navigator.vibrate) {
+    try { navigator.vibrate(0); } catch(e) {}
+  }
+}
+
+// ===================================================================
+// LOGIN
+// ===================================================================
+function handleLogin() {
+  var adminToken = $('login-admin-token').value.trim();
+  var deviceId = $('login-device-id').value.trim();
+
+  // adminToken is optional (only used for future admin features)
+  // deviceId is required
+  if (!deviceId) {
+    showToast('Enter device ID', 'err');
+    return;
   }
 
-  wcRefresh.addEventListener('click', function(){
-    wcRefresh.textContent = 'Refreshing...';
-    wcRefresh.disabled = true;
-    fetchWriteCount().then(function(){
-      wcRefresh.textContent = 'Refresh';
-      wcRefresh.disabled = false;
+  // Save to localStorage for convenience
+  try {
+    if (adminToken) localStorage.setItem('poat-admin-token', adminToken);
+    localStorage.setItem('poat-device-id', deviceId);
+  } catch(e) {}
+
+  state.adminToken = adminToken;
+  state.deviceId = deviceId;
+  state.lastSeq = Date.now(); // only receive commands issued AFTER login
+
+  // Register this dashboard with the backend by POSTing to /api/status.
+  // This sets deviceStatus.deviceId + lastSeen so emergency-call.js will
+  // enqueue show_call commands for THIS deviceId.
+  registerDevice().then(function() {
+    showToast('Connected — listening', 'ok');
+    enterIdle();
+    startPolling();
+    startHeartbeat();
+  }).catch(function(err) {
+    showToast('Connection failed: ' + err.message, 'err');
+  });
+}
+
+// Register / heartbeat — tells the backend we're alive and listening
+function registerDevice() {
+  return fetch(BACKEND_URL + '/api/status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      deviceId: state.deviceId,
+      source: 'poat_dashboard',
+      platform: navigator.userAgent.substring(0, 100),
+    })
+  }).then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  });
+}
+
+function startHeartbeat() {
+  if (state.heartbeatTimer) clearInterval(state.heartbeatTimer);
+  state.heartbeatTimer = setInterval(function() {
+    registerDevice().catch(function(err) {
+      console.warn('[POAT] heartbeat failed:', err.message);
     });
-  });
+  }, HEARTBEAT_INTERVAL_MS);
+}
 
-  // Auto-refresh write count every 30 seconds (also checks for new uploads)
-  writeCountTimer = setInterval(function(){
-    fetchWriteCount();
-    loadVoiceMessages();
-  }, 30000);
+function stopHeartbeat() {
+  if (state.heartbeatTimer) {
+    clearInterval(state.heartbeatTimer);
+    state.heartbeatTimer = null;
+  }
+}
 
-  // ===== CALCULATED WRITE COUNTER =====
-  function updateCalcWriteCount(){
-    var state = getCalcState();
-    var total = calcTotalWrites(state);
-    displayCalcWriteCount(total, state);
+function handleLogout() {
+  stopPolling();
+  stopHeartbeat();
+  stopRingtone();
+  stopVibration();
+  if (state.peer) { try { state.peer.destroy(); } catch(e) {} state.peer = null; }
+  if (state.activeCall) { try { state.activeCall.close(); } catch(e) {} state.activeCall = null; }
+  if (state.localStream) {
+    state.localStream.getTracks().forEach(function(t) { try { t.stop(); } catch(e){} });
+    state.localStream = null;
+  }
+  state.adminToken = '';
+  state.deviceId = '';
+  try {
+    localStorage.removeItem('poat-admin-token');
+    localStorage.removeItem('poat-device-id');
+  } catch(e) {}
+  showScreen('login');
+}
+
+// ===================================================================
+// IDLE / POLLING
+// ===================================================================
+function enterIdle() {
+  showScreen('idle');
+  $('idle-device-id').textContent = state.deviceId;
+  $('idle-call-count').textContent = state.callCount;
+}
+
+function startPolling() {
+  if (state.polling) return;
+  state.polling = true;
+  // Immediate first poll
+  doPoll();
+  // Schedule recurring
+  state.pollTimer = setInterval(doPoll, POLL_INTERVAL_MS);
+}
+
+function stopPolling() {
+  state.polling = false;
+  if (state.pollTimer) {
+    clearInterval(state.pollTimer);
+    state.pollTimer = null;
+  }
+}
+
+function doPoll() {
+  if (!state.deviceId) return;
+  var url = BACKEND_URL + '/api/poll?deviceId=' + encodeURIComponent(state.deviceId)
+          + '&lastSeq=' + encodeURIComponent(state.lastSeq);
+
+  // Abort after POLL_TIMEOUT_MS
+  var controller = null;
+  var timeoutId = null;
+  if (window.AbortController) {
+    controller = new AbortController();
+    timeoutId = setTimeout(function() { controller.abort(); }, POLL_TIMEOUT_MS);
   }
 
-  function displayCalcWriteCount(total, state){
-    var remaining = Math.max(0, 1000 - total);
-    var pct = Math.min(100, (total / 1000) * 100);
-
-    calcWcUsed.textContent = total;
-    calcWcBar.style.width = pct + '%';
-    calcWcRemaining.textContent = remaining + ' writes remaining today';
-
-    if(pct > 95){
-      calcWcBar.className = 'wc-bar-fill danger';
-      calcWcUsed.style.color = '#fca5a5';
-      calcWcUsed.style.textShadow = '0 0 12px rgba(252,165,165,0.4)';
-    } else if(pct > 80){
-      calcWcBar.className = 'wc-bar-fill warn';
-      calcWcUsed.style.color = '#fdba74';
-      calcWcUsed.style.textShadow = '0 0 12px rgba(253,186,116,0.3)';
-    } else {
-      calcWcBar.className = 'wc-bar-fill';
-      calcWcUsed.style.color = '#c4b5fd';
-      calcWcUsed.style.textShadow = '0 0 12px rgba(196,181,253,0.3)';
-    }
-
-    var baseline = state.cfBaseline >= 0 ? state.cfBaseline : 0;
-    var opWrites = (state.uploads * WRITES_PER_UPLOAD)
-                 + (state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE)
-                 + (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG)
-                 + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT)
-                 + state.orphanCleans;
-    var uploadWrites = state.uploads * WRITES_PER_UPLOAD;
-    var indivDeleteWrites = state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE;
-    var bulkDeleteWrites = (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG) + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT);
-
-    calcWcBreakdown.innerHTML =
-      '<span>CF Baseline:</span> ' + baseline +
-      (opWrites > 0 ? ' + <span>Ops:</span> ' + opWrites : '') +
-      (state.uploads > 0 ? ' &nbsp;|&nbsp; <span>Uploads:</span> ' + state.uploads + ' &times; 3 = ' + uploadWrites : '') +
-      (state.individualDeletes > 0 ? ' &nbsp;|&nbsp; <span>Ind. Deletes:</span> ' + state.individualDeletes + ' &times; 4 = ' + indivDeleteWrites : '') +
-      (state.bulkDeleteMsgs > 0 ? ' &nbsp;|&nbsp; <span>Bulk:</span> ' + state.bulkDeleteMsgs + ' &times; 3 + ' + state.bulkDeleteOps + ' = ' + bulkDeleteWrites : '');
-
-    calcWcSource.textContent = baseline > 0
-      ? 'CF baseline + ' + opWrites + ' tracked operation writes'
-      : 'Waiting for Cloudflare baseline...';
-  }
-
-  // Seed the calculated counter from Cloudflare GraphQL real write count
-  function seedCalcBaseline(cfWrites){
-    var state = getCalcState();
-    var currentTotal = calcTotalWrites(state);
-
-    if(cfWrites > currentTotal){
-      // CF shows more writes than we tracked — raise the baseline to match
-      // Keep tracked operations as-is, just increase baseline to cover the gap
-      var gap = cfWrites - currentTotal;
-      if(state.cfBaseline < 0){
-        // First ever seed — set baseline to CF count, reset ops
-        state.cfBaseline = cfWrites;
-        state.uploads = 0;
-        state.individualDeletes = 0;
-        state.bulkDeleteMsgs = 0;
-        state.bulkDeleteOps = 0;
-        state.orphanCleans = 0;
-      } else {
-        // CF discovered writes we didn't track (e.g. worker cleanup, orphan scan)
-        // Add the gap to baseline so total matches CF
-        state.cfBaseline += gap;
+  fetch(url, { signal: controller ? controller.signal : undefined })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (timeoutId) clearTimeout(timeoutId);
+      var now = new Date();
+      $('idle-last-poll').textContent = now.toLocaleTimeString();
+      if (data.commands && data.commands.length > 0) {
+        data.commands.forEach(function(cmd) {
+          if (cmd.seq > state.lastSeq) state.lastSeq = cmd.seq;
+          handleCommand(cmd);
+        });
       }
-      saveCalcState(state);
-      updateCalcWriteCount();
-    }
+    })
+    .catch(function(err) {
+      if (timeoutId) clearTimeout(timeoutId);
+      // Don't spam toasts on every poll failure
+      console.warn('[POAT] poll failed:', err.message);
+      $('idle-last-poll').textContent = 'error';
+    });
+}
+
+function handleCommand(cmd) {
+  console.log('[POAT] received command:', cmd);
+  if (cmd.type === 'show_call') {
+    state.callCount++;
+    $('idle-call-count').textContent = state.callCount;
+    showIncomingCall({
+      callerName: cmd.payload.callerName || 'Website Caller',
+      callId: cmd.payload.callId || ('emg_' + Date.now()),
+      seq: cmd.seq
+    });
+  }
+}
+
+// ===================================================================
+// INCOMING CALL OVERLAY
+// ===================================================================
+function showIncomingCall(call) {
+  // If we're already in a call, ignore subsequent incoming calls
+  if ($('screen-incall').classList.contains('sc-active')) {
+    console.log('[POAT] already in call, ignoring incoming');
+    return;
+  }
+  // If overlay already open for a previous call, decline it first
+  if ($('incoming-overlay').classList.contains('sc-open')) {
+    declineIncomingCall();
   }
 
-  function opWritesTotal(state){
-    return (state.uploads * WRITES_PER_UPLOAD)
-         + (state.individualDeletes * WRITES_PER_INDIVIDUAL_DELETE)
-         + (state.bulkDeleteMsgs * WRITES_PER_BULK_DELETE_MSG)
-         + (state.bulkDeleteOps * WRITES_BULK_INDEX_PUT)
-         + state.orphanCleans;
+  state.incomingCall = call;
+  $('incoming-caller-name').textContent = call.callerName;
+  $('incoming-overlay').classList.add('sc-open');
+
+  // Prime audio context on this user gesture chain — actually overlay shown
+  // automatically; for mobile audio to play, we need a user gesture. We'll
+  // attempt to start the ringtone now (may be blocked on first call until
+  // user taps anywhere). To work around, we attach a one-time tap listener.
+  ensureAudioCtx();
+  startRingtone();
+  startVibration();
+
+  // Mobile fallback: if audio is blocked, the first tap on Answer/Decline
+  // will resume the audio context (and we'll briefly play the ringtone even
+  // then). The act of pressing Answer also satisfies the user-gesture
+  // requirement for getUserMedia.
+}
+
+function hideIncomingCall() {
+  $('incoming-overlay').classList.remove('sc-open');
+  stopRingtone();
+  stopVibration();
+  state.incomingCall = null;
+}
+
+function answerIncomingCall() {
+  if (!state.incomingCall) {
+    hideIncomingCall();
+    return;
+  }
+  var call = state.incomingCall;
+  hideIncomingCall();
+
+  // 1) Get microphone
+  navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+    .then(function(stream) {
+      state.localStream = stream;
+      // 2) Open PeerJS — we'll be the CALLER (dialing the website visitor's peerId = callId)
+      connectPeerAndDial(call.callId, call.callerName);
+    })
+    .catch(function(err) {
+      console.error('[POAT] getUserMedia failed:', err);
+      showToast('Microphone access denied: ' + err.message, 'err');
+      // Return to idle
+      showScreen('idle');
+    });
+}
+
+function declineIncomingCall() {
+  hideIncomingCall();
+  showToast('Call declined');
+  // Stay on idle screen
+  if (!$('screen-incall').classList.contains('sc-active')) {
+    showScreen('idle');
+  }
+}
+
+// ===================================================================
+// PEERJS — dial the website visitor (who is hosting with callId as peerId)
+// ===================================================================
+function connectPeerAndDial(remotePeerId, callerName) {
+  showScreen('incall');
+  $('incall-caller').textContent = callerName || 'Website Caller';
+  $('incall-status').textContent = 'Connecting…';
+  $('incall-timer').textContent = '00:00';
+
+  // Create a Peer with a random ID (we're the caller)
+  try {
+    state.peer = new Peer({ debug: 1 });
+  } catch(e) {
+    showToast('PeerJS init failed: ' + e.message, 'err');
+    hangupCall();
+    return;
   }
 
-  // Detect new uploads by comparing voice message count changes
-  function detectUploads(currentVoiceCount){
-    if(currentVoiceCount > lastKnownVoiceCount && lastKnownVoiceCount >= 0){
-      var newUploads = currentVoiceCount - lastKnownVoiceCount;
-      if(newUploads > 0){
-        var state = getCalcState();
-        state.uploads += newUploads;
-        saveCalcState(state);
-        updateCalcWriteCount();
-      }
-    }
-    lastKnownVoiceCount = currentVoiceCount;
-  }
-
-  // ===== VOICE MESSAGES =====
-  async function loadVoiceMessages(){
-    voiceList.innerHTML = '<div class="loading"><div class="spinner"></div>Loading voice messages...</div>';
+  state.peer.on('open', function() {
+    console.log('[POAT] peer open, dialing remote:', remotePeerId);
+    $('incall-status').textContent = 'Ringing…';
     try {
-      var resp = await fetch(WORKER_URL + '/messages', {
-        headers: { 'X-Owner-Token': ownerToken }
-      });
-      if(!resp.ok) throw new Error('Auth failed');
-      var data = await resp.json();
-      voiceMessages = data.messages || [];
-      voiceCountBadge.textContent = voiceMessages.length;
-      deleteAllVoiceBtn.disabled = voiceMessages.length === 0;
-      renderVoiceMessages();
-      // Track voice count for detecting new uploads while dashboard is open
-      lastKnownVoiceCount = voiceMessages.length;
-    } catch(e){
-      voiceList.innerHTML = '<div class="txt-section-empty">Failed to load voice messages. Check auth.</div>';
-    }
-  }
-
-  function renderVoiceMessages(){
-    if(voiceMessages.length === 0){
-      voiceList.innerHTML = '<div class="txt-section-empty">No voice messages</div>';
-      deleteAllVoiceBtn.disabled = true;
+      state.activeCall = state.peer.call(remotePeerId, state.localStream);
+    } catch(e) {
+      showToast('Failed to place call: ' + e.message, 'err');
+      hangupCall();
       return;
     }
-    deleteAllVoiceBtn.disabled = false;
-    var html = '';
-    voiceMessages.forEach(function(msg, i){
-      var dur = msg.duration || '0:00';
-      var sizeStr = msg.size ? Math.round(msg.size / 1024) + ' KB' : '';
-      var timeStr = msg.isoDate ? formatTime(msg.isoDate) : '';
-      var sender = msg.sender || 'unknown';
-      html += '<div class="vmsg-card" data-voice-key="' + escapeAttr(msg.key) + '" data-index="' + i + '">'
-        + '<div class="vmsg-icon">&#127908;</div>'
-        + '<div class="vmsg-info">'
-        + '<div class="vmsg-sender">' + escapeHtml(sender) + '</div>'
-        + '<div class="vmsg-meta">'
-        + '<span class="vmsg-dur">' + escapeHtml(dur) + '</span>'
-        + (sizeStr ? '<span class="vmsg-size">' + sizeStr + '</span>' : '')
-        + (timeStr ? '<span class="vmsg-time">' + timeStr + '</span>' : '')
-        + '</div></div>'
-        + '<button class="vmsg-delete" title="Delete" data-key="' + escapeAttr(msg.key) + '">&#128465;</button>'
-        + '</div>';
-    });
-    voiceList.innerHTML = html;
-
-    // Attach delete handlers with confirm-on-double-click
-    voiceList.querySelectorAll('.vmsg-delete').forEach(function(btn){
-      var confirmTimeout = null;
-      btn.addEventListener('click', function(){
-        if(btn.classList.contains('confirming')){
-          clearTimeout(confirmTimeout);
-          btn.classList.remove('confirming');
-          btn.innerHTML = '&#128465;';
-          deleteVoiceMessage(btn.dataset.key);
-        } else {
-          btn.classList.add('confirming');
-          btn.innerHTML = 'Sure?';
-          confirmTimeout = setTimeout(function(){
-            btn.classList.remove('confirming');
-            btn.innerHTML = '&#128465;';
-          }, 3000);
-        }
-      });
-    });
-  }
-
-  async function deleteVoiceMessage(key){
-    var card = voiceList.querySelector('[data-voice-key="' + CSS.escape(key) + '"]');
-    if(card){
-      card.style.opacity = '0.4';
-      card.style.pointerEvents = 'none';
-    }
-    try {
-      // Step 1: Delete voice data from KV
-      var resp = await fetch(WORKER_URL + '/message/' + key, {
-        method: 'DELETE',
-        headers: { 'X-Owner-Token': ownerToken }
-      });
-      if(!resp.ok) throw new Error('Delete failed');
-      var data = await resp.json();
-      if(data.success){
-        // Step 2: Also remove voice message entry from GitHub chat.json
-        await removeVoiceFromChatJson(key);
-
-        // Step 3: Track calculated write cost (4 writes: 3 deletes + 1 index put)
-        var cState = getCalcState();
-        cState.individualDeletes += 1;
-        saveCalcState(cState);
-        updateCalcWriteCount();
-        lastKnownVoiceCount = Math.max(0, lastKnownVoiceCount - 1);
-
-        showToast('Voice message deleted (+4 writes)', 'success');
-        voiceMessages = voiceMessages.filter(function(m){ return m.key !== key; });
-        voiceCountBadge.textContent = voiceMessages.length;
-        deleteAllVoiceBtn.disabled = voiceMessages.length === 0;
-        if(card){
-          card.style.transition = 'all 0.3s';
-          card.style.opacity = '0';
-          card.style.maxHeight = '0';
-          card.style.padding = '0';
-          card.style.margin = '0';
-          card.style.overflow = 'hidden';
-          setTimeout(function(){ card.remove(); if(voiceMessages.length===0) renderVoiceMessages(); }, 300);
-        }
-        fetchWriteCount();
-      } else {
-        throw new Error(data.error || 'Unknown error');
-      }
-    } catch(e){
-      showToast('Delete failed: ' + e.message, 'error');
-      if(card){ card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
-    }
-  }
-
-  // Remove a single voice message entry from GitHub chat.json by its voiceKey
-  async function removeVoiceFromChatJson(voiceKey){
-    try {
-      var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-      if(fresh.sha) chatFileSha = fresh.sha;
-      if(!fresh.content) return;
-
-      var chatData = await parseChatContent(fresh.content);
-      var now = Date.now();
-      var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-      var before = allMsgs.length;
-      allMsgs = allMsgs.filter(function(m){ return m.type !== 'voice' || m.voiceKey !== voiceKey; });
-      if(allMsgs.length < before){
-        await saveChatToGitHub(allMsgs);
-      }
-    } catch(e){
-      console.log('removeVoiceFromChatJson failed (non-critical):', e);
-    }
-  }
-
-  // Remove ALL voice message entries from GitHub chat.json
-  async function removeAllVoiceFromChatJson(){
-    try {
-      var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-      if(fresh.sha) chatFileSha = fresh.sha;
-      if(!fresh.content) return;
-
-      var chatData = await parseChatContent(fresh.content);
-      var now = Date.now();
-      var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-      var remaining = allMsgs.filter(function(m){ return m.type !== 'voice'; });
-
-      if(remaining.length < allMsgs.length){
-        await saveChatToGitHub(remaining);
-      }
-    } catch(e){
-      console.log('removeAllVoiceFromChatJson failed (non-critical):', e);
-    }
-  }
-
-  // ===== DELETE ALL VOICE MESSAGES =====
-  deleteAllVoiceBtn.addEventListener('click', function(){
-    if(voiceMessages.length === 0) return;
-    var estWrites = voiceMessages.length * 3 + 1; // 3 deletes per msg + 1 index write
-    showConfirm(
-      'Delete All Voice Messages',
-      'Bulk delete ' + voiceMessages.length + ' voice messages. Uses ~' + estWrites + ' KV writes (saves ~' + voiceMessages.length + ' writes vs individual delete). Text messages will NOT be affected. This cannot be undone.',
-      function(){ doDeleteAllVoice(); }
-    );
-  });
-
-  async function doDeleteAllVoice(){
-    var total = voiceMessages.length;
-    if(total === 0) return;
-
-    deleteAllVoiceBtn.disabled = true;
-    deleteAllVoiceBtn.textContent = 'Deleting...';
-    voiceBulkProgress.classList.add('active');
-    voiceBulkStatus.classList.add('active');
-    voiceBulkBar.style.width = '10%';
-    voiceBulkStatus.textContent = 'Sending bulk delete request...';
-
-    try {
-      var resp = await fetch(WORKER_URL + '/messages-all', {
-        method: 'DELETE',
-        headers: { 'X-Owner-Token': ownerToken }
-      });
-      if(!resp.ok) throw new Error('Bulk delete failed: ' + resp.status);
-      var data = await resp.json();
-
-      voiceBulkBar.style.width = '100%';
-      var savedInfo = data.writesSaved ? ' (saved ~' + data.writesSaved + ' writes)' : '';
-      voiceBulkStatus.textContent = 'Done. Deleted: ' + data.deleted + savedInfo + (data.failed > 0 ? ', Failed: ' + data.failed : '');
-
-      // Also remove all voice entries from GitHub chat.json
-      await removeAllVoiceFromChatJson();
-
-      // Track calculated write cost for bulk delete: 3N+1 writes
-      var bulkWrites = (data.deleted * WRITES_PER_BULK_DELETE_MSG) + WRITES_BULK_INDEX_PUT;
-      var cState = getCalcState();
-      cState.bulkDeleteMsgs += data.deleted;
-      cState.bulkDeleteOps += 1;
-      saveCalcState(cState);
-      updateCalcWriteCount();
-      lastKnownVoiceCount = 0;
-
-      voiceMessages = [];
-      voiceCountBadge.textContent = '0';
-      renderVoiceMessages();
-
-      deleteAllVoiceBtn.textContent = 'Delete All Voice';
-      deleteAllVoiceBtn.disabled = true;
-
-      showToast('All ' + data.deleted + ' voice messages deleted (+' + bulkWrites + ' writes)' + savedInfo, 'success');
-      fetchWriteCount();
-    } catch(e){
-      voiceBulkBar.style.width = '0%';
-      voiceBulkStatus.textContent = 'Failed: ' + e.message;
-      deleteAllVoiceBtn.textContent = 'Delete All Voice';
-      deleteAllVoiceBtn.disabled = false;
-      showToast('Bulk delete failed: ' + e.message, 'error');
-    }
-
-    // Hide progress after 5s
-    setTimeout(function(){
-      voiceBulkProgress.classList.remove('active');
-      voiceBulkStatus.classList.remove('active');
-      voiceBulkBar.style.width = '0%';
-    }, 5000);
-  }
-
-  // ===== TEXT MESSAGES =====
-  async function loadTextMessages(){
-    textList.innerHTML = '<div class="loading"><div class="spinner"></div>Loading text messages...</div>';
-    try {
-      var data = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-      if(data.sha) chatFileSha = data.sha;
-      if(data.content){
-        var chatData = await parseChatContent(data.content);
-        var now = Date.now();
-        var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-        textMessages = allMsgs.filter(function(m){ return m.type === 'text'; });
-        textCountBadge.textContent = textMessages.length;
-        renderTextMessages();
-      } else {
-        textMessages = [];
-        textCountBadge.textContent = '0';
-        renderTextMessages();
-      }
-    } catch(e){
-      textList.innerHTML = '<div class="txt-section-empty">Failed to load text messages</div>';
-    }
-  }
-
-  function renderTextMessages(){
-    if(textMessages.length === 0){
-      textList.innerHTML = '<div class="txt-section-empty">No text messages</div>';
-      deleteAllTextBtn.disabled = true;
+    if (!state.activeCall) {
+      showToast('Could not place call (peer.call returned null)', 'err');
+      hangupCall();
       return;
     }
-    deleteAllTextBtn.disabled = false;
-    var html = '';
-    textMessages.forEach(function(msg){
-      var sender = msg.sender || 'unknown';
-      var text = msg.text || '';
-      var timeStr = msg.ts ? formatTime(new Date(msg.ts).toISOString()) : '';
-      var preview = text.length > 80 ? text.substring(0, 80) + '...' : text;
-      html += '<div class="vmsg-card">'
-        + '<div class="vmsg-icon" style="background:linear-gradient(135deg,#1e2a35,#162030);">&#128172;</div>'
-        + '<div class="vmsg-info">'
-        + '<div class="vmsg-sender">' + escapeHtml(sender) + '</div>'
-        + '<div class="vmsg-meta">'
-        + '<span style="color:#94a3b8;font-size:11px;">' + escapeHtml(preview) + '</span>'
-        + '</div>'
-        + (timeStr ? '<div class="vmsg-meta"><span class="vmsg-time">' + timeStr + '</span></div>' : '')
-        + '</div></div>';
+    state.activeCall.on('stream', function(remoteStream) {
+      console.log('[POAT] remote stream received');
+      playRemoteStream(remoteStream);
+      $('incall-status').textContent = 'Connected';
+      startCallTimer();
     });
-    textList.innerHTML = html;
-  }
-
-  deleteAllTextBtn.addEventListener('click', function(){
-    if(textMessages.length === 0) return;
-    showConfirm('Delete All Text Messages', 'This will permanently delete all ' + textMessages.length + ' text messages. Voice messages will NOT be affected. This action cannot be undone.', function(){
-      doDeleteAllText();
+    state.activeCall.on('close', function() {
+      console.log('[POAT] remote closed the call');
+      hangupCall();
+    });
+    state.activeCall.on('error', function(e) {
+      console.error('[POAT] call error:', e);
+      showToast('Call error: ' + (e.message || e), 'err');
+      hangupCall();
     });
   });
 
-  async function doDeleteAllText(){
-    deleteAllTextBtn.disabled = true;
-    deleteAllTextBtn.textContent = 'Deleting...';
-    try {
-      var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-      if(fresh.sha) chatFileSha = fresh.sha;
-      if(!fresh.content) throw new Error('No chat file');
-
-      var chatData = await parseChatContent(fresh.content);
-      var now = Date.now();
-      var allMsgs = (chatData.messages || []).filter(function(m){ return (now - m.ts) < AUTO_DELETE_MS; });
-      var remaining = allMsgs.filter(function(m){ return m.type !== 'text'; });
-
-      var saved = await saveChatToGitHub(remaining);
-      if(saved){
-        showToast('All ' + textMessages.length + ' text messages deleted', 'success');
-        textMessages = [];
-        textCountBadge.textContent = '0';
-        renderTextMessages();
-      } else {
-        throw new Error('Save failed');
-      }
-    } catch(e){
-      showToast('Failed: ' + e.message, 'error');
-      deleteAllTextBtn.disabled = false;
-      deleteAllTextBtn.textContent = 'Delete All Text';
+  state.peer.on('error', function(err) {
+    console.error('[POAT] peer error:', err);
+    var msg = err && err.type ? err.type : (err && err.message ? err.message : String(err));
+    if (msg === 'peer-unavailable') {
+      showToast('Caller not online / call ID not found', 'err');
+    } else if (msg === 'network' || msg === 'server-error' || msg === 'socket-error') {
+      showToast('Network issue', 'err');
+    } else {
+      showToast('Error: ' + msg, 'err');
     }
-  }
+    hangupCall();
+  });
+}
 
-  // ===== GITHUB API =====
-  function githubApi(method, path, body){
-    var opts = {
-      method: method,
-      headers: {
-        'Authorization': 'token ' + _gt(),
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      }
-    };
-    if(body) opts.body = JSON.stringify(body);
-    return fetch('https://api.github.com/repos/' + GITHUB_REPO + path, opts)
-      .then(function(r){ return r.json(); });
-  }
-
-  async function parseChatContent(b64Content){
-    var jsonStr = atob(b64Content.replace(/\n/g, ''));
-    var parsed = JSON.parse(jsonStr);
-    if(parsed.ciphertext){
-      var decrypted = await decryptText(parsed.ciphertext, _rp());
-      return JSON.parse(decrypted);
-    }
-    return parsed;
-  }
-
-  async function saveChatToGitHub(messages){
-    try {
-      var fresh = await githubApi('GET', '/contents/' + CHAT_FILE + '?ref=' + GITHUB_BRANCH + '&t=' + Date.now());
-      if(fresh.sha) chatFileSha = fresh.sha;
-    } catch(e){}
-
-    var now = new Date().toISOString();
-    var payload = { messages: messages, updatedAt: now };
-    var encrypted = await encryptText(JSON.stringify(payload), _rp());
-    var b64 = btoa(JSON.stringify({ v: 1, ciphertext: encrypted, updatedAt: now }));
-    var body = { message: 'Dashboard: delete messages ' + now, content: b64, branch: GITHUB_BRANCH };
-    if(chatFileSha) body.sha = chatFileSha;
-
-    var result = await githubApi('PUT', '/contents/' + CHAT_FILE, body);
-    if(result.sha) chatFileSha = result.sha;
-    if(result.content) chatFileSha = result.content.sha;
-
-    // After any deletion, purge git history so deleted messages can't be recovered from old commits
-    purgeGitHistory();
-
-    return !!(result.sha || result.content);
-  }
-
-  // ===== PURGE GIT HISTORY =====
-  // After deleting messages, old commits still contain them in git history.
-  // This squashes all history into a single commit so deleted data is unrecoverable.
-  var purgeInProgress = false;
-  async function purgeGitHistory(){
-    if(purgeInProgress) return; // prevent concurrent purges
-    purgeInProgress = true;
-    try {
-      // Step 1: Get current HEAD commit
-      var ref = await githubApi('GET', '/git/refs/heads/' + GITHUB_BRANCH);
-      var headSha = ref.object && ref.object.sha;
-      if(!headSha) { purgeInProgress = false; return; }
-
-      // Step 2: Get the tree of current HEAD
-      var commit = await githubApi('GET', '/git/commits/' + headSha);
-      var treeSha = commit.tree && commit.tree.sha;
-      if(!treeSha) { purgeInProgress = false; return; }
-
-      // Step 3: Create a new orphan commit with same tree but no parent
-      var newCommit = await githubApi('POST', '/git/commits', {
-        message: 'History purged — deleted messages unrecoverable',
-        tree: treeSha,
-        parents: []  // No parent = orphan commit, history severed
-      });
-
-      if(!newCommit.sha) { purgeInProgress = false; return; }
-
-      // Step 4: Force-update the branch to point to new orphan commit
-      await githubApi('PATCH', '/git/refs/heads/' + GITHUB_BRANCH, {
-        sha: newCommit.sha,
-        force: true
-      });
-    } catch(e){
-      // Silently fail — not critical if purge doesn't work every time
-      console.log('History purge failed (non-critical):', e);
-    }
-    purgeInProgress = false;
-  }
-
-  // ===== ENCRYPTION =====
-  async function deriveKey(password, salt){
-    var enc = new TextEncoder();
-    var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
-      keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
-    );
-  }
-
-  async function encryptText(text, password){
-    var salt = crypto.getRandomValues(new Uint8Array(16));
-    var iv = crypto.getRandomValues(new Uint8Array(12));
-    var key = await deriveKey(password, salt);
-    var plaintext = new TextEncoder().encode(text);
-    var ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plaintext);
-    var combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
-    combined.set(salt, 0);
-    combined.set(iv, salt.length);
-    combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
-    return btoa(String.fromCharCode.apply(null, combined));
-  }
-
-  async function decryptText(b64, password){
-    var raw = Uint8Array.from(atob(b64), function(c){ return c.charCodeAt(0); });
-    var salt = raw.slice(0, 16);
-    var iv = raw.slice(16, 28);
-    var ciphertext = raw.slice(28);
-    var key = await deriveKey(password, salt);
-    var plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
-    return new TextDecoder().decode(plaintext);
-  }
-
-  // ===== HELPERS =====
-  function formatTime(isoStr){
-    try{
-      var d = new Date(isoStr);
-      var h = d.getHours(); var m = d.getMinutes();
-      var ampm = h >= 12 ? 'PM' : 'AM';
-      h = h % 12 || 12;
-      return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
-    } catch(e){ return isoStr; }
-  }
-
-  function escapeHtml(str){
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  function escapeAttr(str){
-    return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  var toastTimer = null;
-  function showToast(msg, type){
-    toastEl.textContent = msg;
-    toastEl.className = 'toast ' + (type || '') + ' show';
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 3000);
-  }
-
-  function showConfirm(title, desc, onConfirm){
-    confirmOverlay.style.display = 'flex';
-    confirmOverlay.innerHTML = '<div class="confirm-box">'
-      + '<h3>' + escapeHtml(title) + '</h3>'
-      + '<p>' + escapeHtml(desc) + '</p>'
-      + '<div class="confirm-btns">'
-      + '<button class="btn-cancel" id="confirm-cancel">Cancel</button>'
-      + '<button class="btn-confirm" id="confirm-ok">Delete</button>'
-      + '</div></div>';
-    document.getElementById('confirm-cancel').addEventListener('click', function(){
-      confirmOverlay.style.display = 'none';
-    });
-    document.getElementById('confirm-ok').addEventListener('click', function(){
-      confirmOverlay.style.display = 'none';
-      onConfirm();
+function playRemoteStream(stream) {
+  var audio = $('remote-audio');
+  audio.srcObject = stream;
+  // Force speaker route by default (more useful for receiving an emergency call)
+  audio.setSinkId && audio.setSinkId('default').catch(function(){});
+  var p = audio.play();
+  if (p && p.then) {
+    p.then(function() {
+      console.log('[POAT] remote audio playing');
+    }).catch(function(e) {
+      console.warn('[POAT] remote audio play() rejected:', e.message);
+      // Try again on next user interaction
+      var retry = function() {
+        audio.play().catch(function(){});
+        document.removeEventListener('click', retry);
+        document.removeEventListener('touchstart', retry);
+      };
+      document.addEventListener('click', retry);
+      document.addEventListener('touchstart', retry);
     });
   }
+  state.remoteStream = stream;
+}
 
-})();
+function hangupCall() {
+  stopCallTimer();
+  if (state.activeCall) {
+    try { state.activeCall.close(); } catch(e) {}
+    state.activeCall = null;
+  }
+  if (state.peer) {
+    try { state.peer.destroy(); } catch(e) {}
+    state.peer = null;
+  }
+  if (state.localStream) {
+    state.localStream.getTracks().forEach(function(t) { try { t.stop(); } catch(e){} });
+    state.localStream = null;
+  }
+  var audio = $('remote-audio');
+  if (audio) {
+    try { audio.pause(); } catch(e){}
+    audio.srcObject = null;
+  }
+  state.muted = false;
+  $('btn-mute').classList.remove('sc-active');
+  $('btn-mute').querySelector('i').className = 'fas fa-microphone';
+  showScreen('idle');
+  showToast('Call ended');
+}
+
+function startCallTimer() {
+  state.callStartTs = Date.now();
+  state.callTimerHandle = setInterval(function() {
+    var elapsed = Math.floor((Date.now() - state.callStartTs) / 1000);
+    var m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    var s = (elapsed % 60).toString().padStart(2, '0');
+    $('incall-timer').textContent = m + ':' + s;
+  }, 1000);
+}
+
+function stopCallTimer() {
+  if (state.callTimerHandle) {
+    clearInterval(state.callTimerHandle);
+    state.callTimerHandle = null;
+  }
+}
+
+function toggleMute() {
+  if (!state.localStream) return;
+  state.muted = !state.muted;
+  state.localStream.getAudioTracks().forEach(function(t) { t.enabled = !state.muted; });
+  var btn = $('btn-mute');
+  btn.classList.toggle('sc-active', state.muted);
+  btn.querySelector('i').className = state.muted ? 'fas fa-microphone-slash' : 'fas fa-microphone';
+  btn.querySelector('span').textContent = state.muted ? 'Unmute' : 'Mute';
+}
+
+function toggleSpeaker() {
+  // On most mobile browsers we can't truly toggle earpiece vs speaker via JS,
+  // but we can try to setSinkId on supported browsers.
+  var audio = $('remote-audio');
+  if (!audio || !audio.setSinkId) {
+    showToast('Speaker toggle not supported on this browser');
+    return;
+  }
+  var btn = $('btn-speaker');
+  var isOn = btn.classList.toggle('sc-active');
+  audio.setSinkId(isOn ? 'speaker' : 'default').catch(function(e){
+    console.warn('[POAT] setSinkId failed:', e);
+  });
+}
+
+// ===================================================================
+// TEST RINGTONE (idle screen)
+// ===================================================================
+function handleTestRingtone() {
+  ensureAudioCtx();
+  startRingtone();
+  startVibration();
+  showToast('Test ringing — stops in 5s', 'ok');
+  setTimeout(function() {
+    stopRingtone();
+    stopVibration();
+  }, 5000);
+}
+
+// ===================================================================
+// EVENT WIRING
+// ===================================================================
+function bindEvents() {
+  $('btn-login').addEventListener('click', handleLogin);
+  $('btn-logout').addEventListener('click', handleLogout);
+  $('btn-test-call').addEventListener('click', handleTestRingtone);
+  $('btn-hangup').addEventListener('click', hangupCall);
+  $('btn-mute').addEventListener('click', toggleMute);
+  $('btn-speaker').addEventListener('click', toggleSpeaker);
+  $('action-answer').addEventListener('click', answerIncomingCall);
+  $('action-decline').addEventListener('click', declineIncomingCall);
+
+  // Allow Enter key in login inputs to submit
+  ['login-admin-token', 'login-device-id'].forEach(function(id) {
+    $(id).addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.keyCode === 13) handleLogin();
+    });
+  });
+
+  // Resume audio context on first user interaction (mobile requirement)
+  function primeAudio() {
+    ensureAudioCtx();
+  }
+  document.addEventListener('click', primeAudio, { once: true });
+  document.addEventListener('touchstart', primeAudio, { once: true });
+
+  // Handle page visibility — pause aggressive polling when hidden to save battery,
+  // but resume immediately when visible again.
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      if (state.deviceId && !state.polling) {
+        startPolling();
+      }
+    } else {
+      // When hidden, keep polling but maybe slower (still need to detect calls)
+      // For now, keep same rate
+    }
+  });
+}
+
+// ===================================================================
+// INIT
+// ===================================================================
+function init() {
+  bindEvents();
+  // Prefill from localStorage
+  try {
+    var at = localStorage.getItem('poat-admin-token');
+    var di = localStorage.getItem('poat-device-id');
+    if (at) $('login-admin-token').value = at;
+    if (di) $('login-device-id').value = di;
+  } catch(e) {}
+  // Register a Service Worker for future PWA support (optional, ignore if it fails)
+  if ('serviceWorker' in navigator) {
+    // Skip for now — no sw.js file
+  }
+}
+
+init();
 </script>
+
 </body>
 </html>
