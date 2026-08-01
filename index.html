@@ -4530,7 +4530,21 @@
     'wss://sip.linphone.org:443/ws'
   ];
 
+  // ===== v26: SOS ALERT ANDROID APP — primary path (Firebase RTDB) =====
+  // When the SOS button is tapped, this browser writes a WebRTC offer to the
+  // Firebase Realtime Database. The SOS Alert app (installed on the owner's
+  // phone) is listening on /calls_for/{APP_TOKEN}, rings even when locked,
+  // answers, and posts its answer SDP + ICE candidates back via the same
+  // database. The Linphone JsSIP path below remains as fallback.
+  // App project: emergency-call-app-5f433 (RTDB in asia-southeast1/Singapore)
+  var SOS_APP_TOKEN = 'b9c50a109e7972355478423333f64f43ff45211681ca2d5da71db25d29b15b56'; // ← shown on SOS Alert app first launch
+  var SOS_RTDB_URL = 'https://emergency-call-app-5f433-default-rtdb.asia-southeast1.firebasedatabase.app';
+  var SOS_APP_FALLBACK_TO_LINPHONE = true; // if the app path cannot even start, try Linphone
+  var SOS_APP_ANSWER_TIMEOUT_MS = 120000;  // stop ringing after 2 minutes
+  var sosApp = { pc: null, callId: null, answerTimer: null, statusTimer: null, iceTimer: null, sdpSeen: {}, active: false };
+
   function cleanupSOS() {
+    sosAppCleanup();
     if (sosConnectTimeout) { clearTimeout(sosConnectTimeout); sosConnectTimeout = null; }
     if (sosSession) {
       try { sosSession.terminate(); } catch(e){}
@@ -4545,7 +4559,198 @@
     if (sosBtn) sosBtn.disabled = false;
   }
 
+  function httpPutRtdb(path, body) {
+    return fetch(SOS_RTDB_URL + path + '.json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).catch(function(e){ console.warn('[sos-app] RTDB write failed', path, e); });
+  }
+  function httpGetRtdb(path) {
+    return fetch(SOS_RTDB_URL + path + '.json').then(function(r){ return r.json(); })
+      .catch(function(e){ console.warn('[sos-app] RTDB read failed', path, e); return null; });
+  }
+
+  // Tears down the app-path WebRTC call. Called from cleanupSOS() so the
+  // hangup button, the X button, and tab-close all clean up correctly.
+  function sosAppCleanup() {
+    var a = sosApp;
+    if (!a.active && !a.pc && !a.callId) return;
+    a.active = false;
+    if (a.answerTimer) { clearTimeout(a.answerTimer); a.answerTimer = null; }
+    if (a.statusTimer) { clearInterval(a.statusTimer); a.statusTimer = null; }
+    if (a.iceTimer) { clearInterval(a.iceTimer); a.iceTimer = null; }
+    if (a.pc) { try { a.pc.close(); } catch(e){} a.pc = null; }
+    // Tell the app the call is over (best effort — it also detects via ICE).
+    if (a.callId) {
+      httpPutRtdb('/calls/' + a.callId + '/status', 'cancelled');
+      a.callId = null;
+    }
+  }
+
   function handleSOSCall() {
+    console.log('[sos] SOS button tapped (SOS Alert app path)');
+    if (sosApp.active || sosSession || sosUA) {
+      console.log('[sos] SOS call already in progress — ignoring');
+      return;
+    }
+    openOverlay('sc-call-overlay');
+    showStep('incall');
+    setStatus('sc-status-incall', 'SOS: Requesting microphone…', 'sc-busy');
+    var sosBtn = $('sc-btn-sos');
+    if (sosBtn) sosBtn.disabled = true;
+
+    if (!window.RTCPeerConnection || !navigator.mediaDevices) {
+      setStatus('sc-status-incall', 'SOS: WebRTC unsupported in this browser.', 'sc-err');
+      if (sosBtn) sosBtn.disabled = false;
+      return;
+    }
+
+    prewarmAudioContext();
+    ensureMicrophone(function(err) {
+      if (err || !localStream) {
+        setStatus('sc-status-incall', 'SOS: Microphone denied. Tap SOS again to retry.', 'sc-err');
+        if (sosBtn) sosBtn.disabled = false;
+        cleanupSOS();
+        return;
+      }
+      startSosAppCall();
+    });
+  }
+
+  function startSosAppCall() {
+    var callId = crypto.randomUUID();
+    sosApp.callId = callId;
+    sosApp.active = true;
+
+    setStatus('sc-status-incall', 'SOS: Calling owner…', 'sc-busy');
+    var pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    });
+    sosApp.pc = pc;
+    localStream.getTracks().forEach(function(t){ pc.addTrack(t, localStream); });
+
+    pc.createOffer({ offerToReceiveAudio: true })
+      .then(function(offer){ return pc.setLocalDescription(offer); })
+      .then(function(){
+        var info = {
+          created_at: Date.now(),
+          app_token: SOS_APP_TOKEN,
+          caller_url: location.href,
+          caller_user_agent: navigator.userAgent,
+          offer_sdp: pc.localDescription.sdp,
+          status: 'ringing'
+        };
+        // Path C: write the offer to RTDB — /calls (public) + /calls_for/{TOKEN}
+        return Promise.all([
+          httpPutRtdb('/calls/' + callId, info),
+          httpPutRtdb('/calls_for/' + SOS_APP_TOKEN + '/' + callId, info)
+        ]);
+      })
+      .then(function(){
+        setStatus('sc-status-incall', 'SOS: Ringing owner…', 'sc-busy');
+        pc.onicecandidate = function(ev) {
+          if (ev.candidate) {
+            httpPutRtdb('/calls/' + callId + '/ice_browser/' + crypto.randomUUID(), {
+              candidate: ev.candidate.candidate,
+              sdp_mid: ev.candidate.sdpMid,
+              sdp_ml_index: ev.candidate.sdpMLineIndex
+            });
+          }
+        };
+        pc.ontrack = function(event) {
+          if (event.streams && event.streams[0]) {
+            playRemote(event.streams[0]);
+          }
+        };
+        pc.onconnectionstatechange = function() {
+          var cs = pc.connectionState;
+          if (cs === 'connected') {
+            setStatus('sc-status-incall', 'SOS: Connected — talk!', 'sc-ok');
+            startTimer();
+          } else if (cs === 'failed' || cs === 'disconnected' || cs === 'closed') {
+            handleSOSHangup(cs === 'failed' ? 'failed: connection' : 'disconnected');
+          }
+        };
+        pc.oniceconnectionstatechange = function() {
+          var st = pc.iceConnectionState;
+          if (st === 'failed' || st === 'disconnected') {
+            handleSOSHangup(st === 'failed' ? 'failed: ice' : 'disconnected');
+          }
+        };
+        // Watch call status: busy / cancelled / ended
+        sosApp.statusTimer = setInterval(function(){
+          httpGetRtdb('/calls/' + callId + '/status').then(function(st){
+            if (!sosApp.active || sosApp.callId !== callId) return;
+            if (st === 'busy') {
+              setStatus('sc-status-incall', 'SOS: Owner is busy on another call.', 'sc-err');
+              handleSOSHangup('busy');
+            } else if (st === 'cancelled' || st === 'ended') {
+              handleSOSHangup('ended');
+            }
+          });
+        }, 2000);
+        // Stop ringing after the timeout
+        sosApp.answerTimer = setTimeout(function(){
+          if (sosApp.active && sosApp.callId === callId) {
+            setStatus('sc-status-incall', 'SOS: No answer — giving up.', 'sc-err');
+            handleSOSHangup('no-answer');
+          }
+        }, SOS_APP_ANSWER_TIMEOUT_MS);
+        // Poll for the answer SDP, then drain app ICE candidates
+        (function pollAnswer(){
+          if (!sosApp.active || sosApp.callId !== callId) return;
+          httpGetRtdb('/calls/' + callId + '/answer_sdp').then(function(a){
+            if (!sosApp.active || sosApp.callId !== callId) return;
+            if (a) {
+              pc.setRemoteDescription({ type: 'answer', sdp: a }).then(function(){
+                setStatus('sc-status-incall', 'SOS: Connected — talk!', 'sc-ok');
+                startTimer();
+                sosApp.iceTimer = setInterval(function(){
+                  httpGetRtdb('/calls/' + callId + '/ice_app').then(function(cands){
+                    if (!cands || !sosApp.active) return;
+                    Object.keys(cands).forEach(function(k){
+                      var c = cands[k];
+                      var sdp = (typeof c === 'object' && c) ? (c.candidate || '') : (typeof c === 'string' ? c : '');
+                      if (!sdp) return;
+                      var mid = (typeof c === 'object' && c) ? (c.sdp_mid || null) : null;
+                      var idx = (typeof c === 'object' && c) ? (c.sdp_ml_index != null ? c.sdp_ml_index : 0) : 0;
+                      var key = sdp + '|' + (mid || '') + '|' + idx;
+                      if (sosApp.sdpSeen[key]) return;
+                      sosApp.sdpSeen[key] = true;
+                      pc.addIceCandidate({ candidate: sdp, sdpMid: mid, sdpMLineIndex: idx })
+                        .catch(function(){});
+                    });
+                  });
+                }, 500);
+              }).catch(function(e){
+                setStatus('sc-status-incall', 'SOS: Could not connect (' + e.message + ').', 'sc-err');
+                handleSOSHangup('failed: sdp');
+              });
+            } else {
+              setTimeout(pollAnswer, 500);
+            }
+          });
+        })();
+      })
+      .catch(function(e){
+        console.warn('[sos-app] app path failed:', e);
+        setStatus('sc-status-incall', 'SOS: App path failed — trying Linphone…', 'sc-err');
+        sosAppCleanup();
+        var sosBtn2 = $('sc-btn-sos');
+        if (SOS_APP_FALLBACK_TO_LINPHONE) {
+          startLinphoneSOS();
+        } else {
+          if (sosBtn2) sosBtn2.disabled = false;
+          cleanupSOS();
+        }
+      });
+  }
+
+  function startLinphoneSOS() {
     console.log('[sos] SOS button tapped');
     if (sosSession || sosUA) {
       console.log('[sos] SOS call already in progress — ignoring');
