@@ -4540,6 +4540,9 @@
   var SOS_APP_TOKEN = 'b9c50a109e7972355478423333f64f43ff45211681ca2d5da71db25d29b15b56'; // ← shown on SOS Alert app first launch
   var SOS_RTDB_URL = 'https://emergency-call-app-5f433-default-rtdb.asia-southeast1.firebasedatabase.app';
   var SOS_APP_FALLBACK_TO_LINPHONE = true; // if the app path cannot even start, try Linphone
+  var SOS_FCM_URL = ''; // Path A: after deploying worker/worker.js, set this to
+                        // https://<worker-name>.<your-subdomain>.workers.dev for
+                        // instant FCM wake-up (rings even in deep Doze).
   var SOS_APP_ANSWER_TIMEOUT_MS = 120000;  // stop ringing after 2 minutes
   var sosApp = { pc: null, callId: null, answerTimer: null, statusTimer: null, iceTimer: null, sdpSeen: {}, active: false };
 
@@ -4651,6 +4654,15 @@
         ]);
       })
       .then(function(){
+        // Path A: FCM push via the Cloudflare Worker — instant wake even in
+        // deep Doze. Best-effort: path C (RTDB) already rang the app.
+        if (SOS_FCM_URL) {
+          fetch(SOS_FCM_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ call_id: callId, app_token: SOS_APP_TOKEN, caller_url: location.href })
+          }).catch(function(e){ console.warn('[sos] FCM trigger failed', e); });
+        }
         setStatus('sc-status-incall', 'SOS: Ringing owner…', 'sc-busy');
         pc.onicecandidate = function(ev) {
           if (ev.candidate) {
