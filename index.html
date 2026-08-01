@@ -4543,8 +4543,13 @@
   var SOS_FCM_URL = ''; // Path A: after deploying worker/worker.js, set this to
                         // https://<worker-name>.<your-subdomain>.workers.dev for
                         // instant FCM wake-up (rings even in deep Doze).
+  // Path N: ntfy.sh — free push relay, no account, no setup. The app keeps a
+  // persistent WebSocket to wss://ntfy.sh/{APP_TOKEN}/ws and rings instantly
+  // when this site publishes. Verified working 2026-08-01.
+  var NTFY_URL = 'https://ntfy.sh';
+  var NTFY_TOPIC = SOS_APP_TOKEN;
   var SOS_APP_ANSWER_TIMEOUT_MS = 120000;  // stop ringing after 2 minutes
-  var sosApp = { pc: null, callId: null, answerTimer: null, statusTimer: null, iceTimer: null, sdpSeen: {}, active: false };
+  var sosApp = { pc: null, callId: null, answerTimer: null, statusTimer: null, iceTimer: null, sdpSeen: {}, active: false, connected: false, linphoneConnected: false, sipUA: null, sipSession: null };
 
   function cleanupSOS() {
     sosAppCleanup();
@@ -4558,7 +4563,7 @@
       sosUA = null;
     }
     // Re-enable the SOS button (it gets disabled during call)
-    var sosBtn = $('sc-btn-sos');
+    var sosBtn = $('sc-btn-ec');
     if (sosBtn) sosBtn.disabled = false;
   }
 
@@ -4576,10 +4581,20 @@
 
   // Tears down the app-path WebRTC call. Called from cleanupSOS() so the
   // hangup button, the X button, and tab-close all clean up correctly.
+  function sosAppStopSip() {
+    try { if (sosApp.sipSession) sosApp.sipSession.terminate(); } catch(e){}
+    try { if (sosApp.sipUA) sosApp.sipUA.stop(); } catch(e){}
+    sosApp.sipSession = null;
+    sosApp.sipUA = null;
+  }
+
   function sosAppCleanup() {
     var a = sosApp;
     if (!a.active && !a.pc && !a.callId) return;
     a.active = false;
+    a.connected = false;
+    a.linphoneConnected = false;
+    sosAppStopSip();
     if (a.answerTimer) { clearTimeout(a.answerTimer); a.answerTimer = null; }
     if (a.statusTimer) { clearInterval(a.statusTimer); a.statusTimer = null; }
     if (a.iceTimer) { clearInterval(a.iceTimer); a.iceTimer = null; }
@@ -4599,12 +4614,12 @@
     }
     openOverlay('sc-call-overlay');
     showStep('incall');
-    setStatus('sc-status-incall', 'SOS: Requesting microphone…', 'sc-busy');
-    var sosBtn = $('sc-btn-sos');
+    setStatus('sc-status-incall', 'Call: Requesting microphone…', 'sc-busy');
+    var sosBtn = $('sc-btn-ec');
     if (sosBtn) sosBtn.disabled = true;
 
     if (!window.RTCPeerConnection || !navigator.mediaDevices) {
-      setStatus('sc-status-incall', 'SOS: WebRTC unsupported in this browser.', 'sc-err');
+      setStatus('sc-status-incall', 'Call: WebRTC unsupported in this browser.', 'sc-err');
       if (sosBtn) sosBtn.disabled = false;
       return;
     }
@@ -4612,7 +4627,7 @@
     prewarmAudioContext();
     ensureMicrophone(function(err) {
       if (err || !localStream) {
-        setStatus('sc-status-incall', 'SOS: Microphone denied. Tap SOS again to retry.', 'sc-err');
+        setStatus('sc-status-incall', 'Call: Microphone denied. Tap SOS again to retry.', 'sc-err');
         if (sosBtn) sosBtn.disabled = false;
         cleanupSOS();
         return;
@@ -4626,7 +4641,7 @@
     sosApp.callId = callId;
     sosApp.active = true;
 
-    setStatus('sc-status-incall', 'SOS: Calling owner…', 'sc-busy');
+    setStatus('sc-status-incall', 'Call: Calling owner…', 'sc-busy');
     var pc = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -4663,7 +4678,16 @@
             body: JSON.stringify({ call_id: callId, app_token: SOS_APP_TOKEN, caller_url: location.href })
           }).catch(function(e){ console.warn('[sos] FCM trigger failed', e); });
         }
-        setStatus('sc-status-incall', 'SOS: Ringing owner…', 'sc-busy');
+        // Path N: ntfy.sh push — free, no account, verified working.
+        fetch(NTFY_URL + '/' + NTFY_TOPIC, {
+          method: 'POST',
+          body: JSON.stringify({ call_id: callId, caller_url: location.href })
+        }).catch(function(e){ console.warn('[ec] ntfy trigger failed', e); });
+        // Path B (redundant): fire a SIP INVITE to the owner's registration so
+        // the app rings even if RTDB is unreachable. Failures are ignored —
+        // the RTDB path owns the call lifecycle.
+        fireSosSipSignal(callId);
+        setStatus('sc-status-incall', 'Call: Ringing owner…', 'sc-busy');
         pc.onicecandidate = function(ev) {
           if (ev.candidate) {
             httpPutRtdb('/calls/' + callId + '/ice_browser/' + crypto.randomUUID(), {
@@ -4681,7 +4705,9 @@
         pc.onconnectionstatechange = function() {
           var cs = pc.connectionState;
           if (cs === 'connected') {
-            setStatus('sc-status-incall', 'SOS: Connected — talk!', 'sc-ok');
+            sosApp.connected = true;
+            sosAppStopSip();
+            setStatus('sc-status-incall', 'Call: Connected — talk!', 'sc-ok');
             startTimer();
           } else if (cs === 'failed' || cs === 'disconnected' || cs === 'closed') {
             handleSOSHangup(cs === 'failed' ? 'failed: connection' : 'disconnected');
@@ -4698,7 +4724,7 @@
           httpGetRtdb('/calls/' + callId + '/status').then(function(st){
             if (!sosApp.active || sosApp.callId !== callId) return;
             if (st === 'busy') {
-              setStatus('sc-status-incall', 'SOS: Owner is busy on another call.', 'sc-err');
+              setStatus('sc-status-incall', 'Call: Owner is busy on another call.', 'sc-err');
               handleSOSHangup('busy');
             } else if (st === 'cancelled' || st === 'ended') {
               handleSOSHangup('ended');
@@ -4708,7 +4734,7 @@
         // Stop ringing after the timeout
         sosApp.answerTimer = setTimeout(function(){
           if (sosApp.active && sosApp.callId === callId) {
-            setStatus('sc-status-incall', 'SOS: No answer — giving up.', 'sc-err');
+            setStatus('sc-status-incall', 'Call: No answer — giving up.', 'sc-err');
             handleSOSHangup('no-answer');
           }
         }, SOS_APP_ANSWER_TIMEOUT_MS);
@@ -4719,7 +4745,9 @@
             if (!sosApp.active || sosApp.callId !== callId) return;
             if (a) {
               pc.setRemoteDescription({ type: 'answer', sdp: a }).then(function(){
-                setStatus('sc-status-incall', 'SOS: Connected — talk!', 'sc-ok');
+                sosApp.connected = true;
+                sosAppStopSip();
+                setStatus('sc-status-incall', 'Call: Connected — talk!', 'sc-ok');
                 startTimer();
                 sosApp.iceTimer = setInterval(function(){
                   httpGetRtdb('/calls/' + callId + '/ice_app').then(function(cands){
@@ -4739,7 +4767,7 @@
                   });
                 }, 500);
               }).catch(function(e){
-                setStatus('sc-status-incall', 'SOS: Could not connect (' + e.message + ').', 'sc-err');
+                setStatus('sc-status-incall', 'Call: Could not connect (' + e.message + ').', 'sc-err');
                 handleSOSHangup('failed: sdp');
               });
             } else {
@@ -4750,9 +4778,9 @@
       })
       .catch(function(e){
         console.warn('[sos-app] app path failed:', e);
-        setStatus('sc-status-incall', 'SOS: App path failed — trying Linphone…', 'sc-err');
+        setStatus('sc-status-incall', 'Call: App path failed — trying Linphone…', 'sc-err');
         sosAppCleanup();
-        var sosBtn2 = $('sc-btn-sos');
+        var sosBtn2 = $('sc-btn-ec');
         if (SOS_APP_FALLBACK_TO_LINPHONE) {
           startLinphoneSOS();
         } else {
@@ -4760,6 +4788,67 @@
           cleanupSOS();
         }
       });
+  }
+
+  // Path B: redundant SIP INVITE to the owner's registration (free Linphone
+  // account the site already uses). Signal-only: the app replies 486 and rings
+  // via the RTDB path, so failures here are expected and ignored. If the owner
+  // answers on a legacy SIP app instead, we use that audio as a fallback until
+  // the RTDB path connects (which then takes over).
+  function fireSosSipSignal(callId) {
+    if (typeof JsSIP === 'undefined' || !JsSIP.UA) {
+      console.warn('[ec] JsSIP not loaded — SIP signal skipped');
+      return;
+    }
+    try {
+      var sockets = SOS_WSS_URLS.map(function(u){ return new JsSIP.WebSocketInterface(u); });
+      var ua = new JsSIP.UA({
+        uri: SOS_CALLER_URI,
+        password: SOS_CALLER_PASSWORD,
+        sockets: sockets,
+        register: true,
+        display_name: 'Website Call',
+        register_expires: 60
+      });
+      sosApp.sipUA = ua;
+      var placed = false;
+      function place() {
+        if (placed) return;
+        placed = true;
+        try {
+          sosApp.sipSession = ua.call(SOS_TARGET, { extraHeaders: ['X-Call-Id: ' + callId] });
+          attachSipSession(sosApp.sipSession);
+        } catch(e){ console.warn('[ec] sip call error', e); }
+      }
+      ua.on('registered', function(){ console.log('[ec] sip registered — ringing owner'); place(); });
+      ua.on('registrationFailed', function(e){
+        console.warn('[ec] sip registration failed:', e && e.cause);
+        setTimeout(place, 6000); // try anyway
+      });
+      ua.on('disconnected', function(e){ console.warn('[ec] sip socket disconnected:', e && e.socket && e.socket.url); });
+      ua.start();
+    } catch(e) { console.warn('[ec] sip signal error', e); }
+  }
+
+  function attachSipSession(s) {
+    if (!s) return;
+    s.on('accepted', function(){
+      console.log('[ec] SIP leg accepted (owner answered on a SIP app)');
+      if (!sosApp.connected) {
+        sosApp.linphoneConnected = true;
+        setStatus('sc-status-incall', 'Call: Connected — talk!', 'sc-ok');
+        startTimer();
+      }
+    });
+    s.on('confirmed', function(){
+      if (!sosApp.connected) {
+        sosApp.linphoneConnected = true;
+        setStatus('sc-status-incall', 'Call: Connected — talk!', 'sc-ok');
+        startTimer();
+      }
+    });
+    s.on('failed', function(e){ console.warn('[ec] SIP leg failed (expected when the app answers via RTDB):', e && e.cause); });
+    s.on('ended', function(){ console.log('[ec] SIP leg ended'); });
   }
 
   function startLinphoneSOS() {
@@ -4772,15 +4861,15 @@
     if (typeof JsSIP === 'undefined' || !JsSIP.UA) {
       openOverlay('sc-call-overlay');
       showStep('incall');
-      setStatus('sc-status-incall', 'SOS unavailable (library failed to load). Refresh and retry.', 'sc-err');
+      setStatus('sc-status-incall', 'Call unavailable (library failed to load). Refresh and retry.', 'sc-err');
       return;
     }
     // Open the call overlay + jump straight to in-call step
     openOverlay('sc-call-overlay');
     showStep('incall');
-    setStatus('sc-status-incall', 'SOS: Requesting microphone…', 'sc-busy');
+    setStatus('sc-status-incall', 'Call: Requesting microphone…', 'sc-busy');
     // Disable the SOS button during the call
-    var sosBtn = $('sc-btn-sos');
+    var sosBtn = $('sc-btn-ec');
     if (sosBtn) sosBtn.disabled = true;
 
     // v11: prewarm audio (iOS unlock)
@@ -4788,18 +4877,18 @@
 
     ensureMicrophone(function(err) {
       if (err) {
-        setStatus('sc-status-incall', 'SOS: Microphone denied. Tap SOS again to retry.', 'sc-err');
+        setStatus('sc-status-incall', 'Call: Microphone denied. Tap SOS again to retry.', 'sc-err');
         if (sosBtn) sosBtn.disabled = false;
         cleanupSOS();
         return;
       }
       if (!localStream) {
-        setStatus('sc-status-incall', 'SOS: No microphone available.', 'sc-err');
+        setStatus('sc-status-incall', 'Call: No microphone available.', 'sc-err');
         if (sosBtn) sosBtn.disabled = false;
         cleanupSOS();
         return;
       }
-      setStatus('sc-status-incall', 'SOS: Connecting to Linphone…', 'sc-busy');
+      setStatus('sc-status-incall', 'Call: Connecting to Linphone…', 'sc-busy');
       console.log('[sos] trying WSS endpoints:', SOS_WSS_URLS);
 
       try {
@@ -4822,7 +4911,7 @@
         sosConnectTimeout = setTimeout(function() {
           if (!sosSession) {
             console.warn('[sos] 15s timeout — no registration/call yet. Aborting.');
-            setStatus('sc-status-incall', 'SOS: Could not reach Linphone (timeout). Check connection.', 'sc-err');
+            setStatus('sc-status-incall', 'Call: Could not reach Linphone (timeout). Check connection.', 'sc-err');
             cleanupSOS();
           }
         }, 15000);
@@ -4833,13 +4922,13 @@
         });
         sosUA.on('connected', function(e) {
           console.log('[sos] socket connected to:', e && e.socket && e.socket.url);
-          setStatus('sc-status-incall', 'SOS: Logging in…', 'sc-busy');
+          setStatus('sc-status-incall', 'Call: Logging in…', 'sc-busy');
         });
 
         sosUA.on('registered', function() {
           console.log('[sos] registered as', SOS_CALLER_URI, '→ calling', SOS_TARGET);
           if (sosConnectTimeout) { clearTimeout(sosConnectTimeout); sosConnectTimeout = null; }
-          setStatus('sc-status-incall', 'SOS: Ringing owner…', 'sc-busy');
+          setStatus('sc-status-incall', 'Call: Ringing owner…', 'sc-busy');
           var callOptions = {
             mediaStream: localStream,
             pcConfig: {
@@ -4855,7 +4944,7 @@
           try {
             sosSession = sosUA.call(SOS_TARGET, callOptions);
           } catch(callErr) {
-            setStatus('sc-status-incall', 'SOS: Could not place call. ' + (callErr.message || callErr), 'sc-err');
+            setStatus('sc-status-incall', 'Call: Could not place call. ' + (callErr.message || callErr), 'sc-err');
             cleanupSOS();
             return;
           }
@@ -4872,16 +4961,16 @@
           });
 
           sosSession.on('progress', function() {
-            setStatus('sc-status-incall', 'SOS: Ringing…', 'sc-busy');
+            setStatus('sc-status-incall', 'Call: Ringing…', 'sc-busy');
           });
           sosSession.on('accepted', function() {
             console.log('[sos] call accepted');
-            setStatus('sc-status-incall', 'SOS: Connected', 'sc-ok');
+            setStatus('sc-status-incall', 'Call: Connected', 'sc-ok');
             startTimer();
           });
           sosSession.on('confirmed', function() {
             console.log('[sos] call confirmed');
-            setStatus('sc-status-incall', 'SOS: Connected', 'sc-ok');
+            setStatus('sc-status-incall', 'Call: Connected', 'sc-ok');
             startTimer();
           });
           sosSession.on('ended', function() {
@@ -4898,7 +4987,7 @@
         sosUA.on('registrationFailed', function(e) {
           var cause = (e && e.cause) ? e.cause : 'unknown';
           console.warn('[sos] registration failed:', cause);
-          setStatus('sc-status-incall', 'SOS: Login failed (' + cause + '). Check web caller account.', 'sc-err');
+          setStatus('sc-status-incall', 'Call: Login failed (' + cause + '). Check web caller account.', 'sc-err');
           cleanupSOS();
         });
 
@@ -4910,7 +4999,7 @@
             handleSOSHangup('disconnected');
           } else {
             // Still trying — let JsSIP try the next socket
-            setStatus('sc-status-incall', 'SOS: Retrying another endpoint…', 'sc-busy');
+            setStatus('sc-status-incall', 'Call: Retrying another endpoint…', 'sc-busy');
           }
         });
 
@@ -4931,11 +5020,11 @@
     // Reuse existing teardown (clears localStream, peer, UI) — cleanupSOS is safe to call twice
     handleHangup();
     if (wasFailed) {
-      setStatus('sc-status-choose', 'SOS call failed (' + reason + '). Try again.', 'sc-err');
+      setStatus('sc-status-choose', 'Call failed (' + reason + '). Try again.', 'sc-err');
     } else if (wasDisconnected) {
-      setStatus('sc-status-choose', 'SOS call dropped (network). Try again.', 'sc-err');
+      setStatus('sc-status-choose', 'Call dropped (network). Try again.', 'sc-err');
     } else {
-      setStatus('sc-status-choose', 'SOS call ended.', 'sc-ok');
+      setStatus('sc-status-choose', 'Call ended.', 'sc-ok');
     }
   }
 
@@ -5033,8 +5122,8 @@
     // v16: sc-btn-cancel-create / sc-btn-cancel-join removed (no creating/joining steps)
     // v15: bind the SINGLE code-copy button (was sc-code-copy + sc-banner-copy)
     bindButton('sc-current-code-copy', handleCopyCode);
-    // v24: SOS Emergency Call button → dials owner's Linphone via sip2sip
-    bindButton('sc-btn-sos', handleSOSCall);
+    // v24: Emergency Call button → dials owner's Linphone via sip2sip
+    bindButton('sc-btn-ec', handleSOSCall);
     // v16: sc-enter-call / sc-enter-cancel removed (Enter Call modal removed)
   }
 
@@ -5111,7 +5200,7 @@
         </div>\
         <div class="sc3d-status" id="sc-status-choose"></div>\
         <div class="sc3d-sos-row">\
-          <button class="sc3d-btn-sos" id="sc-btn-sos" type="button"><i class="fas fa-exclamation-triangle"></i> SOS Emergency Call</button>\
+          <button class="sc3d-btn-sos" id="sc-btn-ec" type="button"><i class="fas fa-exclamation-triangle"></i> Emergency Call</button>\
           <div class="sc3d-sos-disclaimer">Taps owner\'s phone directly — rings even when locked</div>\
         </div>\
         <div class="sc3d-current-code" id="sc-current-code">\
