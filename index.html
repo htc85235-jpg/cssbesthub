@@ -5614,7 +5614,7 @@
   }
 
   window.wtOpen=function(){ inject(); var m=document.getElementById('wtModal'); m.classList.add('open'); document.body.style.overflow='hidden'; loadHome(); };
-  window.wtClose=function(){ var m=document.getElementById('wtModal'); if(!m)return; m.classList.remove('open'); document.body.style.overflow=''; try{if(conn){conn.close();conn=null;}}catch(e){} try{if(peer){peer.destroy();peer=null;}}catch(e){} try{if(localStream){localStream.getTracks().forEach(function(t){t.stop();});localStream=null;}}catch(e){} var l=document.getElementById('wtLocalVideo'); if(l)l.srcObject=null; var r=document.getElementById('wtRemoteVideo'); if(r)r.srcObject=null; var jp=document.getElementById('wtJoinPanel'); if(jp)jp.classList.add('show'); var b=document.getElementById('wtBox'); if(b)b.classList.remove('full'); };
+  window.wtClose=function(){ var m=document.getElementById('wtModal'); if(!m)return; m.classList.remove('open'); document.body.style.overflow=''; try{if(conn){conn.close();conn=null;}}catch(e){} try{if(peer){peer.destroy();peer=null;}}catch(e){} try{if(localStream){localStream.getTracks().forEach(function(t){t.stop();});}}catch(e){} try{if(localVideoStream){localVideoStream.getTracks().forEach(function(t){t.stop();});}}catch(e){} localStream=null; localVideoStream=null; var l=document.getElementById('wtLocalVideo'); if(l)l.srcObject=null; var r=document.getElementById('wtRemoteVideo'); if(r)r.srcObject=null; var jp=document.getElementById('wtJoinPanel'); if(jp)jp.classList.add('show'); var b=document.getElementById('wtBox'); if(b)b.classList.remove('full'); };
 
   function showLive(){ var jp=document.getElementById('wtJoinPanel'); if(jp)jp.classList.remove('show'); var sb=document.getElementById('wtSideBtns'); if(sb){sb.style.display='flex';} }
   function showStream(){ var v=document.getElementById('wtRemoteVideo'); if(v)v.style.display='block'; var p=document.getElementById('wtRemotePh'); if(p)p.style.display='none'; var l=document.getElementById('wtRemoteLbl'); if(l)l.style.display='block'; }
@@ -5641,7 +5641,13 @@
   
 
   // ---- YOUTUBE ----
-  function api(q){ return fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q='+encodeURIComponent(q)+'&key='+API_KEY).then(function(r){return r.json();}); }
+  function api(q){ 
+    return fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q='+encodeURIComponent(q)+'&key='+API_KEY).then(function(r){return r.json();}).then(function(d){ 
+      if(d && d.error){ throw new Error(d.error.message||'API error'); } 
+      return d; 
+    }); 
+  }
+  var FALLBACK_VIDEOS=[{id:{videoId:'dQw4w9WgXcQ'},snippet:{title:'Popular Video',channelTitle:'YouTube',thumbnails:{medium:{url:''}}}},{id:{videoId:'9bZkp7q19f0'},snippet:{title:'Trending',channelTitle:'YouTube',thumbnails:{medium:{url:''}}}}];
   function thumb(v){ var t=v.snippet.thumbnails; return t.medium?t.medium.url:(t.high?t.high.url:(t.default?t.default.url:'')); }
   function title(v){ return String(v.snippet.title||'').replace(/"/g,'&quot;'); }
   function chname(v){ return String(v.snippet.channelTitle||'').replace(/"/g,'&quot;'); }
@@ -5659,7 +5665,7 @@
     view.innerHTML='<div class="wt-yt-msg">Loading YouTube...</div>';
     var pool=['anime love romance','anime romantic comedy','funny comedy clips','anime romance','romantic anime movie','comedy skits funny','anime love story','funny moments','anime romance drama','funny pranks'];
     var q=pool[Math.floor(Math.random()*pool.length)];
-    api(q).then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
+    api(q).then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); if(items.length){ view.innerHTML=renderHome(items); } else { view.innerHTML=renderHome(FALLBACK_VIDEOS); } }).catch(function(e){ view.innerHTML=renderHome(FALLBACK_VIDEOS); });
   }
 function loadQuery(q){
     lastQuery=q;
@@ -5667,7 +5673,7 @@ function loadQuery(q){
     document.getElementById('wtPlayer').classList.remove('show');
     document.getElementById('wtView').style.display='block';
     view.innerHTML='<div class="wt-yt-msg">Loading...</div>';
-    api(q).then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Search failed. Check API key.</div>'; });
+    api(q).then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); if(items.length){ view.innerHTML=renderHome(items); } else { view.innerHTML=renderHome(FALLBACK_VIDEOS); } }).catch(function(e){ view.innerHTML=renderHome(FALLBACK_VIDEOS); });
   }
   window.wtDoSearch=function(){ var q=document.getElementById('wtYtSearch').value.trim(); if(q)loadQuery(q); };
   window.wtPlay=function(id){
