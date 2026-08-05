@@ -5394,7 +5394,7 @@
 /* Cam controls: appear on pane click, fade 5s */
 .wt-cam-ctrls{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:none;gap:14px;z-index:5;opacity:0;transition:opacity .4s;align-items:center}
 .wt-pane.ctrls .wt-cam-ctrls{display:flex;opacity:1}
-.wt-cam-ctrls button{width:22px;height:22px;border:none;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:.55rem;cursor:pointer;display:grid;place-items:center;line-height:1}
+.wt-cam-ctrls button{width:28px;height:28px;border:none;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:.68rem;cursor:pointer;display:grid;place-items:center;line-height:1}
 .wt-cam-ctrls button:active{transform:scale(.92)}
 .wt-cam-ctrls button.off{background:#ef4444;color:#fff}
 .wt-cam-ctrls button.hang{background:#ea4335;color:#fff}
@@ -5466,8 +5466,9 @@
             <video id="wtLocalVideo" autoplay muted playsinline></video>
             <span class="lbl">You</span>
             <div class="wt-cam-ctrls">
-              <button id="wtMuteBtn" onclick="wtMute()" title="Mute">&#127908;</button>
-              <button class="hang" onclick="wtHangup()" title="Hang up">&#128222;</button>
+              <button id="wtMuteBtn" onclick="wtMute()" title="Mute"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm18-2.5L19.5 8 17 10.5 14.5 8 13 6.5 15.5 4 13 1.5 14.5 0 17 2.5 19.5 0 21 1.5 18.5 4 21 6.5z"/></svg></button>
+              <button id="wtVideoBtn1" class="on" onclick="wtVideoToggle(1)" title="Video"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
+              <button class="hang" onclick="wtHangup()" title="Hang up"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29a1 1 0 0 1-.7-.28c-.79-.73-1.68-1.36-2.66-1.85a.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
             </div>
             
           </div>
@@ -5476,8 +5477,9 @@
             <div class="ph" id="wtRemotePh">&#128064; Waiting for other user...</div>
             <span class="lbl" id="wtRemoteLbl" style="display:none">Friend</span>
             <div class="wt-cam-ctrls">
-              <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend">&#127908;</button>
-              <button class="hang" onclick="wtHangup()" title="End">&#128222;</button>
+              <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm18-2.5L19.5 8 17 10.5 14.5 8 13 6.5 15.5 4 13 1.5 14.5 0 17 2.5 19.5 0 21 1.5 18.5 4 21 6.5z"/></svg></button>
+              <button id="wtVideoBtn2" class="on" onclick="wtVideoToggle(2)" title="Video"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
+              <button class="hang" onclick="wtHangup()" title="End"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29a1 1 0 0 1-.7-.28c-.79-.73-1.68-1.36-2.66-1.85a.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
             </div>
             
           </div>
@@ -5577,6 +5579,15 @@
   function wtLoad(id){ document.getElementById('wtView').style.display='none'; document.getElementById('wtPlayer').classList.add('show'); document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1'; }
   function wtHandleData(d){ try{d=JSON.parse(d);}catch(e){return;} if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id);} } }
 
+  window.wtVideoToggle=function(which){
+    var b=document.getElementById(which===1?'wtVideoBtn1':'wtVideoBtn2');
+    if(!b) return;
+    var on=b.classList.contains('on');
+    if(which===1){ var v=document.getElementById('wtLocalVideo'); if(v){ v.paused?v.play():v.pause(); } }
+    else { var v2=document.getElementById('wtRemoteVideo'); if(v2){ v2.paused?v2.play():v2.pause(); } }
+    b.classList.toggle('on',!on);
+    b.style.opacity=on?'0.4':'1';
+  };
   window.wtMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtMuteBtn'); b.classList.toggle('off',myMuted); b.textContent=myMuted?'&#128263;':'&#127908;'; };
   window.wtPeerMute=function(){ peerMuted=!peerMuted; var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted; var b=document.getElementById('wtPeerMuteBtn'); b.classList.toggle('off',peerMuted); b.textContent=peerMuted?'&#128263;':'&#127908;'; };
   window.wtHangup=function(){ wtClose(); };
