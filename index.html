@@ -5406,6 +5406,13 @@
 .wt-result img{width:60px;height:34px;object-fit:cover;border-radius:6px;flex-shrink:0}
 .wt-result .rt{font-size:.72rem;font-weight:600;color:#0f1b33;line-height:1.2}
 @media (max-width:640px){.wt-main.show{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto}.wt-left{flex-direction:row;height:auto}.wt-cam{min-height:110px}}
+
+.wt-pw{text-align:center;padding:20px 0}
+.wt-pw h4{font-size:1.1rem;margin-bottom:10px;color:#0f1b33}
+.wt-pw input{width:80%;max-width:300px;padding:14px;border-radius:12px;border:2px solid #e5e7eb;text-align:center;font-size:1.1rem;letter-spacing:2px;outline:none;font-family:inherit}
+.wt-pw input:focus{border-color:#2196f3}
+.wt-pw .err{color:#dc2626;font-size:.8rem;margin-top:8px;display:none}
+.wt-pw button{display:block;width:80%;max-width:300px;margin:12px auto 0;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;font-family:inherit;font-weight:700;font-size:.95rem;cursor:pointer}
 </style>
 
 <!-- ===== WATCH TOGETHER v2 ===== -->
@@ -5415,15 +5422,25 @@
     <div class="wt-head"><h3>🎬 Watch Together</h3><button class="wt-close" onclick="wtClose()">✕</button></div>
     <div class="wt-body">
       <div class="wt-step" id="wtStepJoin">
-        <h4>🎬 Watch Together</h4>
-        <p>One of you creates the room, the other joins. Strictly 2 people allowed.</p>
-        <button class="wt-bigbtn" onclick="wtCreate()">➕ Create a room</button>
-        <button class="wt-bigbtn green" onclick="wtJoin()">⚡ Join room</button>
-        <div id="wtRoomInfo" style="display:none">
-          <p class="wt-hint">Room code</p>
-          <div class="wt-roomcode" id="wtRoomCode">----</div>
-          <p class="wt-status" id="wtRoomStatus">Room created. Waiting for friend to join...</p>
+
+        <div class="wt-pw" id="wtPw">
+          <h4>🔒 Enter Password</h4>
+          <input id="wtPwInput" type="password" placeholder="Password" autocomplete="off">
+          <div class="err" id="wtPwErr">Wrong password. Try again.</div>
+          <button onclick="wtSubmitPw()">Unlock</button>
         </div>
+        <div id="wtJoinStep" style="display:none">
+          <h4>🎬 Watch Together</h4>
+          <p>One of you creates the room, the other joins. Strictly 2 people allowed.</p>
+          <button class="wt-bigbtn" onclick="wtCreate()">➕ Create a room</button>
+          <button class="wt-bigbtn green" onclick="wtJoin()">⚡ Join room</button>
+          <div id="wtRoomInfo" style="display:none">
+            <p class="wt-hint">Room code</p>
+            <div class="wt-roomcode" id="wtRoomCode">----</div>
+            <p class="wt-status" id="wtRoomStatus">Room created. Waiting for friend to join...</p>
+          </div>
+        </div>
+
       </div>
       <div class="wt-main" id="wtMain">
         <div class="wt-left">
@@ -5454,15 +5471,25 @@
   function $(id){ return document.getElementById(id); }
 
   window.wtOpen = function(){
-    var p = prompt('Enter password:');
-    if(p===null) return;
-    if(p !== PASSWORD){ alert('Wrong password'); return; }
     $('wtModal').classList.add('open');
     document.body.style.overflow='hidden';
     $('wtStepJoin').style.display='block';
-    $('wtRoomInfo').style.display='none';
-    $('wtMain').classList.remove('show');
+    $('wtPw').style.display='block';
+    $('wtJoinStep').style.display='none';
+    $('wtPwErr').style.display='none';
+    $('wtPwInput').value='';
+    setTimeout(function(){ $('wtPwInput').focus(); }, 100);
   };
+  window.wtSubmitPw = function(){
+    var v = ($('wtPwInput').value||'');
+    if(v === PASSWORD){
+      $('wtPw').style.display='none';
+      $('wtJoinStep').style.display='block';
+    } else {
+      $('wtPwErr').style.display='block';
+    }
+  };
+  window.wtClosePwErr = function(){ $('wtPwErr').style.display='none'; };
   window.wtClose = function(){
     $('wtModal').classList.remove('open');
     document.body.style.overflow='';
@@ -5488,7 +5515,7 @@
     if(peerCount >= 2){ // reject 3rd person
       try{ if(gconn) gconn.close(); }catch(e){}
       try{ if(gcall){ gcall.answer(); gcall.close(); } }catch(e){}
-      alert('Room is full. Only 2 people allowed.');
+      $('wtRoomStatus').textContent='Room is full. Only 2 people allowed.'; $('wtRoomStatus').className='wt-status';
       return false;
     }
     peerCount++;
@@ -5512,7 +5539,7 @@
           if(!acceptGuest(c, null)) return;
         });
         host.on('call', function(call){
-          if(peerCount>=2){ try{ call.answer(); call.close(); }catch(e){} alert('Room is full.'); return; }
+          if(peerCount>=2){ try{ call.answer(); call.close(); }catch(e){} $('wtRoomStatus').textContent='Room is full.'; $('wtRoomStatus').className='wt-status'; return; }
           peerCount++;
           call.answer(localStream);
           call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; });
@@ -5523,9 +5550,9 @@
       });
       host.on('error', function(err){
         // unavailable-id => someone else already created room => tell to join instead
-        if(err.type==='unavailable-id'){ alert('A room already exists. Click "Join room" instead.'); }
+        if(err.type==='unavailable-id'){ $('wtRoomStatus').textContent='A room already exists. Click Join room instead.'; $('wtRoomStatus').className='wt-status'; }
       });
-    }).catch(function(){ alert('Camera/mic access needed'); });
+    }).catch(function(){ $('wtRoomStatus').textContent='Camera/mic access needed.'; $('wtRoomStatus').className='wt-status'; });
   };
 
   window.wtJoin = function(){
@@ -5540,8 +5567,8 @@
         conn.on('open', function(){ wtCall(); });
         gPeer.on('call', function(call){ call.answer(localStream); call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; }); });
       });
-      gPeer.on('error', function(){ alert('No active room found. Ask your friend to create one first.'); });
-    }).catch(function(){ alert('Camera/mic access needed'); });
+      gPeer.on('error', function(){ $('wtRoomStatus').textContent='No active room found. Ask your friend to create one first.'; $('wtRoomStatus').className='wt-status'; });
+    }).catch(function(){ $('wtRoomStatus').textContent='Camera/mic access needed.'; $('wtRoomStatus').className='wt-status'; });
   };
 
   function wtCall(){
@@ -5563,7 +5590,7 @@
   }
   window.wtSearch = function(){
     var q=($('wtYtSearch').value||'').trim();
-    if(!q){ alert('Type what to search'); return; }
+    if(!q){ $('wtRoomStatus').textContent='Type what to search.'; $('wtRoomStatus').className='wt-status'; return; }
     var url='https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q='+encodeURIComponent(q)+'&key='+API_KEY;
     fetch(url).then(function(r){return r.json();}).then(function(data){
       var items=data.items||[];
@@ -5584,6 +5611,7 @@
     else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
   };
   $('wtYtSearch').addEventListener('keydown', function(e){ if(e.key==='Enter') wtSearch(); });
+  $('wtPwInput').addEventListener('keydown', function(e){ if(e.key==='Enter') wtSubmitPw(); });
 })();
 </script>
 
