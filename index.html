@@ -5444,8 +5444,10 @@
 .wt-box.full #wtCam1,.wt-box.full #wtCam2{display:none}
 .wt-box.full #wtYtPane{left:14px;top:14px;right:14px;bottom:14px;width:auto;height:auto}
 /* ===== SIDE TOGGLE BUTTONS (attached to left of box) ===== */
-.wt-sidebtns{position:fixed;left:calc(50% - min(39vw,480px) - 42px);top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:12px;z-index:999}
+.wt-sidebtns{position:fixed;left:calc(50% - min(39vw,480px) - 42px);top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:10px;z-index:999}
 .wt-sidebtns.show{display:flex}
+.wt-sidebtns #wtModeBtn,.wt-sidebtns #wtChatBtn{display:none}
+.wt-sidebtns.open #wtModeBtn,.wt-sidebtns.open #wtChatBtn{display:grid}
 .wt-sbtn{width:32px;height:32px;border-radius:50%;border:none;background:#eef0f5;color:#5a739c;cursor:pointer;display:grid;place-items:center;box-shadow:8px 8px 16px #cdd1dc,-8px -8px 16px #ffffff,inset 0 0 0 1px rgba(255,255,255,.6);font-size:1rem;transition:.2s}
 .wt-sbtn:active{box-shadow:inset 5px 5px 10px #cdd1dc,inset -5px -5px 10px #ffffff}
 .wt-sbtn.on{background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff}
@@ -5492,6 +5494,7 @@
     var box=document.createElement('div'); box.className='wt-modal'; box.id='wtModal';
     box.innerHTML=`<div class="wt-ov" onclick="wtClose()"></div>
               <div class="wt-sidebtns" id="wtSideBtns">
+          <button class="wt-sbtn" id="wtArrowBtn" onclick="wtToggleSide()" title="Menu">&#8249;</button>
           <button class="wt-sbtn" id="wtModeBtn" onclick="wtToggleMode()" title="Toggle mode">&#128222;</button>
           <button class="wt-sbtn" id="wtChatBtn" onclick="wtOpenChat()" title="Chat">&#128172;</button>
         </div>
