@@ -5449,7 +5449,7 @@
 .wt-sidebtns #wtModeBtn,.wt-sidebtns #wtChatBtn,.wt-sidebtns #wtAudioBtn{display:none}
 .wt-sidebtns.open #wtModeBtn,.wt-sidebtns.open #wtChatBtn,.wt-sidebtns.open #wtAudioBtn{display:grid}
 .wt-sidebtns.open{left:auto;right:12px;position:absolute}
-#wtArrowBtn{background:transparent !important;border:none !important;color:#5a739c;width:auto;height:auto;padding:8px;font-size:2rem;line-height:1;cursor:pointer}
+#wtArrowBtn{background:transparent !important;border:none !important;color:#5a739c;width:auto;height:auto;padding:6px;font-size:1.6rem;line-height:1;cursor:pointer}
 #wtArrowBtn:hover{color:#2196f3}
 .wt-sbtn{width:32px;height:32px;border-radius:50%;border:none;background:#eef0f5;color:#5a739c;cursor:pointer;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.12);font-size:1rem;transition:.2s}
 .wt-sbtn:active{box-shadow:inset 5px 5px 10px #cdd1dc,inset -5px -5px 10px #ffffff}
@@ -5459,9 +5459,9 @@
 .wt-box.callonly #wtCam1{top:10px;height:48%;left:10px;right:10px;width:auto}
 .wt-box.callonly #wtCam2{top:52%;height:48%;left:10px;right:10px;width:auto}
 /* ===== CHAT BOX (WhatsApp style) ===== */
-.wt-chatbox{position:absolute;left:8px;top:31%;right:8px;bottom:8px;width:auto;display:none;flex-direction:column;background:linear-gradient(160deg,#131c2e,#0e1522);border-radius:18px;overflow:hidden;z-index:60;box-shadow:0 26px 70px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.12),0 14px 40px rgba(33,150,243,.25),inset 0 1px 0 rgba(255,255,255,.08);border:1px solid rgba(33,150,243,.35)}
+.wt-chatbox{position:absolute;left:20px;top:50px;bottom:50px;width:min(340px,40vw);display:none;flex-direction:column;background:linear-gradient(170deg,#111b21,#0b141a);border-radius:18px;overflow:hidden;z-index:60;box-shadow:0 26px 70px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.10),0 10px 30px rgba(0,168,132,.15);border:1px solid rgba(0,168,132,.25)}
 .wt-chatbox.show{display:flex}
-.wt-chat-head{display:flex;align-items:center;gap:10px;padding:3px 10px;background:rgba(15,25,45,.7);color:#eaf3ff;border-bottom:1px solid rgba(34,211,238,.15)}
+.wt-chat-head{display:flex;align-items:center;gap:8px;padding:3px 10px;background:rgba(0,0,0,.35);color:#e9edef;border-bottom:1px solid rgba(255,255,255,.06)}
 .wt-chat-ava{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#2196f3,#22d3ee);display:grid;place-items:center;font-weight:700;color:#fff;font-size:.7rem}
 .wt-chat-head .nm{font-weight:600;font-size:.9rem}
 .wt-chat-head .st{font-size:.68rem;color:#8696a0}
@@ -5470,15 +5470,15 @@
 .wt-msg{max-width:78%;margin-bottom:8px;padding:8px 12px;border-radius:10px;font-size:.82rem;line-height:1.35;position:relative;word-wrap:break-word;color:#111b21}
 .wt-msg .who{font-size:.62rem;font-weight:700;margin-bottom:2px}
 .wt-msg.me{align-self:flex-start;background:#fff;border-top-left-radius:2px}
-.wt-msg.me .who{color:#2196f3}
-.wt-msg.them{align-self:flex-end;background:#d7e8ff;border-top-right-radius:2px}
-.wt-msg.them .who{color:#0ea5e9}
+.wt-msg.me .who{color:#008069}
+.wt-msg.them{align-self:flex-end;background:#d9fdd3;border-top-right-radius:2px}
+.wt-msg.them .who{color:#005c4b}
 .wt-msg .time{display:block;font-size:.6rem;color:#8696a0;text-align:right;margin-top:2px}
-.wt-chat-input{display:flex;gap:8px;padding:4px 8px;background:rgba(10,16,26,.7);align-items:center;flex-wrap:nowrap;box-sizing:border-box;width:100%;border-top:1px solid rgba(34,211,238,.12)}
+.wt-chat-input{display:flex;gap:6px;padding:6px 10px;background:rgba(0,0,0,.35);align-items:center;flex-wrap:nowrap;box-sizing:border-box;width:100%;border-top:1px solid rgba(255,255,255,.06)}
 .wt-chat-input input{flex:1;background:#202c33;border:none;border-radius:18px;color:#e9edef;outline:none;padding:7px 12px;font-size:.78rem;font-family:inherit;min-width:0}
-.wt-chat-input button{width:42px;height:42px;border-radius:50%;border:none;background:#2196f3;color:#fff;cursor:pointer;font-size:1rem;flex-shrink:0}
+.wt-chat-input button{width:42px;height:42px;border-radius:50%;border:none;background:#00a884;color:#fff;cursor:pointer;font-size:1rem;flex-shrink:0}
 .wt-chatbox{background:linear-gradient(160deg,#0b141a,#101f2a);box-shadow:0 34px 90px rgba(0,0,0,.75),0 0 0 1px rgba(0,168,132,.35),0 0 40px rgba(0,168,132,.15)}
-.wt-chat-head{background:rgba(15,25,45,.7)}
+.wt-chat-head{background:linear-gradient(135deg,#075e54,#128c7e);padding:7px 12px}
 .wt-chat-hd-txt{flex:1}
 .wt-chat-ava{width:42px;height:42px;font-size:1.05rem;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .wt-chat-head .nm{font-size:.8rem;font-weight:700}
@@ -5488,18 +5488,18 @@
 .wt-chat-input{background:#1f2c34;padding:12px 14px;gap:10px;border-top:1px solid rgba(255,255,255,.08)}
 .wt-chat-input input{flex:1;min-width:0;background:#2a3942;border:none;border-radius:20px;padding:6px 12px;font-size:.78rem;color:#e9edef;outline:none}
 .wt-chat-input input::placeholder{color:#8696a0}
-.wt-chat-send{width:30px;height:30px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;box-shadow:0 4px 12px rgba(33,150,243,.5);display:grid;place-items:center;transition:.2s;border:none}
-.wt-chat-send:hover{transform:scale(1.08);box-shadow:0 8px 22px rgba(33,150,243,.55)}
+.wt-chat-send{width:30px;height:30px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;box-shadow:0 4px 12px rgba(37,211,102,.4);display:grid;place-items:center;transition:.2s;border:none}
+.wt-chat-send:hover{transform:scale(1.08);box-shadow:0 8px 22px rgba(37,211,102,.55)}
 .wt-chat-send:active{transform:scale(.95)}
 
 .wt-box.audioonly #wtYtPane{display:none}
 .wt-box.audioonly #wtCam1,.wt-box.audioonly #wtCam2{display:none}
 .wt-audio-panel{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#111b21;z-index:5;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:22px 22px}
 .wt-box.audioonly .wt-audio-panel{display:flex;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#111b21;z-index:5;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:22px 22px}
-.wt-audio-avatar{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#2196f3,#22d3ee);display:grid;place-items:center;color:#fff;font-size:3.2rem;box-shadow:0 22px 60px rgba(0,128,105,.5);border:3px solid rgba(255,255,255,.15)}
+.wt-audio-avatar{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#008069,#128c7e);display:grid;place-items:center;color:#fff;font-size:3.2rem;box-shadow:0 22px 60px rgba(0,128,105,.5);border:3px solid rgba(255,255,255,.15)}
 .wt-audio-name{color:#e9edef;font-size:1.35rem;font-weight:700}
 .wt-audio-status{color:#8696a0;font-size:.85rem;letter-spacing:.03em}
-.wt-audio-timer{color:#22d3ee;font-size:1rem;font-weight:600;font-family:monospace}
+.wt-audio-timer{color:#00a884;font-size:1rem;font-weight:600;font-family:monospace}
 .wt-audio-ctrls{display:flex;gap:18px;margin-top:18px}
 .wt-audio-ctrl{width:56px;height:56px;border-radius:50%;border:none;display:grid;place-items:center;cursor:pointer;font-size:1.3rem;transition:.2s}
 .wt-audio-ctrl.mute{background:#2a3942;color:#e9edef}
@@ -5536,7 +5536,7 @@
             <span class="lbl">You</span>
             <div class="wt-cam-ctrls">
               <button id="wtMuteBtn" onclick="wtMute()" title="Mute"><i class="fa-solid fa-microphone"></i></button>
-              <button id="wtVideoBtn1" onclick="wtVideoToggle(1)" title="Video"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
+              <button id="wtVideoBtn1" class="on" onclick="wtVideoToggle(1)" title="Video"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
               <button class="hang" onclick="wtHangup()" title="Hang up"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29a1 1 0 0 1-.7-.28c-.79-.73-1.68-1.36-2.66-1.85a.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
             </div>
             
@@ -5547,7 +5547,7 @@
             <span class="lbl" id="wtRemoteLbl" style="display:none">Friend</span>
             <div class="wt-cam-ctrls">
               <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend"><i class="fa-solid fa-microphone"></i></button>
-              <button id="wtVideoBtn2" onclick="wtVideoToggle(2)" title="Video"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
+              <button id="wtVideoBtn2" class="on" onclick="wtVideoToggle(2)" title="Video"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
               <button class="hang" onclick="wtHangup()" title="End"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29a1 1 0 0 1-.7-.28c-.79-.73-1.68-1.36-2.66-1.85a.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
             </div>
             
@@ -5580,7 +5580,7 @@
         <div class="wt-chatbox" id="wtChatBox">
           <div class="wt-chat-head">
             <div class="wt-chat-ava" id="wtChatAva">?</div>
-            <div class="wt-chat-hd-txt"><div class="nm" id="wtChatName">Friend</div><div class="st" id="wtChatStatus" style="color:#9fe8d5">&#9679; identity: Receiver</div></div>
+            <div class="wt-chat-hd-txt"><div class="nm" id="wtChatName">Watch Together</div><div class="st" id="wtChatStatus">&#10004; Online</div></div>
             <button class="wt-chat-close" onclick="wtCloseChat()">&#10005;</button>
           </div>
           <div class="wt-chat-msgs" id="wtChatMsgs"></div>
@@ -5717,9 +5717,7 @@ function loadQuery(q){
       var st=document.getElementById('wtRoomStatus'); st.textContent='Room created. Waiting for friend...'; st.className='wt-status wait';
       showLive(); bindCams(); try{loadHome();}catch(e){}
       myRole='Caller'; peerRole='Receiver';
-      var cn=document.getElementById('wtChatName'); if(cn){ cn.textContent=peerRole; }
-      var cs=document.getElementById('wtChatStatus'); if(cs){ cs.innerHTML='&#9679; identity: '+peerRole; }
-      var ca=document.getElementById('wtChatAva'); if(ca){ ca.textContent=peerRole==='Receiver'?'R':'C'; }
+      document.getElementById('wtChatName').textContent='Chat'; document.getElementById('wtChatAva').textContent='C';
       var host=new Peer(ROOM_ID);
       host.on('open',function(){peer=host;
         host.on('connection',function(cc){ if(peerCount>=2){try{cc.close();}catch(e){}} else {peerCount++;conn=cc;conn.on('data',wtHandleData);} });
@@ -5732,9 +5730,7 @@ function loadQuery(q){
     navigator.mediaDevices.getUserMedia({video:false,audio:true}).then(function(stream){
       localStream=stream;
       myRole='Receiver'; peerRole='Caller';
-      var cn=document.getElementById('wtChatName'); if(cn){ cn.textContent=peerRole; }
-      var cs=document.getElementById('wtChatStatus'); if(cs){ cs.innerHTML='&#9679; identity: '+peerRole; }
-      var ca=document.getElementById('wtChatAva'); if(ca){ ca.textContent=peerRole==='Caller'?'C':'R'; }
+      document.getElementById('wtChatName').textContent='Chat'; document.getElementById('wtChatAva').textContent='R';
       var g=new Peer();
       g.on('open',function(){peer=g; conn=g.connect(ROOM_ID,{reliable:true}); conn.on('data',wtHandleData); conn.on('open',function(){ var call=peer.call(ROOM_ID,localStream); call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();}); }); g.on('call',function(call){call.answer(localStream);call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();});}); showLive(); bindCams(); });
       g.on('error',function(){});
