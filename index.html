@@ -5553,9 +5553,11 @@
     document.getElementById('wtPlayer').classList.remove('show');
     document.getElementById('wtView').style.display='block';
     view.innerHTML='<div class="wt-yt-msg">Loading YouTube...</div>';
-    api('anime love romance comedy').then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
+    var pool=['anime love romance','anime romantic comedy','funny comedy clips','anime romance','romantic anime movie','comedy skits funny','anime love story','funny moments','anime romance drama','funny pranks'];
+    var q=pool[Math.floor(Math.random()*pool.length)];
+    api(q).then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
   }
-  function loadQuery(q){
+function loadQuery(q){
     var view=document.getElementById('wtView');
     document.getElementById('wtPlayer').classList.remove('show');
     document.getElementById('wtView').style.display='block';
@@ -5595,6 +5597,7 @@
       document.getElementById('wtRoomCode').textContent=c;
       var st=document.getElementById('wtRoomStatus'); st.textContent='Room created. Waiting for friend...'; st.className='wt-status wait';
       showLive(); bindCams();
+      try{loadHome();}catch(e){}
       var host=new Peer(ROOM_ID);
       host.on('open',function(){peer=host;
         host.on('connection',function(cc){ if(peerCount>=2){try{cc.close();}catch(e){}} else {peerCount++;conn=cc;conn.on('data',wtHandleData);} });
