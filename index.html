@@ -5369,97 +5369,103 @@
 (function(){
   var API_KEY='AIzaSyBsTwPAX6W8ASmxz56kpVOmzom-WPZkx-I';
   var ROOM_ID='cssguide-wt-room';
-  var peer=null,conn=null,localStream=null,peerCount=0;
+  var peer=null,conn=null,localStream=null,peerCount=0,myMuted=false,peerMuted=false;
 
   function inject(){
-    if(document.getElementById('wtModal')) return; // already injected
-    var css = document.createElement('style');
-    css.id='wt-styles';
-    css.textContent = `
-.wt-modal{position:fixed;inset:0;z-index:99999;visibility:hidden;pointer-events:none}
-.wt-modal .wt-ov{position:absolute;inset:0;background:rgba(8,12,25,.82);opacity:0;transition:.3s}
-.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(760px,96vw);max-height:94vh;overflow:hidden;background:#fff;border-radius:22px;box-shadow:0 18px 40px rgba(0,0,0,.45);opacity:0;transition:.3s}
+    if(document.getElementById('wtModal')) return;
+    var css=document.createElement('style'); css.id='wt-styles';
+    css.textContent=`.wt-modal{position:fixed;inset:0;z-index:99999;visibility:hidden;pointer-events:none}
+.wt-modal .wt-ov{position:absolute;inset:0;background:rgba(10,14,25,.85);backdrop-filter:blur(4px);opacity:0;transition:.3s}
+.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(96vw,1100px);height:min(92vh,760px);background:#eef0f5;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.9);opacity:0;transition:.3s;overflow:hidden;border:1px solid rgba(255,255,255,.5)}
 .wt-modal.open{visibility:visible;pointer-events:auto}
 .wt-modal.open .wt-ov{opacity:1}
 .wt-modal.open .wt-box{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.wt-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #e5e7eb}
-.wt-head h3{font-size:1.05rem;color:#0f1b33;margin:0}
-.wt-close{border:none;background:#f3f4f6;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:1.05rem;color:#0f1b33}
-.wt-body{padding:16px;max-height:calc(94vh - 64px);overflow:auto}
-.wt-step{text-align:center;padding:10px 0}
-.wt-bigbtn{display:block;width:80%;max-width:340px;margin:0 auto 12px;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer}
-.wt-bigbtn:active{transform:scale(.98)}
-.wt-bigbtn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
-.wt-bigbtn.ghost{background:#fff;color:#0f1b33;border:2px solid #e5e7eb}
-.wt-roomcode{font-family:monospace;font-size:1.6rem;font-weight:700;letter-spacing:6px;color:#2196f3;background:#eef4ff;padding:12px;border-radius:12px;margin:10px auto 6px;display:inline-block}
-.wt-status{color:#16a34a;font-weight:600;font-size:.85rem;margin-top:10px}
-.wt-status.wait{color:#f59e0b}
-.wt-hint{text-align:center;color:#8aa3c5;font-size:.74rem;margin-top:6px}
-.wt-main{display:none}
-.wt-main.show{display:grid;grid-template-columns:1fr 1.2fr;gap:12px;height:calc(94vh - 100px);min-height:360px}
-.wt-left{display:flex;flex-direction:column;gap:10px;height:100%}
-.wt-cam{flex:1;position:relative;background:#0b1220;border-radius:14px;overflow:hidden;min-height:0}
+.wt-body{display:grid;grid-template-columns:1fr 1.5fr;gap:0;height:100%;width:100%}
+.wt-left{display:flex;flex-direction:column;gap:16px;padding:18px;overflow-y:auto;background:linear-gradient(180deg,#f5f7fc,#e8ebf3)}
+.wt-camwrap{position:relative;border-radius:22px;background:#eef0f5;box-shadow:9px 9px 22px #cdd1dc,-9px -9px 22px #ffffff,inset 0 0 0 1px rgba(255,255,255,.6);padding:8px}
+.wt-cam{position:relative;aspect-ratio:4/3;background:#0b1220;border-radius:16px;overflow:hidden}
 .wt-cam video{width:100%;height:100%;object-fit:cover}
 .wt-cam.local video{transform:scaleX(-1)}
-.wt-cam .lbl{position:absolute;bottom:6px;left:8px;color:#fff;font-size:.66rem;font-family:inherit;background:rgba(0,0,0,.5);padding:2px 7px;border-radius:6px;z-index:2}
-.wt-cam .ph{width:100%;height:100%;display:grid;place-items:center;color:#7694bd;font-size:.7rem;text-align:center;padding:8px}
-.wt-right{position:relative;background:#000;border-radius:14px;overflow:hidden;height:100%}
-.wt-right iframe{width:100%;height:100%;border:none;display:block}
-.wt-right .ph{width:100%;height:100%;display:grid;place-items:center;color:#7694bd;font-size:.8rem;text-align:center;padding:12px}
-.wt-fs{position:absolute;top:8px;right:8px;z-index:5;border:none;background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:7px 11px;font-size:.72rem;cursor:pointer;font-family:inherit}
-.wt-ytctrl{position:absolute;bottom:8px;left:8px;right:8px;z-index:6;display:flex;gap:6px}
-.wt-ytctrl input{flex:1;min-width:0;padding:9px 11px;border:none;border-radius:9px;font-size:.8rem;outline:none}
-.wt-ytctrl button{border:none;background:#2196f3;color:#fff;border-radius:9px;padding:9px 13px;font-size:.78rem;cursor:pointer;font-family:inherit}
-.wt-results{position:absolute;left:8px;right:8px;bottom:52px;z-index:6;max-height:150px;overflow-y:auto;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:6px;display:none}
+.wt-cam .lbl{position:absolute;top:8px;left:10px;color:#fff;font-size:.66rem;font-family:inherit;background:rgba(0,0,0,.45);padding:3px 9px;border-radius:8px;z-index:3}
+.wt-cam .ph{width:100%;height:100%;display:grid;place-items:center;color:#8aa3c5;font-size:.72rem;text-align:center;padding:10px}
+.wt-cam-ctrls{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:4}
+.wt-cam-ctrls button{width:36px;height:36px;border:none;border-radius:50%;background:#eef0f5;color:#5a739c;font-size:.9rem;cursor:pointer;box-shadow:4px 4px 10px #cdd1dc,-4px -4px 10px #ffffff}
+.wt-cam-ctrls button:active{box-shadow:inset 4px 4px 8px #cdd1dc,inset -4px -4px 8px #ffffff}
+.wt-cam-ctrls button.off{color:#fff;background:#ef4444;box-shadow:0 4px 14px rgba(239,68,68,.4)}
+.wt-cam-ctrls button.hang{color:#fff;background:linear-gradient(135deg,#ef4444,#dc2626)}
+.wt-join-panel{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#eef0f5;z-index:8;padding:20px;text-align:center}
+.wt-join-panel.show{display:flex}
+.wt-bigbtn{width:240px;padding:17px;border:none;border-radius:60px;background:#eef0f5;color:#0f1b33;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:10px 10px 22px #cdd1dc,-10px -10px 22px #ffffff}
+.wt-bigbtn:active{box-shadow:inset 6px 6px 14px #cdd1dc,inset -6px -6px 14px #ffffff}
+.wt-bigbtn.green{color:#fff;background:linear-gradient(135deg,#2196f3,#22d3ee);box-shadow:0 12px 28px rgba(33,150,243,.4)}
+.wt-roomcode{font-family:monospace;font-size:1.4rem;font-weight:700;letter-spacing:5px;color:#2196f3;background:#eef0f5;padding:12px 20px;border-radius:14px;box-shadow:inset 4px 4px 10px #cdd1dc,inset -4px -4px 10px #ffffff}
+.wt-status{color:#16a34a;font-weight:600;font-size:.82rem}
+.wt-status.wait{color:#f59e0b}
+.wt-hint{color:#8aa3c5;font-size:.72rem;text-align:center}
+.wt-right{position:relative;display:flex;flex-direction:column;background:#eef0f5;padding:16px;overflow:hidden}
+.wt-ytstage{position:relative;flex:1;border-radius:20px;overflow:hidden;background:#0b1220;box-shadow:9px 9px 24px #cdd1dc,-9px -9px 24px #ffffff}
+.wt-ytstage iframe{width:100%;height:100%;border:none;display:block}
+.wt-fs{position:absolute;top:10px;right:10px;z-index:6;border:none;background:rgba(0,0,0,.5);color:#fff;border-radius:10px;padding:8px 12px;font-size:.72rem;cursor:pointer;font-family:inherit}
+.wt-results{position:absolute;top:0;left:0;right:0;bottom:0;z-index:5;background:#fff;overflow-y:auto;padding:14px;display:none}
 .wt-results.show{display:block}
-.wt-result{display:flex;gap:8px;align-items:center;padding:6px;border-radius:8px;cursor:pointer}
+.wt-result{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;cursor:pointer}
 .wt-result:hover{background:#f1f5f9}
-.wt-result img{width:60px;height:34px;object-fit:cover;border-radius:6px;flex-shrink:0}
-.wt-result .rt{font-size:.72rem;font-weight:600;color:#0f1b33;line-height:1.2}
-@media (max-width:640px){.wt-main.show{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto}.wt-left{flex-direction:row;height:auto}.wt-cam{min-height:110px}}
-`;
+.wt-result img{width:70px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0}
+.wt-result .rt{font-size:.78rem;font-weight:600;color:#0f1b33;line-height:1.25}
+.wt-searchbar{display:flex;gap:8px;padding:12px;background:#eef0f5;border-radius:60px;box-shadow:inset 4px 4px 10px #cdd1dc,inset -4px -4px 10px #ffffff;margin-top:14px}
+.wt-searchbar input{flex:1;min-width:0;border:none;background:transparent;outline:none;font-size:.88rem;padding:10px 14px;font-family:inherit;color:#0f1b33}
+.wt-searchbar button{border:none;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;border-radius:50px;padding:11px 22px;font-size:.82rem;cursor:pointer;font-family:inherit;font-weight:600}
+.wt-box.full .wt-body{grid-template-columns:1fr}
+.wt-box.full .wt-left{display:none}
+.wt-box.full .wt-right{padding:0}
+.wt-box.full .wt-ytstage{border-radius:0;flex:1}
+.wt-box.full .wt-searchbar,.wt-box.full .wt-fs{display:none}`;
     document.head.appendChild(css);
 
-    var box=document.createElement('div');
-    box.className='wt-modal';
-    box.id='wtModal';
-    box.innerHTML = `
-      <div class="wt-ov" onclick="wtClose()"></div>
-      <div class="wt-box">
-        <div class="wt-head"><h3>&#127916; Watch Together</h3><button class="wt-close" onclick="wtClose()">&#10005;</button></div>
+    var box=document.createElement('div'); box.className='wt-modal'; box.id='wtModal';
+    box.innerHTML=`<div class="wt-ov" onclick="wtClose()"></div>
+      <div class="wt-box" id="wtBox">
         <div class="wt-body">
-          <div class="wt-step" id="wtStepJoin">
-            
-            <div id="wtJoinStep" style="display:none">
-              <h4>&#127916; Watch Together</h4>
-              <p>One of you creates the room, the other joins. Strictly 2 people allowed.</p>
-              <button class="wt-bigbtn" onclick="wtCreate()">&#10133; Create a room</button>
-              <button class="wt-bigbtn green" onclick="wtJoin()">&#9889; Join room</button>
-              <div id="wtRoomInfo" style="display:none">
-                <p class="wt-hint">Room code</p>
+          <div class="wt-left" id="wtLeft">
+            <div class="wt-join-panel show" id="wtJoinPanel">
+              <h4 style="margin:0;color:#0f1b33">&#127916; Watch Together</h4>
+              <p class="wt-hint">One creates the room, the other joins. Strictly 2 people.</p>
+              <button class="wt-bigbtn green" onclick="wtCreate()">&#10133; Create a room</button>
+              <button class="wt-bigbtn" onclick="wtJoin()">&#9889; Join room</button>
+              <div id="wtRoomInfo" style="display:none;text-align:center">
                 <div class="wt-roomcode" id="wtRoomCode">----</div>
-                <p class="wt-status" id="wtRoomStatus">Room created. Waiting for friend to join...</p>
+                <p class="wt-status" id="wtRoomStatus">Room created. Waiting for friend...</p>
               </div>
             </div>
-          </div>
-          <div class="wt-main" id="wtMain">
-            <div class="wt-left">
+            <div class="wt-camwrap">
               <div class="wt-cam local"><video id="wtLocalVideo" autoplay muted playsinline></video><span class="lbl">You</span></div>
+              <div class="wt-cam-ctrls">
+                <button id="wtMuteBtn" onclick="wtMute()" title="Mute">&#127908;</button>
+                <button class="hang" onclick="wtHangup()" title="Hang up">&#128222;</button>
+              </div>
+            </div>
+            <div class="wt-camwrap">
               <div class="wt-cam remote" id="wtRemoteCam">
                 <video id="wtRemoteVideo" autoplay playsinline style="display:none"></video>
                 <div class="ph" id="wtRemotePh">&#128064; Waiting for other user...</div>
-                <span class="lbl" style="display:none" id="wtRemoteLbl">Friend</span>
+                <span class="lbl" id="wtRemoteLbl" style="display:none">Friend</span>
+              </div>
+              <div class="wt-cam-ctrls">
+                <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend">&#127908;</button>
+                <button class="hang" onclick="wtHangup()" title="End">&#128222;</button>
               </div>
             </div>
-            <div class="wt-right" id="wtRight">
-              <div class="ph" id="wtRightPh">&#128269; Search a video to start watching together</div>
+          </div>
+          <div class="wt-right" id="wtRight">
+            <div class="wt-ytstage" id="wtStage">
               <iframe id="wtFrame" style="display:none" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-              <button class="wt-fs" onclick="wtFullscreen()">&#9974; Fullscreen</button>
+              <div class="ph" id="wtRightPh" style="width:100%;height:100%;display:grid;place-items:center;color:#8aa3c5;font-size:.9rem;text-align:center">&#128269; YouTube home — search to start watching together</div>
               <div class="wt-results" id="wtResults"></div>
-              <div class="wt-ytctrl">
-                <input id="wtYtSearch" placeholder="Search YouTube (movie, reel, video)..." autocomplete="off">
-                <button onclick="wtSearch()">Search</button>
-              </div>
+              <button class="wt-fs" onclick="wtFullscreen()">&#9974; Expand</button>
+            </div>
+            <div class="wt-searchbar">
+              <input id="wtYtSearch" placeholder="Search YouTube (movie, reel, video)..." autocomplete="off">
+              <button onclick="wtSearch()">Search</button>
             </div>
           </div>
         </div>
@@ -5467,55 +5473,29 @@
     document.body.appendChild(box);
   }
 
-  // ---- API ----
-  window.wtOpen = function(){
-    inject();
-    var m=document.getElementById('wtModal');
-    m.classList.add('open');
-    document.body.style.overflow='hidden';
-    var js=document.getElementById('wtJoinStep'); if(js)js.style.display='block';
-  };
-  window.wtClose = function(){
-    var m=document.getElementById('wtModal'); if(!m) return;
-    m.classList.remove('open'); document.body.style.overflow='';
-    try{ if(conn){conn.close();conn=null;} }catch(e){}
-    try{ if(peer){peer.destroy();peer=null;} }catch(e){}
-    try{ if(localStream){localStream.getTracks().forEach(function(t){t.stop();});localStream=null;} }catch(e){}
-    var lv=document.getElementById('wtLocalVideo'); if(lv)lv.srcObject=null;
-    var rv=document.getElementById('wtRemoteVideo'); if(rv)rv.srcObject=null;
-  };
-  function showLive(){
-    document.getElementById('wtStepJoin').style.display='none';
-    document.getElementById('wtMain').classList.add('show');
-  }
-  function showStream(){
-    var v=document.getElementById('wtRemoteVideo'); if(v){v.style.display='block';}
-    var p=document.getElementById('wtRemotePh'); if(p)p.style.display='none';
-    var l=document.getElementById('wtRemoteLbl'); if(l)l.style.display='block';
-  }
-  window.wtCreate = function(){
+  window.wtOpen=function(){ inject(); var m=document.getElementById('wtModal'); m.classList.add('open'); document.body.style.overflow='hidden'; };
+  window.wtClose=function(){ var m=document.getElementById('wtModal'); if(!m)return; m.classList.remove('open'); document.body.style.overflow=''; try{if(conn){conn.close();conn=null;}}catch(e){} try{if(peer){peer.destroy();peer=null;}}catch(e){} try{if(localStream){localStream.getTracks().forEach(function(t){t.stop();});localStream=null;}}catch(e){} var l=document.getElementById('wtLocalVideo'); if(l)l.srcObject=null; var r=document.getElementById('wtRemoteVideo'); if(r)r.srcObject=null; var jp=document.getElementById('wtJoinPanel'); if(jp)jp.classList.add('show'); var b=document.getElementById('wtBox'); if(b)b.classList.remove('full'); };
+
+  function showLive(){ var jp=document.getElementById('wtJoinPanel'); if(jp)jp.classList.remove('show'); }
+  function showStream(){ var v=document.getElementById('wtRemoteVideo'); if(v)v.style.display='block'; var p=document.getElementById('wtRemotePh'); if(p)p.style.display='none'; var l=document.getElementById('wtRemoteLbl'); if(l)l.style.display='block'; }
+
+  window.wtCreate=function(){
     navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
       localStream=stream; document.getElementById('wtLocalVideo').srcObject=stream;
       document.getElementById('wtRoomInfo').style.display='block';
       var s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',c='';for(var i=0;i<4;i++)c+=s[Math.floor(Math.random()*s.length)];
       document.getElementById('wtRoomCode').textContent=c;
-      document.getElementById('wtRoomStatus').textContent='Room created. Waiting for friend to join...';
-      document.getElementById('wtRoomStatus').className='wt-status wait';
+      var st=document.getElementById('wtRoomStatus'); st.textContent='Room created. Waiting for friend...'; st.className='wt-status wait';
       showLive();
       var host=new Peer(ROOM_ID);
       host.on('open',function(){peer=host;
         host.on('connection',function(cc){ if(peerCount>=2){try{cc.close();}catch(e){}} else {peerCount++;conn=cc;conn.on('data',wtHandleData);} });
-        host.on('call',function(call){
-          if(peerCount>=2){try{call.answer();call.close();}catch(e){} return;}
-          peerCount++; call.answer(localStream);
-          call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();});
-          document.getElementById('wtRoomStatus').textContent='Friend connected! Watching together.'; document.getElementById('wtRoomStatus').className='wt-status';
-        });
+        host.on('call',function(call){ if(peerCount>=2){try{call.answer();call.close();}catch(e){}return;} peerCount++; call.answer(localStream); call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();}); var st=document.getElementById('wtRoomStatus'); st.textContent='Friend connected!'; st.className='wt-status'; });
       });
-      host.on('error',function(err){ if(err.type==='unavailable-id'){document.getElementById('wtRoomStatus').textContent='A room already exists. Click Join instead.';document.getElementById('wtRoomStatus').className='wt-status';} });
+      host.on('error',function(err){ if(err.type==='unavailable-id'){var st=document.getElementById('wtRoomStatus'); st.textContent='A room exists. Click Join instead.'; st.className='wt-status';} });
     }).catch(function(){});
   };
-  window.wtJoin = function(){
+  window.wtJoin=function(){
     navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
       localStream=stream; document.getElementById('wtLocalVideo').srcObject=stream;
       var g=new Peer();
@@ -5523,6 +5503,19 @@
       g.on('error',function(){});
     }).catch(function(){});
   };
+
+  window.wtMute=function(){
+    myMuted=!myMuted;
+    if(localStream){ localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;}); }
+    var b=document.getElementById('wtMuteBtn'); b.classList.toggle('off',myMuted); b.textContent=myMuted?'\u{1F3A3}':'\u{1F3A4}';
+  };
+  window.wtPeerMute=function(){
+    peerMuted=!peerMuted;
+    var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted;
+    var b=document.getElementById('wtPeerMuteBtn'); b.classList.toggle('off',peerMuted); b.textContent=peerMuted?'\u{1F3A3}':'\u{1F3A4}';
+  };
+  window.wtHangup=function(){ wtClose(); };
+
   function wtHandleData(d){ try{d=JSON.parse(d);}catch(e){return;} if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id,false);} } }
   function wtLoad(id,broadcast){
     var ph=document.getElementById('wtRightPh'),fr=document.getElementById('wtFrame');
@@ -5530,48 +5523,41 @@
     if(broadcast&&conn&&conn.open)conn.send({type:'yt',id:id,_lock:true});
     var r=document.getElementById('wtResults'); if(r)r.classList.remove('show');
   }
-  window.wtSearch = function(){
+  window.wtSearch=function(){
     var q=document.getElementById('wtYtSearch').value.trim(); if(!q)return;
-    var url='https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q='+encodeURIComponent(q)+'&key='+API_KEY;
+    var res=document.getElementById('wtResults'); res.classList.add('show'); res.innerHTML='<p class="wt-hint">Searching...</p>';
+    var url='https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=12&q='+encodeURIComponent(q)+'&key='+API_KEY;
     fetch(url).then(function(r){return r.json();}).then(function(data){
-      var items=data.items||[]; var res=document.getElementById('wtResults');
+      var items=data.items||[];
       if(!items.length){res.innerHTML='<p class="wt-hint">No results</p>';}
       else{ res.innerHTML=items.filter(function(v){return v.id&&v.id.videoId;}).map(function(v){
         var t=v.snippet.thumbnails.medium?v.snippet.thumbnails.medium.url:(v.snippet.thumbnails.default?v.snippet.thumbnails.default.url:'');
         return '<div class="wt-result" data-vid="'+v.id.videoId+'" onclick="wtPickFrom(this)"><img src="'+t+'"><span class="rt">'+String(v.snippet.title).replace(/"/g,'&quot;')+'</span></div>';}).join(''); }
-      res.classList.add('show');
-    }).catch(function(){});
+    }).catch(function(){res.innerHTML='<p class="wt-hint">Search failed</p>';});
   };
   window.wtPick=function(id){wtLoad(id,true);};
   window.wtPickFrom=function(el){wtLoad(el.getAttribute('data-vid'),true);};
-  window.wtFullscreen=function(){ var el=document.getElementById('wtRight'); if(el.requestFullscreen)el.requestFullscreen(); else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen(); };
+  window.wtFullscreen=function(){
+    var b=document.getElementById('wtBox'); b.classList.toggle('full');
+    var btn=document.querySelector('#wtStage .wt-fs'); if(btn)btn.textContent=b.classList.contains('full')?'\u25C0 Restore':'\u9974 Expand';
+  };
 
-  // ---- Trigger: event delegation on document (survives React hydration) ----
   function setupTrigger(){
-    // Attach to footer "Commission" text if present
-    var nodes=document.querySelectorAll('*');
-    for(var i=0;i<nodes.length;i++){ var n=nodes[i];
-      if(n.childNodes.length===1 && n.childNodes[0].nodeType===3 && /Commission/.test(n.textContent) && n.textContent.trim().length<20){ n.style.cursor='pointer'; n.style.textDecoration='underline dotted'; n.style.textUnderlineOffset='3px'; }
-    }
     document.addEventListener('click', function(ev){
       var el=ev.target;
       while(el && el!==document.body && el!==document){
-        if(el.textContent && el.textContent.trim().toLowerCase()==='commission'){ wtOpen(); ev.stopPropagation(); return; }
+        var t=(el.textContent||'').trim();
+        if(t.toLowerCase()==='commission'){ wtOpen(); ev.stopPropagation(); return; }
         el=el.parentNode;
       }
-      // also match footer disclaimer containing Commission (FPSC)
-      if(el){ var t=(el.textContent||'').toLowerCase(); if(t.indexOf('commission (fpsc)')!==-1){ wtOpen(); } }
     }, true);
   }
-  function start(){
-    inject(); setupTrigger();
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start);
-  else start();
-  // retry periodically in case hydration re-renders footer
-  setTimeout(function(){ inject(); },1000);
-  setTimeout(function(){ inject(); },3000);
+  function start(){ inject(); setupTrigger(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+  setTimeout(function(){inject();},1000);
+  setTimeout(function(){inject();},3000);
 })();
 </script>
+
 
 </body></html>
