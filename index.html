@@ -5444,10 +5444,13 @@
 .wt-box.full #wtCam1,.wt-box.full #wtCam2{display:none}
 .wt-box.full #wtYtPane{left:14px;top:14px;right:14px;bottom:14px;width:auto;height:auto}
 /* ===== SIDE TOGGLE BUTTONS (attached to left of box) ===== */
-.wt-sidebtns{position:fixed;left:calc(50% - min(39vw,480px) - 42px);top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:10px;z-index:999}
+.wt-sidebtns{position:absolute;left:calc(50% - min(39vw,480px) - 14px);top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:8px;z-index:999;align-items:center}
 .wt-sidebtns.show{display:flex}
 .wt-sidebtns #wtModeBtn,.wt-sidebtns #wtChatBtn{display:none}
 .wt-sidebtns.open #wtModeBtn,.wt-sidebtns.open #wtChatBtn{display:grid}
+.wt-sidebtns.open{left:auto;right:12px;position:absolute}
+#wtArrowBtn{background:transparent;color:#5a739c;box-shadow:none;width:22px;height:40px;font-size:1.4rem;border-radius:0;cursor:pointer}
+#wtArrowBtn:hover{color:#2196f3}
 .wt-sbtn{width:32px;height:32px;border-radius:50%;border:none;background:#eef0f5;color:#5a739c;cursor:pointer;display:grid;place-items:center;box-shadow:8px 8px 16px #cdd1dc,-8px -8px 16px #ffffff,inset 0 0 0 1px rgba(255,255,255,.6);font-size:1rem;transition:.2s}
 .wt-sbtn:active{box-shadow:inset 5px 5px 10px #cdd1dc,inset -5px -5px 10px #ffffff}
 .wt-sbtn.on{background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff}
@@ -5687,6 +5690,12 @@ function loadQuery(q){
 
   var chatInp=document.getElementById('wtChatInput');
   if(chatInp){ chatInp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ wtSendMsg(); } }); }
+  window.wtToggleSide=function(){
+    var sb=document.getElementById('wtSideBtns'); if(!sb) return;
+    sb.classList.toggle('open');
+    var a=document.getElementById('wtArrowBtn');
+    if(a){ a.innerHTML=sb.classList.contains('open')?'&#8250;':'&#8249;'; }
+  };
   window.wtToggleMode=function(){
     var b=document.getElementById('wtBox'); b.classList.toggle('callonly');
     var btn=document.getElementById('wtModeBtn'); btn.classList.toggle('on',b.classList.contains('callonly'));
