@@ -5376,7 +5376,7 @@
     var css=document.createElement('style'); css.id='wt-styles';
     css.textContent=`.wt-modal{position:fixed;inset:0;z-index:99999;visibility:hidden;pointer-events:none}
 .wt-modal .wt-ov{position:absolute;inset:0;background:rgba(10,14,25,.82);backdrop-filter:blur(4px);opacity:0;transition:.3s}
-.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(96vw,1180px);height:min(94vh,820px);background:#eef0f5;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.5);opacity:0;transition:.3s;overflow:hidden;border:1px solid rgba(255,255,255,.5)}
+.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(48vw,590px);height:min(47vh,410px);background:#eef0f5;border-radius:16px;box-shadow:0 16px 36px rgba(0,0,0,.5);opacity:0;transition:.3s;overflow:hidden;border:1px solid rgba(255,255,255,.5)}
 .wt-modal.open{visibility:visible;pointer-events:auto}
 .wt-modal.open .wt-ov{opacity:1}
 .wt-modal.open .wt-box{opacity:1;transform:translate(-50%,-50%) scale(1)}
@@ -5384,9 +5384,9 @@
 .wt-box{position:relative}
 .wt-body{position:absolute;inset:0;padding:14px;box-sizing:border-box}
 .wt-pane{position:absolute;border-radius:16px;background:#eef0f5;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff;overflow:hidden}
-#wtCam1{left:14px;top:14px;right:50%;width:auto;height:29%}
-#wtCam2{left:50%;top:14px;right:14px;width:auto;height:29%}
-#wtYtPane{left:14px;top:31%;right:14px;bottom:14px;width:auto;height:auto}
+#wtCam1{left:8px;top:8px;right:50%;width:auto;height:29%}
+#wtCam2{left:50%;top:8px;right:8px;width:auto;height:29%}
+#wtYtPane{left:8px;top:31%;right:8px;bottom:8px;width:auto;height:auto}
 .wt-pane video{width:100%;height:100%;object-fit:cover;display:block}
 .wt-pane.local video{transform:scaleX(-1)}
 .wt-pane .lbl{position:absolute;top:8px;left:10px;color:#fff;font-size:.62rem;font-family:inherit;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;z-index:3}
@@ -5415,7 +5415,7 @@
 /* YouTube pane: beautiful search bar, no header text */
 .wt-yt{position:absolute;inset:0;display:flex;flex-direction:column;background:#0f0f0f}
 .wt-yt-search{display:flex;align-items:center;gap:6px;padding:4px 8px;background:#1a1a1a;border-bottom:1px solid #2a2a2a;flex-shrink:0}
-.wt-yt-search input{flex:1;max-width:420px;margin:0 auto;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:40px;color:#fff;outline:none;padding:5px 12px;font-size:.78rem;font-family:inherit}
+.wt-yt-search input{flex:1;max-width:260px;margin:0 auto;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:40px;color:#fff;outline:none;padding:3px 8px;font-size:.68rem;font-family:inherit}
 .wt-yt-search input:focus{border-color:#2196f3}
 .wt-yt-search button{background:linear-gradient(135deg,#2196f3,#22d3ee);border:none;color:#fff;border-radius:40px;padding:5px 12px;cursor:pointer;font-size:.72rem;font-family:inherit;font-weight:600}
 .wt-yt-tabs{display:flex;gap:5px;padding:5px 10px;overflow-x:auto;background:#1a1a1a;flex-shrink:0;scrollbar-width:none}
