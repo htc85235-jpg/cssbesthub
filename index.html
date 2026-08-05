@@ -5368,7 +5368,6 @@
 <script id="wt-bootstrap">
 (function(){
   var API_KEY='AIzaSyBsTwPAX6W8ASmxz56kpVOmzom-WPZkx-I';
-  var PASSWORD='secretcallbox';
   var ROOM_ID='cssguide-wt-room';
   var peer=null,conn=null,localStream=null,peerCount=0;
 
@@ -5388,12 +5387,6 @@
 .wt-close{border:none;background:#f3f4f6;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:1.05rem;color:#0f1b33}
 .wt-body{padding:16px;max-height:calc(94vh - 64px);overflow:auto}
 .wt-step{text-align:center;padding:10px 0}
-.wt-pw{text-align:center;padding:20px 0}
-.wt-pw h4{font-size:1.1rem;margin-bottom:10px;color:#0f1b33}
-.wt-pw input{width:80%;max-width:300px;padding:14px;border-radius:12px;border:2px solid #e5e7eb;text-align:center;font-size:1.1rem;letter-spacing:2px;outline:none;font-family:inherit}
-.wt-pw input:focus{border-color:#2196f3}
-.wt-pw .err{color:#dc2626;font-size:.8rem;margin-top:8px;display:none}
-.wt-pw button{display:block;width:80%;max-width:300px;margin:12px auto 0;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;font-family:inherit;font-weight:700;font-size:.95rem;cursor:pointer}
 .wt-bigbtn{display:block;width:80%;max-width:340px;margin:0 auto 12px;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer}
 .wt-bigbtn:active{transform:scale(.98)}
 .wt-bigbtn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
@@ -5436,12 +5429,7 @@
         <div class="wt-head"><h3>&#127916; Watch Together</h3><button class="wt-close" onclick="wtClose()">&#10005;</button></div>
         <div class="wt-body">
           <div class="wt-step" id="wtStepJoin">
-            <div class="wt-pw" id="wtPw">
-              <h4>&#128274; Enter Password</h4>
-              <input id="wtPwInput" type="password" placeholder="Password" autocomplete="off">
-              <div class="err" id="wtPwErr">Wrong password. Try again.</div>
-              <button onclick="wtSubmitPw()">Unlock</button>
-            </div>
+            
             <div id="wtJoinStep" style="display:none">
               <h4>&#127916; Watch Together</h4>
               <p>One of you creates the room, the other joins. Strictly 2 people allowed.</p>
@@ -5485,10 +5473,7 @@
     var m=document.getElementById('wtModal');
     m.classList.add('open');
     document.body.style.overflow='hidden';
-    document.getElementById('wtPw').style.display='block';
-    document.getElementById('wtJoinStep').style.display='none';
-    document.getElementById('wtPwErr').style.display='none';
-    var pi=document.getElementById('wtPwInput'); pi.value=''; setTimeout(function(){pi.focus();},100);
+    var js=document.getElementById('wtJoinStep'); if(js)js.style.display='block';
   };
   window.wtClose = function(){
     var m=document.getElementById('wtModal'); if(!m) return;
@@ -5498,11 +5483,6 @@
     try{ if(localStream){localStream.getTracks().forEach(function(t){t.stop();});localStream=null;} }catch(e){}
     var lv=document.getElementById('wtLocalVideo'); if(lv)lv.srcObject=null;
     var rv=document.getElementById('wtRemoteVideo'); if(rv)rv.srcObject=null;
-  };
-  window.wtSubmitPw = function(){
-    var v=(document.getElementById('wtPwInput').value||'').replace(/\s+/g,'').toLowerCase();
-    if(v===PASSWORD){ document.getElementById('wtPw').style.display='none'; document.getElementById('wtJoinStep').style.display='block'; document.getElementById('wtPwErr').style.display='none'; }
-    else { document.getElementById('wtPwErr').style.display='block'; }
   };
   function showLive(){
     document.getElementById('wtStepJoin').style.display='none';
