@@ -5375,27 +5375,34 @@
     if(document.getElementById('wtModal')) return;
     var css=document.createElement('style'); css.id='wt-styles';
     css.textContent=`.wt-modal{position:fixed;inset:0;z-index:99999;visibility:hidden;pointer-events:none}
-.wt-modal .wt-ov{position:absolute;inset:0;background:rgba(10,14,25,.85);backdrop-filter:blur(4px);opacity:0;transition:.3s}
-.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(96vw,1180px);height:min(94vh,820px);background:#eef0f5;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.9);opacity:0;transition:.3s;overflow:hidden;border:1px solid rgba(255,255,255,.5)}
+.wt-modal .wt-ov{position:absolute;inset:0;background:rgba(10,14,25,.82);backdrop-filter:blur(4px);opacity:0;transition:.3s}
+.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(96vw,1180px);height:min(94vh,820px);background:#eef0f5;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.5);opacity:0;transition:.3s;overflow:hidden;border:1px solid rgba(255,255,255,.5)}
 .wt-modal.open{visibility:visible;pointer-events:auto}
 .wt-modal.open .wt-ov{opacity:1}
 .wt-modal.open .wt-box{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.wt-body{display:flex;flex-direction:column;height:100%;width:100%;padding:14px;box-sizing:border-box;gap:6px}
-.wt-body-top{display:flex;flex-direction:column;height:32%;min-height:120px;flex-shrink:0;overflow:hidden}
-/* Larger cameras on top (vertical space freed by removing bottom search bar) */
-.wt-cams{display:flex;gap:12px;flex-shrink:0}
-.wt-camwrap{position:relative;flex:1 1 50%;max-width:50%;border-radius:16px;background:#eef0f5;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff;padding:6px;cursor:pointer}
-.wt-cam{position:relative;aspect-ratio:16/9;background:#0b1220;border-radius:12px;overflow:hidden}
-.wt-cam video{width:100%;height:100%;object-fit:cover}
-.wt-cam.local video{transform:scaleX(-1)}
-.wt-cam .lbl{position:absolute;top:7px;left:9px;color:#fff;font-size:.62rem;font-family:inherit;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;z-index:3}
-.wt-cam .ph{width:100%;height:100%;display:grid;place-items:center;color:#8aa3c5;font-size:.7rem;text-align:center;padding:8px}
+/* ABSOLUTE positioning: resizing one pane never affects others */
+.wt-box{position:relative}
+.wt-body{position:absolute;inset:0;padding:14px;box-sizing:border-box}
+.wt-pane{position:absolute;border-radius:16px;background:#eef0f5;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff;overflow:hidden}
+#wtCam1{left:14px;top:14px;width:44%;height:32%}
+#wtCam2{left:50%;top:14px;right:14px;width:auto;height:32%}
+#wtYtPane{left:14px;top:40%;right:14px;bottom:14px;width:auto;height:auto}
+.wt-pane video{width:100%;height:100%;object-fit:cover;display:block}
+.wt-pane.local video{transform:scaleX(-1)}
+.wt-pane .lbl{position:absolute;top:8px;left:10px;color:#fff;font-size:.62rem;font-family:inherit;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;z-index:3}
+.wt-pane .ph{width:100%;height:100%;display:grid;place-items:center;color:#8aa3c5;font-size:.7rem;text-align:center;padding:8px}
+/* Cam controls: appear on pane click, fade 5s */
 .wt-cam-ctrls{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:none;gap:12px;z-index:5;background:rgba(0,0,0,.45);padding:10px 14px;border-radius:30px;backdrop-filter:blur(3px);opacity:0;transition:opacity .4s}
-.wt-camwrap.ctrls .wt-cam-ctrls{display:flex;opacity:1}
+.wt-pane.ctrls .wt-cam-ctrls{display:flex;opacity:1}
 .wt-cam-ctrls button{width:42px;height:42px;border:none;border-radius:50%;background:#fff;color:#0f1b33;font-size:1rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .wt-cam-ctrls button:active{transform:scale(.92)}
 .wt-cam-ctrls button.off{background:#ef4444;color:#fff}
 .wt-cam-ctrls button.hang{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+/* Little ">" arrow resize handle - nothing else */
+.wt-handle{position:absolute;right:4px;bottom:4px;width:22px;height:22px;display:grid;place-items:center;cursor:nwse-resize;z-index:9;color:#94a3b8;font-size:.8rem;font-family:monospace;line-height:1;user-select:none}
+.wt-handle:hover{color:#2196f3}
+.wt-resizing{user-select:none;cursor:nwse-resize}
+/* Join panel */
 .wt-join-panel{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#eef0f5;z-index:8;padding:20px;text-align:center}
 .wt-join-panel.show{display:flex}
 .wt-bigbtn{width:240px;padding:17px;border:none;border-radius:60px;background:#eef0f5;color:#0f1b33;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:10px 10px 22px #cdd1dc,-10px -10px 22px #ffffff}
@@ -5405,32 +5412,17 @@
 .wt-status{color:#16a34a;font-weight:600;font-size:.82rem}
 .wt-status.wait{color:#f59e0b}
 .wt-hint{color:#8aa3c5;font-size:.72rem;text-align:center}
-/* YOUTUBE-STYLE AREA */
-.wt-yt{flex:1;display:flex;flex-direction:column;background:#0f0f0f;border-radius:16px;overflow:hidden;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff}
-.wt-yt-top{display:flex;align-items:center;gap:8px;padding:4px 10px;background:#1a1a1a;border-bottom:1px solid #2a2a2a;flex-shrink:0}
-.wt-yt-logo{display:flex;align-items:center;gap:5px;color:#fff;font-weight:700;font-size:.72rem;font-family:inherit;white-space:nowrap}
-.wt-yt-logo span{color:#f03c2e;font-size:1.2rem}
-.wt-yt-search{flex:1;display:flex;max-width:340px;margin:0 auto;background:#2a2a2a;border-radius:40px;overflow:hidden;border:1px solid #3a3a3a}
-.wt-yt-search input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:#fff;padding:4px 10px;font-size:.72rem;font-family:inherit}
-.wt-yt-search button{background:#3a3a3a;border:none;color:#fff;padding:0 12px;cursor:pointer;font-size:.75rem}
-.wt-yt-tabs{display:flex;gap:5px;padding:3px 10px;overflow-x:auto;background:#1a1a1a;flex-shrink:0;scrollbar-width:none}
+/* YouTube pane: beautiful search bar, no header text */
+.wt-yt{position:absolute;inset:0;display:flex;flex-direction:column;background:#0f0f0f}
+.wt-yt-search{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1a1a1a;border-bottom:1px solid #2a2a2a;flex-shrink:0}
+.wt-yt-search input{flex:1;max-width:520px;margin:0 auto;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:40px;color:#fff;outline:none;padding:10px 18px;font-size:.88rem;font-family:inherit}
+.wt-yt-search input:focus{border-color:#2196f3}
+.wt-yt-search button{background:linear-gradient(135deg,#2196f3,#22d3ee);border:none;color:#fff;border-radius:40px;padding:10px 20px;cursor:pointer;font-size:.88rem;font-family:inherit;font-weight:600}
+.wt-yt-tabs{display:flex;gap:5px;padding:5px 10px;overflow-x:auto;background:#1a1a1a;flex-shrink:0;scrollbar-width:none}
 .wt-yt-tabs::-webkit-scrollbar{display:none}
-.wt-yt-tab{padding:3px 12px;border-radius:18px;background:#2a2a2a;color:#e0e0e0;font-size:.66rem;font-family:inherit;cursor:pointer;white-space:nowrap;border:none}
+.wt-yt-tab{padding:5px 14px;border-radius:18px;background:#2a2a2a;color:#e0e0e0;font-size:.72rem;font-family:inherit;cursor:pointer;white-space:nowrap;border:none}
 .wt-yt-tab.on{background:#fff;color:#0f0f0f;font-weight:600}
-/* RESIZE - visible handles, both directions */
-.wt-cams{position:relative}
-.wt-camwrap{overflow:hidden}
-.wt-resize-v{position:relative;height:14px;margin:-2px 0;cursor:row-resize;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:7;background:rgba(33,150,243,.08)}
-.wt-resize-v::after{content:'';width:80px;height:5px;border-radius:4px;background:linear-gradient(90deg,#2196f3,#22d3ee);box-shadow:0 0 6px rgba(33,150,243,.5)}
-.wt-resize-h{position:absolute;top:0;bottom:0;width:12px;cursor:col-resize;z-index:7}
-.wt-resize-h.right{right:-4px}
-.wt-resize-h.left{left:-4px}
-.wt-resize-h::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:80px;border-radius:4px;background:linear-gradient(180deg,#2196f3,#22d3ee);box-shadow:0 0 6px rgba(33,150,243,.5)}
-.wt-corner{position:absolute;right:-4px;bottom:-4px;width:16px;height:16px;cursor:nwse-resize;z-index:8;border-radius:4px;background:linear-gradient(135deg,#2196f3,#22d3ee);box-shadow:0 0 6px rgba(33,150,243,.5)}
-.wt-resizing{user-select:none}
-.wt-resizing *{pointer-events:none}
 .wt-yt-view{flex:1;overflow-y:auto;padding:12px;position:relative}
-/* Home: suggestions grid + reels row */
 .wt-reels-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none}
 .wt-reels-row::-webkit-scrollbar{display:none}
 .wt-reel{flex:0 0 84px;aspect-ratio:9/16;border-radius:12px;overflow:hidden;position:relative;cursor:pointer;background:#222}
@@ -5449,10 +5441,9 @@
 .wt-back{position:absolute;top:10px;left:10px;z-index:6;border:none;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:7px 12px;font-size:.7rem;cursor:pointer;font-family:inherit}
 .wt-expand{position:absolute;top:10px;right:10px;z-index:6;border:none;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:7px 12px;font-size:.7rem;cursor:pointer;font-family:inherit}
 .wt-yt-msg{width:100%;height:100%;display:grid;place-items:center;color:#666;font-size:.9rem;text-align:center;padding:12px}
-/* Fullscreen expand */
-.wt-box.full .wt-cams{display:none}
-.wt-box.full .wt-yt{flex:1}
-.wt-box.full .wt-yt-top,.wt-box.full .wt-yt-tabs{display:none}`;
+.wt-box.full .wt-body{display:block}
+.wt-box.full #wtCam1,.wt-box.full #wtCam2{display:none}
+.wt-box.full #wtYtPane{left:14px;top:14px;right:14px;bottom:14px;width:auto;height:auto}`;
     document.head.appendChild(css);
 
     var box=document.createElement('div'); box.className='wt-modal'; box.id='wtModal';
@@ -5469,50 +5460,45 @@
           </div>
         </div>
         <div class="wt-body">
-          <div class="wt-body-top">
-          <div class="wt-cams">
-            <div class="wt-camwrap" id="wtLocalWrap">
-              <div class="wt-resize-h right" data-resize-cam="wtLocalWrap"></div>
-              <div class="wt-corner" data-corner-cam="wtLocalWrap"></div>
-              <div class="wt-cam local"><video id="wtLocalVideo" autoplay muted playsinline></video><span class="lbl">You</span></div>
-              <div class="wt-cam-ctrls">
-                <button id="wtMuteBtn" onclick="wtMute()" title="Mute">&#127908;</button>
-                <button class="hang" onclick="wtHangup()" title="Hang up">&#128222;</button>
-              </div>
+          <div class="wt-pane local" id="wtCam1">
+            <video id="wtLocalVideo" autoplay muted playsinline></video>
+            <span class="lbl">You</span>
+            <div class="wt-cam-ctrls">
+              <button id="wtMuteBtn" onclick="wtMute()" title="Mute">&#127908;</button>
+              <button class="hang" onclick="wtHangup()" title="Hang up">&#128222;</button>
             </div>
-            <div class="wt-camwrap" id="wtRemoteWrap">
-              <div class="wt-resize-h right" data-resize-cam="wtRemoteWrap"></div>
-              <div class="wt-corner" data-corner-cam="wtRemoteWrap"></div>
-              <div class="wt-cam remote" id="wtRemoteCam">
-                <video id="wtRemoteVideo" autoplay playsinline style="display:none"></video>
-                <div class="ph" id="wtRemotePh">&#128064; Waiting for other user...</div>
-                <span class="lbl" id="wtRemoteLbl" style="display:none">Friend</span>
-              </div>
-              <div class="wt-cam-ctrls">
-                <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend">&#127908;</button>
-                <button class="hang" onclick="wtHangup()" title="End">&#128222;</button>
-              </div>
-            </div>
+            <div class="wt-handle">&#8250;</div>
           </div>
+          <div class="wt-pane" id="wtCam2">
+            <video id="wtRemoteVideo" autoplay playsinline style="display:none"></video>
+            <div class="ph" id="wtRemotePh">&#128064; Waiting for other user...</div>
+            <span class="lbl" id="wtRemoteLbl" style="display:none">Friend</span>
+            <div class="wt-cam-ctrls">
+              <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend">&#127908;</button>
+              <button class="hang" onclick="wtHangup()" title="End">&#128222;</button>
+            </div>
+            <div class="wt-handle">&#8250;</div>
           </div>
-          <div class="wt-resize-v" id="wtResizeV"></div>
-          <div class="wt-yt" id="wtYt">
-            <div class="wt-yt-top">
-              <div class="wt-yt-logo"><span>&#9654;</span>YouTube <span style="color:#666;font-weight:400">Watch Together</span></div>
-              <div class="wt-yt-search"><input id="wtYtSearch" placeholder="Search"><button onclick="wtDoSearch()">&#128269;</button></div>
-            </div>
-            <div class="wt-yt-tabs">
-              <button class="wt-yt-tab on" onclick="wtTab('home')">Home</button>
-              <button class="wt-yt-tab" onclick="wtTab('reels')">Reels</button>
-              <button class="wt-yt-tab" onclick="wtTab('trending')">Trending</button>
-              <button class="wt-yt-tab" onclick="wtTab('movies')">Movies</button>
-            </div>
-            <div class="wt-yt-view" id="wtView"></div>
-            <div class="wt-yt-player" id="wtPlayer">
-              <div class="wt-player-stage" id="wtStage">
-                <iframe id="wtFrame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                <button class="wt-back" onclick="wtBackHome()">&#8592; Back</button>
-                <button class="wt-expand" onclick="wtExpand()">&#9974; Expand</button>
+          <div class="wt-pane" id="wtYtPane">
+            <div class="wt-handle">&#8250;</div>
+            <div class="wt-yt" id="wtYt">
+              <div class="wt-yt-search">
+                <input id="wtYtSearch" placeholder="Search movies, reels, videos...">
+                <button onclick="wtDoSearch()">Search</button>
+              </div>
+              <div class="wt-yt-tabs">
+                <button class="wt-yt-tab on" onclick="wtTab('home',this)">Home</button>
+                <button class="wt-yt-tab" onclick="wtTab('reels',this)">Reels</button>
+                <button class="wt-yt-tab" onclick="wtTab('trending',this)">Trending</button>
+                <button class="wt-yt-tab" onclick="wtTab('movies',this)">Movies</button>
+              </div>
+              <div class="wt-yt-view" id="wtView"></div>
+              <div class="wt-yt-player" id="wtPlayer">
+                <div class="wt-player-stage" id="wtStage">
+                  <iframe id="wtFrame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                  <button class="wt-back" onclick="wtBackHome()">&#8592; Back</button>
+                  <button class="wt-expand" onclick="wtExpand()">&#9974; Expand</button>
+                </div>
               </div>
             </div>
           </div>
@@ -5527,104 +5513,94 @@
   function showLive(){ var jp=document.getElementById('wtJoinPanel'); if(jp)jp.classList.remove('show'); }
   function showStream(){ var v=document.getElementById('wtRemoteVideo'); if(v)v.style.display='block'; var p=document.getElementById('wtRemotePh'); if(p)p.style.display='none'; var l=document.getElementById('wtRemoteLbl'); if(l)l.style.display='block'; }
 
-  function bindCamClicks(){
-    var wraps=['wtLocalWrap','wtRemoteWrap'];
-    wraps.forEach(function(id){
+  // Cam controls on click + fade
+  function bindCams(){
+    var cams=['wtCam1','wtCam2'];
+    cams.forEach(function(id){
       var el=document.getElementById(id);
-      if(el && !el._cb){
-        el._cb=true;
-        el.addEventListener('click', function(e){
-          if(e.target.closest && e.target.closest('.wt-cam-ctrls')) return;
-          var any=document.querySelectorAll('.wt-camwrap.ctrls');
-          for(var i=0;i<any.length;i++) any[i].classList.remove('ctrls');
-          el.classList.add('ctrls');
-          clearTimeout(el._t);
-          el._t=setTimeout(function(){ el.classList.remove('ctrls'); }, 5000);
-        });
+      if(!el||el._cb) return; el._cb=true;
+      el.addEventListener('click', function(e){
+        if(e.target.closest && e.target.closest('.wt-cam-ctrls')) return;
+        if(e.target.closest && e.target.closest('.wt-handle')) return;
+        var any=document.querySelectorAll('.wt-pane.ctrls');
+        for(var i=0;i<any.length;i++) any[i].classList.remove('ctrls');
+        el.classList.add('ctrls');
+        clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove('ctrls'); }, 5000);
+      });
+    });
+  }
+  setTimeout(bindCams,300);
+  setTimeout(bindCams,2000);
+
+  // RESIZE: independent per pane (absolute positioning -> no push)
+  function initResize(){
+    var handles=document.querySelectorAll('.wt-handle');
+    handles.forEach(function(h){
+      if(h._r) return; h._r=true;
+      h.addEventListener('mousedown', function(e){ e.preventDefault(); e.stopPropagation(); start(h,e.clientX,e.clientY); });
+      h.addEventListener('touchstart', function(e){ if(e.touches[0]){e.preventDefault();e.stopPropagation();start(h,e.touches[0].clientX,e.touches[0].clientY);} }, {passive:false});
+      function start(h,sx,sy){
+        var pane=h.parentNode;
+        var startW=pane.offsetWidth, startH=pane.offsetHeight;
+        document.body.classList.add('wt-resizing');
+        function mv(x,y){
+          var nw=startW+(x-sx), nh=startH+(y-sy);
+          if(nw<60)nw=60; if(nh<60)nh=60;
+          pane.style.width=nw+'px';
+          pane.style.height=nh+'px';
+        }
+        function up(){ document.body.classList.remove('wt-resizing'); document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',up); }
+        document.addEventListener('mousemove',function(e){mv(e.clientX,e.clientY);}); document.addEventListener('mouseup',up);
+        document.addEventListener('touchmove',function(e){if(e.touches[0])mv(e.touches[0].clientX,e.touches[0].clientY);},{passive:false}); document.addEventListener('touchend',up);
       }
     });
   }
-  setTimeout(bindCamClicks,300);
-  setTimeout(bindCamClicks,2000);
+  setTimeout(initResize,400);
+  setTimeout(initResize,2000);
 
-  // ---- YOUTUBE-LIKE API ----
-  function api(query, type){
-    var u='https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q='+encodeURIComponent(query)+'&key='+API_KEY;
-    return fetch(u).then(function(r){return r.json();});
-  }
-  function thumb(v){ var t=v.snippet.thumbnails; return (t.medium?t.medium.url:(t.high?t.high.url:(t.default?t.default.url:''))); }
+  // ---- YOUTUBE ----
+  function api(q){ return fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q='+encodeURIComponent(q)+'&key='+API_KEY).then(function(r){return r.json();}); }
+  function thumb(v){ var t=v.snippet.thumbnails; return t.medium?t.medium.url:(t.high?t.high.url:(t.default?t.default.url:'')); }
   function title(v){ return String(v.snippet.title||'').replace(/"/g,'&quot;'); }
   function chname(v){ return String(v.snippet.channelTitle||'').replace(/"/g,'&quot;'); }
   function renderHome(items){
-    // Separate a few into a "Reels/Shorts" row + the rest as suggestions
-    var reels=items.slice(0,6), sugg=items.slice(6);
-    var h='';
+    var reels=items.slice(0,6), sugg=items.slice(6), h='';
     if(reels.length){ h+='<div class="wt-home-label">Shorts / Reels</div><div class="wt-reels-row">'+reels.map(function(v){return '<div class="wt-reel" onclick="wtPlay(\''+v.id.videoId+'\')"><img src="'+thumb(v)+'" loading="lazy"><span class="rl">'+title(v)+'</span></div>';}).join('')+'</div>'; }
     if(sugg.length){ h+='<div class="wt-home-label">Recommended for you</div><div class="wt-suggest">'+sugg.map(function(v){return '<div class="wt-sv" onclick="wtPlay(\''+v.id.videoId+'\')"><img src="'+thumb(v)+'" loading="lazy"><div class="tt">'+title(v)+'</div><div class="ch">'+chname(v)+'</div></div>';}).join('')+'</div>'; }
     return h;
   }
   function loadHome(){
-    var view=document.getElementById('wtView'); if(!view)return;
+    var view=document.getElementById('wtView');
     document.getElementById('wtPlayer').classList.remove('show');
     document.getElementById('wtView').style.display='block';
     view.innerHTML='<div class="wt-yt-msg">Loading YouTube...</div>';
-    api('music','video').then(function(data){
-      var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;});
-      view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>';
-    }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
+    api('music').then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
   }
-  function loadQuery(q, label){
+  function loadQuery(q){
     var view=document.getElementById('wtView');
     document.getElementById('wtPlayer').classList.remove('show');
     document.getElementById('wtView').style.display='block';
     view.innerHTML='<div class="wt-yt-msg">Loading...</div>';
-    api(q,'video').then(function(data){
-      var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;});
-      view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>';
-    }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Search failed. Check API key.</div>'; });
+    api(q).then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Search failed. Check API key.</div>'; });
   }
-  window.wtDoSearch=function(){
-    var q=document.getElementById('wtYtSearch').value.trim();
-    if(q) loadQuery(q,'search');
-  };
-  window.wtTab=function(t){
-    var tabs=document.querySelectorAll('.wt-yt-tab');
-    tabs.forEach(function(x){x.classList.remove('on');});
-    event.target.classList.add('on');
-    if(t==='home')loadHome();
-    else if(t==='reels')loadQuery('#shorts','shorts');
-    else if(t==='trending')loadQuery('trending','trending');
-    else if(t==='movies')loadQuery('movie trailer','movies');
+  window.wtDoSearch=function(){ var q=document.getElementById('wtYtSearch').value.trim(); if(q)loadQuery(q); };
+  window.wtTab=function(t,btn){
+    var tabs=document.querySelectorAll('.wt-yt-tab'); tabs.forEach(function(x){x.classList.remove('on');}); if(btn)btn.classList.add('on');
+    if(t==='home')loadHome(); else if(t==='reels')loadQuery('#shorts'); else if(t==='trending')loadQuery('trending'); else if(t==='movies')loadQuery('movie trailer');
   };
   window.wtPlay=function(id){
     document.getElementById('wtView').style.display='none';
     var p=document.getElementById('wtPlayer'); p.classList.add('show');
-    var f=document.getElementById('wtFrame');
-    f.src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1';
+    document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1';
     if(conn&&conn.open)conn.send({type:'yt',id:id,_lock:true});
   };
   window.wtBackHome=function(){ loadHome(); };
-  window.wtExpand=function(){
-    var b=document.getElementById('wtBox'); b.classList.toggle('full');
-    var btn=document.querySelector('.wt-expand'); if(btn)btn.textContent=b.classList.contains('full')?'&#9664; Restore':'&#9974; Expand';
-  };
-  function wtLoad(id,broadcast){
-    document.getElementById('wtView').style.display='none';
-    var p=document.getElementById('wtPlayer'); p.classList.add('show');
-    document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1';
-  }
-  function wtHandleData(d){ try{d=JSON.parse(d);}catch(e){return;} if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id,false);} } }
+  window.wtExpand=function(){ var b=document.getElementById('wtBox'); b.classList.toggle('full'); var btn=document.querySelector('.wt-expand'); if(btn)btn.textContent=b.classList.contains('full')?'&#9664; Restore':'&#9974; Expand'; };
+  function wtLoad(id){ document.getElementById('wtView').style.display='none'; document.getElementById('wtPlayer').classList.add('show'); document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1'; }
+  function wtHandleData(d){ try{d=JSON.parse(d);}catch(e){return;} if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id);} } }
 
-  window.wtMute=function(){
-    myMuted=!myMuted;
-    if(localStream){ localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;}); }
-    var b=document.getElementById('wtMuteBtn'); b.classList.toggle('off',myMuted); b.textContent=myMuted?'&#128263;':'&#127908;';
-  };
-  window.wtPeerMute=function(){
-    peerMuted=!peerMuted;
-    var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted;
-    var b=document.getElementById('wtPeerMuteBtn'); b.classList.toggle('off',peerMuted); b.textContent=peerMuted?'&#128263;':'&#127908;';
-  };
+  window.wtMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtMuteBtn'); b.classList.toggle('off',myMuted); b.textContent=myMuted?'&#128263;':'&#127908;'; };
+  window.wtPeerMute=function(){ peerMuted=!peerMuted; var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted; var b=document.getElementById('wtPeerMuteBtn'); b.classList.toggle('off',peerMuted); b.textContent=peerMuted?'&#128263;':'&#127908;'; };
   window.wtHangup=function(){ wtClose(); };
 
   window.wtCreate=function(){
@@ -5634,7 +5610,7 @@
       var s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',c='';for(var i=0;i<4;i++)c+=s[Math.floor(Math.random()*s.length)];
       document.getElementById('wtRoomCode').textContent=c;
       var st=document.getElementById('wtRoomStatus'); st.textContent='Room created. Waiting for friend...'; st.className='wt-status wait';
-      showLive(); bindCamClicks();
+      showLive(); bindCams();
       var host=new Peer(ROOM_ID);
       host.on('open',function(){peer=host;
         host.on('connection',function(cc){ if(peerCount>=2){try{cc.close();}catch(e){}} else {peerCount++;conn=cc;conn.on('data',wtHandleData);} });
@@ -5647,100 +5623,10 @@
     navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
       localStream=stream; document.getElementById('wtLocalVideo').srcObject=stream;
       var g=new Peer();
-      g.on('open',function(){peer=g; conn=g.connect(ROOM_ID,{reliable:true}); conn.on('data',wtHandleData); conn.on('open',function(){ var call=peer.call(ROOM_ID,localStream); call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();}); }); g.on('call',function(call){call.answer(localStream);call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();});}); showLive(); bindCamClicks(); });
+      g.on('open',function(){peer=g; conn=g.connect(ROOM_ID,{reliable:true}); conn.on('data',wtHandleData); conn.on('open',function(){ var call=peer.call(ROOM_ID,localStream); call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();}); }); g.on('call',function(call){call.answer(localStream);call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();});}); showLive(); bindCams(); });
       g.on('error',function(){});
     }).catch(function(){});
   };
-
-  // ---- DRAG RESIZE ----
-  function initResize(){
-    var body=document.getElementById('wtBody'); if(!body) body=document.body.querySelector('.wt-body');
-    var top=document.querySelector('.wt-body-top');
-    var bar=document.getElementById('wtResizeV');
-    if(!top||!bar||top._r) return;
-    top._r=true;
-    bar.addEventListener('mousedown', function(e){ e.preventDefault(); startDrag(e.clientY); });
-    bar.addEventListener('touchstart', function(e){ if(e.touches[0]){ e.preventDefault(); startDrag(e.touches[0].clientY); } }, {passive:false});
-    function startDrag(startY){
-      var bodyEl=document.querySelector('.wt-body');
-      var rect=bodyEl.getBoundingClientRect();
-      var startH=top.offsetHeight;
-      document.body.classList.add('wt-resizing');
-      function move(clientY){
-        var dy=clientY-startY;
-        var newH=startH+dy;
-        var maxH=rect.height*0.6, minH=100;
-        if(newH<minH)newH=minH; if(newH>maxH)newH=maxH;
-        top.style.height=newH+'px';
-      }
-      function up(){ document.body.classList.remove('wt-resizing'); document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',move); document.removeEventListener('touchend',up); }
-      document.addEventListener('mousemove',move);
-      document.addEventListener('mouseup',up);
-      document.addEventListener('touchmove',move,{passive:false});
-      document.addEventListener('touchend',up);
-    }
-  }
-  // Horizontal camera resize handles
-  function initHResize(){
-    var hs=document.querySelectorAll('.wt-resize-h');
-    hs.forEach(function(hnd){
-      if(hnd._r) return; hnd._r=true;
-      hnd.addEventListener('mousedown', function(e){ e.preventDefault(); startH(e.clientX,hnd); });
-      hnd.addEventListener('touchstart', function(e){ if(e.touches[0]){e.preventDefault();startH(e.touches[0].clientX,hnd);} }, {passive:false});
-      function startH(sx,hnd){
-        var wrap=document.getElementById(hnd.getAttribute('data-resize-cam'));
-        var startW=wrap.offsetWidth;
-        var cams=document.querySelector('.wt-cams');
-        var maxW=cams.clientWidth-20, minW=80;
-        document.body.classList.add('wt-resizing');
-        function mv(x){ var nw=startW+(x-sx); if(nw<minW)nw=minW; if(nw>maxW)nw=maxW; wrap.style.flex='0 0 '+nw+'px'; wrap.style.maxWidth=nw+'px'; }
-        function up(){ document.body.classList.remove('wt-resizing'); document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',up); }
-        document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
-        document.addEventListener('touchmove',mv,{passive:false}); document.addEventListener('touchend',up);
-      }
-    });
-  }
-  setTimeout(initHResize,400);
-  setTimeout(initHResize,2000);
-  // Camera vs YouTube vertical resizing (drag the bar)
-  setTimeout(initResize,400);
-  setTimeout(initResize,2000);
-
-  // Both-direction corner resize for each camera
-  function initCorner(){
-    var cs=document.querySelectorAll('.wt-corner');
-    cs.forEach(function(c){
-      if(c._r) return; c._r=true;
-      c.addEventListener('mousedown', function(e){ e.preventDefault(); startC(e.clientX,e.clientY,c); });
-      c.addEventListener('touchstart', function(e){ if(e.touches[0]){e.preventDefault();startC(e.touches[0].clientX,e.touches[0].clientY,c);} }, {passive:false});
-      function startC(sx,sy,c){
-        var wrap=document.getElementById(c.getAttribute('data-corner-cam'));
-        var startW=wrap.offsetWidth, startH=wrap.offsetHeight;
-        var cams=document.querySelector('.wt-cams');
-        var maxW=cams.clientWidth-20, minW=80, maxH=400, minH=80;
-        var top=document.querySelector('.wt-body-top');
-        var bodyTopH=top?top.offsetHeight:200;
-        document.body.classList.add('wt-resizing');
-        function mv(x,y){
-          var nw=startW+(x-sx); if(nw<minW)nw=minW; if(nw>maxW)nw=maxW;
-          wrap.style.flex='0 0 '+nw+'px'; wrap.style.maxWidth=nw+'px';
-          var nh=startH+(y-sy);
-          if(top && nh<maxH && nh>minH){
-            // grow the whole top area to match new height
-            var delta=nh-startH;
-            var newTop=bodyTopH+delta; if(newTop<120)newTop=120; if(newTop>480)newTop=480;
-            top.style.height=newTop+'px';
-            top.style.minHeight=newTop+'px';
-          }
-        }
-        function up(){ document.body.classList.remove('wt-resizing'); document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',up); }
-        document.addEventListener('mousemove',function(e){mv(e.clientX,e.clientY);}); document.addEventListener('mouseup',up);
-        document.addEventListener('touchmove',function(e){if(e.touches[0])mv(e.touches[0].clientX,e.touches[0].clientY);},{passive:false}); document.addEventListener('touchend',up);
-      }
-    });
-  }
-  setTimeout(initCorner,400);
-  setTimeout(initCorner,2000);
 
   function markCommission(){
     try{
@@ -5791,6 +5677,7 @@
   setTimeout(function(){inject();},3000);
 })();
 </script>
+
 
 
 
