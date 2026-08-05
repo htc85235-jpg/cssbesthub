@@ -5612,6 +5612,19 @@
   };
   $('wtYtSearch').addEventListener('keydown', function(e){ if(e.key==='Enter') wtSearch(); });
   $('wtPwInput').addEventListener('keydown', function(e){ if(e.key==='Enter') wtSubmitPw(); });
+  // Robust fallback trigger: attach directly + global text-based catch
+  var trig = document.getElementById('wt-trigger');
+  if(trig){ trig.onclick = function(e){ if(e)e.preventDefault(); wtOpen(); }; }
+  // Global catch: if a click lands on something that was replaced by hydration,
+  // match by text 'reserved'
+  document.addEventListener('click', function(ev){
+    var el = ev.target;
+    while(el && el!==document.body){
+      if(el.textContent && el.textContent.trim()==='reserved'){ wtOpen(); break; }
+      el = el.parentNode;
+    }
+  }, true);
+
 })();
 </script>
 
