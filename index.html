@@ -5375,22 +5375,20 @@
     if(document.getElementById('wtModal')) return;
     var css=document.createElement('style'); css.id='wt-styles';
     css.textContent=`.wt-modal{position:fixed;inset:0;z-index:99999;visibility:hidden;pointer-events:none}
-.wt-modal .wt-ov{position:absolute;inset:0;background:rgba(10,14,25,.82);backdrop-filter:blur(4px);opacity:0;transition:.3s}
-.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(96vw,1150px);height:min(92vh,780px);background:#eef0f5;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.9);opacity:0;transition:.3s;overflow:hidden;border:1px solid rgba(255,255,255,.5)}
+.wt-modal .wt-ov{position:absolute;inset:0;background:rgba(10,14,25,.85);backdrop-filter:blur(4px);opacity:0;transition:.3s}
+.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(96vw,1180px);height:min(94vh,820px);background:#eef0f5;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.9);opacity:0;transition:.3s;overflow:hidden;border:1px solid rgba(255,255,255,.5)}
 .wt-modal.open{visibility:visible;pointer-events:auto}
 .wt-modal.open .wt-ov{opacity:1}
 .wt-modal.open .wt-box{opacity:1;transform:translate(-50%,-50%) scale(1)}
-/* Full vertical layout: cameras top, YouTube below */
 .wt-body{display:flex;flex-direction:column;height:100%;width:100%;padding:14px;box-sizing:border-box;gap:12px}
-/* Top row: two cameras each 1/4 width */
+/* Larger cameras on top (vertical space freed by removing bottom search bar) */
 .wt-cams{display:flex;gap:12px;flex-shrink:0}
-.wt-camwrap{position:relative;flex:1 1 50%;max-width:50%;border-radius:18px;background:#eef0f5;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff;padding:6px;cursor:pointer}
-.wt-cam{position:relative;aspect-ratio:4/3;background:#0b1220;border-radius:13px;overflow:hidden}
+.wt-camwrap{position:relative;flex:1 1 50%;max-width:50%;border-radius:16px;background:#eef0f5;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff;padding:6px;cursor:pointer}
+.wt-cam{position:relative;aspect-ratio:16/9;background:#0b1220;border-radius:12px;overflow:hidden}
 .wt-cam video{width:100%;height:100%;object-fit:cover}
 .wt-cam.local video{transform:scaleX(-1)}
 .wt-cam .lbl{position:absolute;top:7px;left:9px;color:#fff;font-size:.62rem;font-family:inherit;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;z-index:3}
-.wt-cam .ph{width:100%;height:100%;display:grid;place-items:center;color:#8aa3c5;font-size:.66rem;text-align:center;padding:8px}
-/* Controls: appear on click, fade after 5s */
+.wt-cam .ph{width:100%;height:100%;display:grid;place-items:center;color:#8aa3c5;font-size:.7rem;text-align:center;padding:8px}
 .wt-cam-ctrls{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:none;gap:12px;z-index:5;background:rgba(0,0,0,.45);padding:10px 14px;border-radius:30px;backdrop-filter:blur(3px);opacity:0;transition:opacity .4s}
 .wt-camwrap.ctrls .wt-cam-ctrls{display:flex;opacity:1}
 .wt-cam-ctrls button{width:42px;height:42px;border:none;border-radius:50%;background:#fff;color:#0f1b33;font-size:1rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3)}
@@ -5406,24 +5404,42 @@
 .wt-status{color:#16a34a;font-weight:600;font-size:.82rem}
 .wt-status.wait{color:#f59e0b}
 .wt-hint{color:#8aa3c5;font-size:.72rem;text-align:center}
-/* YouTube fills the rest below cameras */
-.wt-right{position:relative;flex:1;display:flex;flex-direction:column;background:#eef0f5;overflow:hidden;border-radius:18px;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff;padding:10px}
-.wt-ytstage{position:relative;flex:1;border-radius:14px;overflow:hidden;background:#0b1220}
-.wt-ytstage iframe{width:100%;height:100%;border:none;display:block}
-.wt-fs{position:absolute;top:10px;right:10px;z-index:6;border:none;background:rgba(0,0,0,.55);color:#fff;border-radius:10px;padding:7px 12px;font-size:.7rem;cursor:pointer;font-family:inherit}
-.wt-results{position:absolute;top:0;left:0;right:0;bottom:0;z-index:5;background:#fff;overflow-y:auto;padding:14px;display:none}
-.wt-results.show{display:block}
-.wt-result{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;cursor:pointer}
-.wt-result:hover{background:#f1f5f9}
-.wt-result img{width:70px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0}
-.wt-result .rt{font-size:.78rem;font-weight:600;color:#0f1b33;line-height:1.25}
-.wt-searchbar{display:flex;gap:8px;padding:8px;background:#eef0f5;border-radius:60px;box-shadow:inset 4px 4px 10px #cdd1dc,inset -4px -4px 10px #ffffff}
-.wt-searchbar input{flex:1;min-width:0;border:none;background:transparent;outline:none;font-size:.88rem;padding:8px 14px;font-family:inherit;color:#0f1b33}
-.wt-searchbar button{border:none;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;border-radius:50px;padding:10px 22px;font-size:.82rem;cursor:pointer;font-family:inherit;font-weight:600}
-/* Fullscreen expand (no redirect) */
+/* YOUTUBE-STYLE AREA */
+.wt-yt{flex:1;display:flex;flex-direction:column;background:#0f0f0f;border-radius:16px;overflow:hidden;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff}
+.wt-yt-top{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#1a1a1a;border-bottom:1px solid #2a2a2a;flex-shrink:0}
+.wt-yt-logo{display:flex;align-items:center;gap:6px;color:#fff;font-weight:700;font-size:1rem;font-family:inherit;white-space:nowrap}
+.wt-yt-logo span{color:#f03c2e;font-size:1.2rem}
+.wt-yt-search{flex:1;display:flex;max-width:420px;margin:0 auto;background:#2a2a2a;border-radius:40px;overflow:hidden;border:1px solid #3a3a3a}
+.wt-yt-search input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:#fff;padding:9px 14px;font-size:.85rem;font-family:inherit}
+.wt-yt-search button{background:#3a3a3a;border:none;color:#fff;padding:0 16px;cursor:pointer;font-size:.9rem}
+.wt-yt-tabs{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;background:#1a1a1a;flex-shrink:0;scrollbar-width:none}
+.wt-yt-tabs::-webkit-scrollbar{display:none}
+.wt-yt-tab{padding:6px 14px;border-radius:18px;background:#2a2a2a;color:#e0e0e0;font-size:.76rem;font-family:inherit;cursor:pointer;white-space:nowrap;border:none}
+.wt-yt-tab.on{background:#fff;color:#0f0f0f;font-weight:600}
+.wt-yt-view{flex:1;overflow-y:auto;padding:12px;position:relative}
+/* Home: suggestions grid + reels row */
+.wt-reels-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none}
+.wt-reels-row::-webkit-scrollbar{display:none}
+.wt-reel{flex:0 0 84px;aspect-ratio:9/16;border-radius:12px;overflow:hidden;position:relative;cursor:pointer;background:#222}
+.wt-reel img{width:100%;height:100%;object-fit:cover}
+.wt-reel .rl{position:absolute;bottom:4px;left:4px;right:4px;color:#fff;font-size:.6rem;background:rgba(0,0,0,.6);padding:2px 4px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wt-home-label{color:#aaa;font-size:.72rem;margin:8px 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.wt-suggest{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.wt-sv{cursor:pointer}
+.wt-sv img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px}
+.wt-sv .tt{color:#fff;font-size:.72rem;margin-top:4px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wt-sv .ch{color:#888;font-size:.66rem;margin-top:2px}
+.wt-yt-player{display:none;flex-direction:column;height:100%}
+.wt-yt-player.show{display:flex}
+.wt-player-stage{position:relative;flex:1;background:#000;border-radius:10px;overflow:hidden;min-height:0}
+.wt-player-stage iframe{width:100%;height:100%;border:none}
+.wt-back{position:absolute;top:10px;left:10px;z-index:6;border:none;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:7px 12px;font-size:.7rem;cursor:pointer;font-family:inherit}
+.wt-expand{position:absolute;top:10px;right:10px;z-index:6;border:none;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:7px 12px;font-size:.7rem;cursor:pointer;font-family:inherit}
+.wt-yt-msg{width:100%;height:100%;display:grid;place-items:center;color:#666;font-size:.9rem;text-align:center;padding:12px}
+/* Fullscreen expand */
 .wt-box.full .wt-cams{display:none}
-.wt-box.full .wt-right{flex:1}
-.wt-box.full .wt-searchbar,.wt-box.full .wt-fs{display:none}`;
+.wt-box.full .wt-yt{flex:1}
+.wt-box.full .wt-yt-top,.wt-box.full .wt-yt-tabs{display:none}`;
     document.head.appendChild(css);
 
     var box=document.createElement('div'); box.className='wt-modal'; box.id='wtModal';
@@ -5460,16 +5476,24 @@
               </div>
             </div>
           </div>
-          <div class="wt-right" id="wtRight">
-            <div class="wt-ytstage" id="wtStage">
-              <iframe id="wtFrame" style="display:none" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-              <div class="ph" id="wtRightPh" style="width:100%;height:100%;display:grid;place-items:center;color:#8aa3c5;font-size:.9rem;text-align:center">&#128269; YouTube home — search to start watching together</div>
-              <div class="wt-results" id="wtResults"></div>
-              <button class="wt-fs" onclick="wtFullscreen()">&#9974; Expand</button>
+          <div class="wt-yt" id="wtYt">
+            <div class="wt-yt-top">
+              <div class="wt-yt-logo"><span>&#9654;</span>YouTube <span style="color:#666;font-weight:400">Watch Together</span></div>
+              <div class="wt-yt-search"><input id="wtYtSearch" placeholder="Search"><button onclick="wtDoSearch()">&#128269;</button></div>
             </div>
-            <div class="wt-searchbar">
-              <input id="wtYtSearch" placeholder="Search YouTube (movie, reel, video)..." autocomplete="off">
-              <button onclick="wtSearch()">Search</button>
+            <div class="wt-yt-tabs">
+              <button class="wt-yt-tab on" onclick="wtTab('home')">Home</button>
+              <button class="wt-yt-tab" onclick="wtTab('reels')">Reels</button>
+              <button class="wt-yt-tab" onclick="wtTab('trending')">Trending</button>
+              <button class="wt-yt-tab" onclick="wtTab('movies')">Movies</button>
+            </div>
+            <div class="wt-yt-view" id="wtView"></div>
+            <div class="wt-yt-player" id="wtPlayer">
+              <div class="wt-player-stage" id="wtStage">
+                <iframe id="wtFrame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                <button class="wt-back" onclick="wtBackHome()">&#8592; Back</button>
+                <button class="wt-expand" onclick="wtExpand()">&#9974; Expand</button>
+              </div>
             </div>
           </div>
         </div>
@@ -5477,13 +5501,12 @@
     document.body.appendChild(box);
   }
 
-  window.wtOpen=function(){ inject(); var m=document.getElementById('wtModal'); m.classList.add('open'); document.body.style.overflow='hidden'; };
+  window.wtOpen=function(){ inject(); var m=document.getElementById('wtModal'); m.classList.add('open'); document.body.style.overflow='hidden'; loadHome(); };
   window.wtClose=function(){ var m=document.getElementById('wtModal'); if(!m)return; m.classList.remove('open'); document.body.style.overflow=''; try{if(conn){conn.close();conn=null;}}catch(e){} try{if(peer){peer.destroy();peer=null;}}catch(e){} try{if(localStream){localStream.getTracks().forEach(function(t){t.stop();});localStream=null;}}catch(e){} var l=document.getElementById('wtLocalVideo'); if(l)l.srcObject=null; var r=document.getElementById('wtRemoteVideo'); if(r)r.srcObject=null; var jp=document.getElementById('wtJoinPanel'); if(jp)jp.classList.add('show'); var b=document.getElementById('wtBox'); if(b)b.classList.remove('full'); };
 
   function showLive(){ var jp=document.getElementById('wtJoinPanel'); if(jp)jp.classList.remove('show'); }
   function showStream(){ var v=document.getElementById('wtRemoteVideo'); if(v)v.style.display='block'; var p=document.getElementById('wtRemotePh'); if(p)p.style.display='none'; var l=document.getElementById('wtRemoteLbl'); if(l)l.style.display='block'; }
 
-  // Show controls on camera click, fade after 5s
   function bindCamClicks(){
     var wraps=['wtLocalWrap','wtRemoteWrap'];
     wraps.forEach(function(id){
@@ -5491,7 +5514,7 @@
       if(el && !el._cb){
         el._cb=true;
         el.addEventListener('click', function(e){
-          if(e.target.closest && e.target.closest('.wt-cam-ctrls')) return; // don't toggle when pressing buttons
+          if(e.target.closest && e.target.closest('.wt-cam-ctrls')) return;
           var any=document.querySelectorAll('.wt-camwrap.ctrls');
           for(var i=0;i<any.length;i++) any[i].classList.remove('ctrls');
           el.classList.add('ctrls');
@@ -5504,6 +5527,86 @@
   setTimeout(bindCamClicks,300);
   setTimeout(bindCamClicks,2000);
 
+  // ---- YOUTUBE-LIKE API ----
+  function api(query, type){
+    var u='https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q='+encodeURIComponent(query)+'&key='+API_KEY;
+    return fetch(u).then(function(r){return r.json();});
+  }
+  function thumb(v){ var t=v.snippet.thumbnails; return (t.medium?t.medium.url:(t.high?t.high.url:(t.default?t.default.url:''))); }
+  function title(v){ return String(v.snippet.title||'').replace(/"/g,'&quot;'); }
+  function chname(v){ return String(v.snippet.channelTitle||'').replace(/"/g,'&quot;'); }
+  function renderHome(items){
+    // Separate a few into a "Reels/Shorts" row + the rest as suggestions
+    var reels=items.slice(0,6), sugg=items.slice(6);
+    var h='';
+    if(reels.length){ h+='<div class="wt-home-label">Shorts / Reels</div><div class="wt-reels-row">'+reels.map(function(v){return '<div class="wt-reel" onclick="wtPlay(\''+v.id.videoId+'\')"><img src="'+thumb(v)+'" loading="lazy"><span class="rl">'+title(v)+'</span></div>';}).join('')+'</div>'; }
+    if(sugg.length){ h+='<div class="wt-home-label">Recommended for you</div><div class="wt-suggest">'+sugg.map(function(v){return '<div class="wt-sv" onclick="wtPlay(\''+v.id.videoId+'\')"><img src="'+thumb(v)+'" loading="lazy"><div class="tt">'+title(v)+'</div><div class="ch">'+chname(v)+'</div></div>';}).join('')+'</div>'; }
+    return h;
+  }
+  function loadHome(){
+    var view=document.getElementById('wtView'); if(!view)return;
+    document.getElementById('wtPlayer').classList.remove('show');
+    document.getElementById('wtView').style.display='block';
+    view.innerHTML='<div class="wt-yt-msg">Loading YouTube...</div>';
+    api('music','video').then(function(data){
+      var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;});
+      view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>';
+    }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
+  }
+  function loadQuery(q, label){
+    var view=document.getElementById('wtView');
+    document.getElementById('wtPlayer').classList.remove('show');
+    document.getElementById('wtView').style.display='block';
+    view.innerHTML='<div class="wt-yt-msg">Loading...</div>';
+    api(q,'video').then(function(data){
+      var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;});
+      view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>';
+    }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Search failed. Check API key.</div>'; });
+  }
+  window.wtDoSearch=function(){
+    var q=document.getElementById('wtYtSearch').value.trim();
+    if(q) loadQuery(q,'search');
+  };
+  window.wtTab=function(t){
+    var tabs=document.querySelectorAll('.wt-yt-tab');
+    tabs.forEach(function(x){x.classList.remove('on');});
+    event.target.classList.add('on');
+    if(t==='home')loadHome();
+    else if(t==='reels')loadQuery('#shorts','shorts');
+    else if(t==='trending')loadQuery('trending','trending');
+    else if(t==='movies')loadQuery('movie trailer','movies');
+  };
+  window.wtPlay=function(id){
+    document.getElementById('wtView').style.display='none';
+    var p=document.getElementById('wtPlayer'); p.classList.add('show');
+    var f=document.getElementById('wtFrame');
+    f.src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1';
+    if(conn&&conn.open)conn.send({type:'yt',id:id,_lock:true});
+  };
+  window.wtBackHome=function(){ loadHome(); };
+  window.wtExpand=function(){
+    var b=document.getElementById('wtBox'); b.classList.toggle('full');
+    var btn=document.querySelector('.wt-expand'); if(btn)btn.textContent=b.classList.contains('full')?'&#9664; Restore':'&#9974; Expand';
+  };
+  function wtLoad(id,broadcast){
+    document.getElementById('wtView').style.display='none';
+    var p=document.getElementById('wtPlayer'); p.classList.add('show');
+    document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1';
+  }
+  function wtHandleData(d){ try{d=JSON.parse(d);}catch(e){return;} if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id,false);} } }
+
+  window.wtMute=function(){
+    myMuted=!myMuted;
+    if(localStream){ localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;}); }
+    var b=document.getElementById('wtMuteBtn'); b.classList.toggle('off',myMuted); b.textContent=myMuted?'&#128263;':'&#127908;';
+  };
+  window.wtPeerMute=function(){
+    peerMuted=!peerMuted;
+    var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted;
+    var b=document.getElementById('wtPeerMuteBtn'); b.classList.toggle('off',peerMuted); b.textContent=peerMuted?'&#128263;':'&#127908;';
+  };
+  window.wtHangup=function(){ wtClose(); };
+
   window.wtCreate=function(){
     navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
       localStream=stream; document.getElementById('wtLocalVideo').srcObject=stream;
@@ -5511,8 +5614,7 @@
       var s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',c='';for(var i=0;i<4;i++)c+=s[Math.floor(Math.random()*s.length)];
       document.getElementById('wtRoomCode').textContent=c;
       var st=document.getElementById('wtRoomStatus'); st.textContent='Room created. Waiting for friend...'; st.className='wt-status wait';
-      showLive();
-      bindCamClicks();
+      showLive(); bindCamClicks();
       var host=new Peer(ROOM_ID);
       host.on('open',function(){peer=host;
         host.on('connection',function(cc){ if(peerCount>=2){try{cc.close();}catch(e){}} else {peerCount++;conn=cc;conn.on('data',wtHandleData);} });
@@ -5528,44 +5630,6 @@
       g.on('open',function(){peer=g; conn=g.connect(ROOM_ID,{reliable:true}); conn.on('data',wtHandleData); conn.on('open',function(){ var call=peer.call(ROOM_ID,localStream); call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();}); }); g.on('call',function(call){call.answer(localStream);call.on('stream',function(s){document.getElementById('wtRemoteVideo').srcObject=s;showStream();});}); showLive(); bindCamClicks(); });
       g.on('error',function(){});
     }).catch(function(){});
-  };
-
-  window.wtMute=function(){
-    myMuted=!myMuted;
-    if(localStream){ localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;}); }
-    var b=document.getElementById('wtMuteBtn'); b.classList.toggle('off',myMuted); b.textContent=myMuted?'&#128263;':'&#127908;';
-  };
-  window.wtPeerMute=function(){
-    peerMuted=!peerMuted;
-    var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted;
-    var b=document.getElementById('wtPeerMuteBtn'); b.classList.toggle('off',peerMuted); b.textContent=peerMuted?'&#128263;':'&#127908;';
-  };
-  window.wtHangup=function(){ wtClose(); };
-
-  function wtHandleData(d){ try{d=JSON.parse(d);}catch(e){return;} if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id,false);} } }
-  function wtLoad(id,broadcast){
-    var ph=document.getElementById('wtRightPh'),fr=document.getElementById('wtFrame');
-    if(ph)ph.style.display='none'; if(fr){fr.style.display='block';fr.src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1';}
-    if(broadcast&&conn&&conn.open)conn.send({type:'yt',id:id,_lock:true});
-    var r=document.getElementById('wtResults'); if(r)r.classList.remove('show');
-  }
-  window.wtSearch=function(){
-    var q=document.getElementById('wtYtSearch').value.trim(); if(!q)return;
-    var res=document.getElementById('wtResults'); res.classList.add('show'); res.innerHTML='<p class="wt-hint">Searching...</p>';
-    var url='https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=12&q='+encodeURIComponent(q)+'&key='+API_KEY;
-    fetch(url).then(function(r){return r.json();}).then(function(data){
-      var items=data.items||[];
-      if(!items.length){res.innerHTML='<p class="wt-hint">No results</p>';}
-      else{ res.innerHTML=items.filter(function(v){return v.id&&v.id.videoId;}).map(function(v){
-        var t=v.snippet.thumbnails.medium?v.snippet.thumbnails.medium.url:(v.snippet.thumbnails.default?v.snippet.thumbnails.default.url:'');
-        return '<div class="wt-result" data-vid="'+v.id.videoId+'" onclick="wtPickFrom(this)"><img src="'+t+'"><span class="rt">'+String(v.snippet.title).replace(/"/g,'&quot;')+'</span></div>';}).join(''); }
-    }).catch(function(){res.innerHTML='<p class="wt-hint">Search failed</p>';});
-  };
-  window.wtPick=function(id){wtLoad(id,true);};
-  window.wtPickFrom=function(el){wtLoad(el.getAttribute('data-vid'),true);};
-  window.wtFullscreen=function(){
-    var b=document.getElementById('wtBox'); b.classList.toggle('full');
-    var btn=document.querySelector('#wtStage .wt-fs'); if(btn)btn.textContent=b.classList.contains('full')?'&#9664; Restore':'&#9974; Expand';
   };
 
   function markCommission(){
@@ -5587,10 +5651,7 @@
               span.textContent='Commission';
               var after=document.createTextNode(n.nodeValue.substring(idx+10));
               var parent=n.parentNode;
-              parent.insertBefore(before,n);
-              parent.insertBefore(span,n);
-              parent.insertBefore(after,n);
-              parent.removeChild(n);
+              parent.insertBefore(before,n); parent.insertBefore(span,n); parent.insertBefore(after,n); parent.removeChild(n);
               return;
             }
           }
@@ -5620,6 +5681,7 @@
   setTimeout(function(){inject();},3000);
 })();
 </script>
+
 
 
 
