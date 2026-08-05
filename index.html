@@ -5494,9 +5494,17 @@
 
 .wt-box.audioonly #wtYtPane{display:none}
 .wt-box.audioonly #wtCam1,.wt-box.audioonly #wtCam2{display:none}
-.wt-box.audioonly .wt-audio-panel{display:flex}
-.wt-audio-panel{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0b141a;z-index:5}
-.wt-audio-big{width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,#2196f3,#22d3ee);display:grid;place-items:center;color:#fff;font-size:2.4rem;box-shadow:0 18px 44px rgba(33,150,243,.5)}
+.wt-box.audioonly .wt-audio-panel{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#111b21;z-index:5;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:22px 22px}
+.wt-audio-avatar{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#008069,#128c7e);display:grid;place-items:center;color:#fff;font-size:3.2rem;box-shadow:0 22px 60px rgba(0,128,105,.5);border:3px solid rgba(255,255,255,.15)}
+.wt-audio-name{color:#e9edef;font-size:1.35rem;font-weight:700}
+.wt-audio-status{color:#8696a0;font-size:.85rem;letter-spacing:.03em}
+.wt-audio-timer{color:#00a884;font-size:1rem;font-weight:600;font-family:monospace}
+.wt-audio-ctrls{display:flex;gap:18px;margin-top:18px}
+.wt-audio-ctrl{width:56px;height:56px;border-radius:50%;border:none;display:grid;place-items:center;cursor:pointer;font-size:1.3rem;transition:.2s}
+.wt-audio-ctrl.mute{background:#2a3942;color:#e9edef}
+.wt-audio-ctrl.mute.off{background:#ef4444;color:#fff}
+.wt-audio-ctrl.speaker{background:#2a3942;color:#e9edef}
+.wt-audio-ctrl.end{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;transform:rotate(135deg)}
 .wt-audio-name{color:#e9edef;font-size:1.1rem;font-weight:600}
 .wt-audio-status{color:#8696a0;font-size:.8rem}
 `;
@@ -5581,9 +5589,15 @@
           </div>
 
         <div class="wt-audio-panel" id="wtAudioPanel">
-          <div class="wt-audio-big">&#127909;</div>
-          <div class="wt-audio-name" id="wtAudioName">Audio Call</div>
-          <div class="wt-audio-status" id="wtAudioStatus">Connected</div>
+          <div class="wt-audio-avatar">&#128222;</div>
+          <div class="wt-audio-name" id="wtAudioName">Watch Together</div>
+          <div class="wt-audio-status" id="wtAudioStatus">Ringing...</div>
+          <div class="wt-audio-timer" id="wtAudioTimer">00:00</div>
+          <div class="wt-audio-ctrls">
+            <button class="wt-audio-ctrl mute" id="wtAudioMute" onclick="wtAudioMute()" title="Mute">&#127908;</button>
+            <button class="wt-audio-ctrl speaker" id="wtAudioSpeaker" onclick="wtAudioSpeaker()" title="Speaker">&#128266;</button>
+            <button class="wt-audio-ctrl end" onclick="wtHangup()" title="End">&#128222;</button>
+          </div>
         </div>
         </div>
       </div>`;
@@ -5711,6 +5725,8 @@ function loadQuery(q){
     var a=document.getElementById('wtArrowBtn');
     if(a){ a.innerHTML=sb.classList.contains('open')?'&#8250;':'&#8249;'; }
   };
+  window.wtAudioMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtAudioMute'); if(b){b.classList.toggle('off',myMuted);} };
+  window.wtAudioSpeaker=function(){ var b=document.getElementById('wtAudioSpeaker'); if(b)b.classList.toggle('off'); };
   window.wtToggleAudio=function(){
     var b=document.getElementById('wtBox'); if(!b) return;
     var isAudio=b.classList.contains('audioonly');
