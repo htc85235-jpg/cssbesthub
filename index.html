@@ -5459,9 +5459,9 @@
 .wt-box.callonly #wtCam1{top:10px;height:48%;left:10px;right:10px;width:auto}
 .wt-box.callonly #wtCam2{top:52%;height:48%;left:10px;right:10px;width:auto}
 /* ===== CHAT BOX (WhatsApp style) ===== */
-.wt-chatbox{position:absolute;left:14px;top:40px;bottom:40px;width:min(280px,80%);display:none;flex-direction:column;background:#0b141a;border-radius:20px;overflow:hidden;z-index:50;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.15);border:1px solid rgba(0,168,132,.3)}
+.wt-chatbox{position:absolute;left:16px;top:44px;bottom:44px;width:min(250px,75%);display:none;flex-direction:column;background:#0b141a;border-radius:20px;overflow:hidden;z-index:50;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.15);border:1px solid rgba(0,168,132,.3)}
 .wt-chatbox.show{display:flex}
-.wt-chat-head{display:flex;align-items:center;gap:8px;padding:5px 10px;background:#1f2c34;color:#fff}
+.wt-chat-head{display:flex;align-items:center;gap:8px;padding:4px 8px;background:#0b141a;color:#fff}
 .wt-chat-ava{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#2196f3,#22d3ee);display:grid;place-items:center;font-weight:700;color:#fff;font-size:.95rem}
 .wt-chat-head .nm{font-weight:600;font-size:.9rem}
 .wt-chat-head .st{font-size:.68rem;color:#8696a0}
@@ -5474,7 +5474,7 @@
 .wt-msg.them{align-self:flex-end;background:#d9fdd3;border-top-right-radius:2px}
 .wt-msg.them .who{color:#005c4b}
 .wt-msg .time{display:block;font-size:.6rem;color:#8696a0;text-align:right;margin-top:2px}
-.wt-chat-input{display:flex;gap:6px;padding:3px 8px;background:#1f2c34;align-items:center;flex-wrap:nowrap;box-sizing:border-box;width:100%}
+.wt-chat-input{display:flex;gap:6px;padding:3px 6px;background:#0b141a;align-items:center;flex-wrap:nowrap;box-sizing:border-box;width:100%}
 .wt-chat-input input{flex:1;background:#2a3942;border:none;border-radius:22px;color:#fff;outline:none;padding:10px 16px;font-size:.82rem;font-family:inherit}
 .wt-chat-input button{width:42px;height:42px;border-radius:50%;border:none;background:#00a884;color:#fff;cursor:pointer;font-size:1rem;flex-shrink:0}
 .wt-chatbox{background:linear-gradient(160deg,#0b141a,#101f2a);box-shadow:0 34px 90px rgba(0,0,0,.75),0 0 0 1px rgba(0,168,132,.35),0 0 40px rgba(0,168,132,.15)}
@@ -5486,9 +5486,9 @@
 .wt-chat-close{color:#d8ecea;font-size:1.2rem;padding:6px}
 .wt-chat-msgs{padding:16px;background-image:radial-gradient(rgba(0,168,132,.06) 1px,transparent 1px);background-size:20px 20px}
 .wt-chat-input{background:#1f2c34;padding:12px 14px;gap:10px;border-top:1px solid rgba(255,255,255,.08)}
-.wt-chat-input input{flex:1;min-width:0;background:#2a3942;border:none;border-radius:24px;padding:12px 16px;font-size:.85rem;color:#e9edef;outline:none}
+.wt-chat-input input{flex:1;min-width:0;background:#2a3942;border:none;border-radius:20px;padding:6px 12px;font-size:.78rem;color:#e9edef;outline:none}
 .wt-chat-input input::placeholder{color:#8696a0}
-.wt-chat-send{width:44px;height:44px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;box-shadow:0 6px 18px rgba(37,211,102,.4);display:grid;place-items:center;transition:.2s;border:none}
+.wt-chat-send{width:32px;height:32px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;box-shadow:0 4px 12px rgba(37,211,102,.4);display:grid;place-items:center;transition:.2s;border:none}
 .wt-chat-send:hover{transform:scale(1.08);box-shadow:0 8px 22px rgba(37,211,102,.55)}
 .wt-chat-send:active{transform:scale(.95)}
 
@@ -5515,8 +5515,8 @@
     box.innerHTML=`<div class="wt-ov" onclick="wtClose()"></div>
               <div class="wt-sidebtns" id="wtSideBtns">
           <button class="wt-sbtn" id="wtArrowBtn" onclick="wtToggleSide()" title="Menu">&#8250;</button>
-          <button class="wt-sbtn" id="wtModeBtn" onclick="wtToggleMode()" title="Toggle mode">&#128222;</button>
-          <button class="wt-sbtn" id="wtAudioBtn" onclick="wtToggleAudio()" title="Audio call only">&#128266;</button>
+          <button class="wt-sbtn" id="wtModeBtn" onclick="wtToggleMode()" title="Toggle mode"><i class="fa-solid fa-video"></i></button>
+          <button class="wt-sbtn" id="wtAudioBtn" onclick="wtToggleAudio()" title="Audio call only"><i class="fa-solid fa-phone"></i></button>
           <button class="wt-sbtn" id="wtChatBtn" onclick="wtToggleChat()" title="Chat">&#128172;</button>
         </div>
       <div class="wt-box" id="wtBox">
@@ -5535,7 +5535,7 @@
             <video id="wtLocalVideo" autoplay muted playsinline></video>
             <span class="lbl">You</span>
             <div class="wt-cam-ctrls">
-              <button id="wtMuteBtn" onclick="wtMute()" title="Mute"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm18-2.5L19.5 8 17 10.5 14.5 8 13 6.5 15.5 4 13 1.5 14.5 0 17 2.5 19.5 0 21 1.5 18.5 4 21 6.5z"/></svg></button>
+              <button id="wtMuteBtn" onclick="wtMute()" title="Mute"><i class="fa-solid fa-microphone"></i></button>
               <button id="wtVideoBtn1" class="on" onclick="wtVideoToggle(1)" title="Video"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
               <button class="hang" onclick="wtHangup()" title="Hang up"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29a1 1 0 0 1-.7-.28c-.79-.73-1.68-1.36-2.66-1.85a.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
             </div>
@@ -5546,7 +5546,7 @@
             <div class="ph" id="wtRemotePh">&#128064; Waiting for other user...</div>
             <span class="lbl" id="wtRemoteLbl" style="display:none">Friend</span>
             <div class="wt-cam-ctrls">
-              <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm18-2.5L19.5 8 17 10.5 14.5 8 13 6.5 15.5 4 13 1.5 14.5 0 17 2.5 19.5 0 21 1.5 18.5 4 21 6.5z"/></svg></button>
+              <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend"><i class="fa-solid fa-microphone"></i></button>
               <button id="wtVideoBtn2" class="on" onclick="wtVideoToggle(2)" title="Video"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
               <button class="hang" onclick="wtHangup()" title="End"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29a1 1 0 0 1-.7-.28c-.79-.73-1.68-1.36-2.66-1.85a.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
             </div>
@@ -5595,7 +5595,7 @@
           <div class="wt-audio-status" id="wtAudioStatus">Ringing...</div>
           <div class="wt-audio-timer" id="wtAudioTimer">00:00</div>
           <div class="wt-audio-ctrls">
-            <button class="wt-audio-ctrl mute" id="wtAudioMute" onclick="wtAudioMute()" title="Mute"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
+            <button class="wt-audio-ctrl mute" id="wtAudioMute" onclick="wtAudioMute()" title="Mute"><i class="fa-solid fa-microphone"></i></button>
             
             <button class="wt-audio-ctrl end" onclick="wtHangup()" title="End">&#128222;</button>
           </div>
@@ -5688,18 +5688,19 @@ function loadQuery(q){
     var b=document.getElementById(which===1?'wtVideoBtn1':'wtVideoBtn2');
     if(!b) return;
     var on=b.classList.contains('on');
-    if(which===1){ var v=document.getElementById('wtLocalVideo'); if(v){ v.paused?v.play():v.pause(); } }
-    else { var v2=document.getElementById('wtRemoteVideo'); if(v2){ v2.paused?v2.play():v2.pause(); } }
+    var v=which===1?document.getElementById('wtLocalVideo'):document.getElementById('wtRemoteVideo');
+    if(which===1 && v && !v.srcObject && localStream){ v.srcObject=localStream; }
+    if(v){ if(on){ v.pause(); } else { v.play(); } }
     b.classList.toggle('on',!on);
     b.style.opacity=on?'0.4':'1';
   };
-  window.wtMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtMuteBtn'); if(b){ b.classList.toggle('off',myMuted); b.style.opacity=myMuted?'0.4':'1'; } };
-  window.wtPeerMute=function(){ peerMuted=!peerMuted; var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted; var b=document.getElementById('wtPeerMuteBtn'); if(b){ b.classList.toggle('off',peerMuted); b.style.opacity=peerMuted?'0.4':'1'; } };
+  window.wtMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtMuteBtn'); if(b){ b.classList.toggle('off',myMuted); b.innerHTML=myMuted?'<i class=\'fa-solid fa-microphone-slash\'></i>':'<i class=\'fa-solid fa-microphone\'></i>'; } };
+  window.wtPeerMute=function(){ peerMuted=!peerMuted; var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted; var b=document.getElementById('wtPeerMuteBtn'); if(b){ b.classList.toggle('off',peerMuted); b.innerHTML=peerMuted?'<i class=\'fa-solid fa-microphone-slash\'></i>':'<i class=\'fa-solid fa-microphone\'></i>'; } };
   window.wtHangup=function(){ wtClose(); };
 
   window.wtCreate=function(){
     navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
-      localStream=stream; document.getElementById('wtLocalVideo').srcObject=stream;
+      localStream=stream;
       document.getElementById('wtRoomInfo').style.display='block';
       var s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',c='';for(var i=0;i<4;i++)c+=s[Math.floor(Math.random()*s.length)];
       document.getElementById('wtRoomCode').textContent=c;
@@ -5717,7 +5718,7 @@ function loadQuery(q){
   };
   window.wtJoin=function(){
     navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
-      localStream=stream; document.getElementById('wtLocalVideo').srcObject=stream;
+      localStream=stream;
       myRole='Receiver'; peerRole='Caller';
       document.getElementById('wtChatName').textContent='Chat'; document.getElementById('wtChatAva').textContent='R';
       var g=new Peer();
@@ -5734,7 +5735,7 @@ function loadQuery(q){
     var a=document.getElementById('wtArrowBtn');
     if(a){ a.innerHTML=sb.classList.contains('open')?'&#8249;':'&#8250;'; }
   };
-  window.wtAudioMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtAudioMute'); if(b){b.classList.toggle('off',myMuted);} };
+  window.wtAudioMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtAudioMute'); if(b){ b.classList.toggle('off',myMuted); b.innerHTML=myMuted?'<i class=\'fa-solid fa-microphone-slash\'></i>':'<i class=\'fa-solid fa-microphone\'></i>'; } };
   window.wtToggleAudio=function(){
     var b=document.getElementById('wtBox'); if(!b) return;
     var isAudio=b.classList.contains('audioonly');
