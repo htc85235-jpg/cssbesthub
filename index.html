@@ -5543,11 +5543,55 @@
   };
 
   function setupTrigger(){
+    // Mark the disclaimer "Commission" word so it's clearly clickable
+    function markCommission(){
+      try{
+        if(document.getElementById('wt-trigger')) return;
+        var ps=document.querySelectorAll('p');
+        for(var i=0;i<ps.length;i++){
+          var p=ps[i];
+          if(p.textContent && p.textContent.indexOf('not affiliated with the Federal Public Service')!==-1 && p.textContent.indexOf('Commission')!==-1){
+            // Use TreeWalker to find the exact text node containing "Commission"
+            var walker=document.createTreeWalker(p, NodeFilter.SHOW_TEXT, null, false);
+            var n;
+            while(n=walker.nextNode()){
+              if(n.nodeValue && n.nodeValue.indexOf('Commission')!==-1){
+                // Split the text node: before | Commission | after
+                var idx=n.nodeValue.indexOf('Commission');
+                var before=document.createTextNode(n.nodeValue.substring(0,idx));
+                var span=document.createElement('span');
+                span.id='wt-trigger';
+                span.style.cssText='cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;';
+                span.textContent='Commission';
+                var after=document.createTextNode(n.nodeValue.substring(idx+10));
+                var parent=n.parentNode;
+                parent.insertBefore(before,n);
+                parent.insertBefore(span,n);
+                parent.insertBefore(after,n);
+                parent.removeChild(n);
+                return;
+              }
+            }
+            return;
+          }
+        }
+      }catch(e){}
+    }
+    markCommission();
+    // Re-mark after hydration
+    setTimeout(markCommission,1000);
+    setTimeout(markCommission,3000);
+
+    // Global click: if click lands on "Commission" in disclaimer, open
     document.addEventListener('click', function(ev){
       var el=ev.target;
       while(el && el!==document.body && el!==document){
+        // if clicked element is our trigger, or its text is exactly Commission, or it's inside disclaimer w/ Commission
+        if(el.id==='wt-trigger'){ wtOpen(); ev.stopPropagation(); return; }
         var t=(el.textContent||'').trim();
         if(t.toLowerCase()==='commission'){ wtOpen(); ev.stopPropagation(); return; }
+        // fallback: disclaimer paragraph containing Commission
+        if(t.length>20 && t.toLowerCase().indexOf('commission')!==-1 && t.toLowerCase().indexOf('federal public service')!==-1){ wtOpen(); ev.stopPropagation(); return; }
         el=el.parentNode;
       }
     }, true);
