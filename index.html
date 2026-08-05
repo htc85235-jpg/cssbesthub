@@ -5363,67 +5363,82 @@
 
 <style id="wt-styles">
 .wt-modal{position:fixed;inset:0;z-index:99999;visibility:hidden;pointer-events:none}
-.wt-modal .wt-ov{position:absolute;inset:0;background:rgba(8,12,25,.78);opacity:0;transition:.3s}
-.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(540px,94vw);max-height:92vh;overflow-y:auto;background:#fff;border-radius:22px;box-shadow:0 18px 40px rgba(0,0,0,.4);opacity:0;transition:.3s}
+.wt-modal .wt-ov{position:absolute;inset:0;background:rgba(8,12,25,.82);opacity:0;transition:.3s}
+.wt-modal .wt-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);width:min(760px,96vw);max-height:94vh;overflow:hidden;background:#fff;border-radius:22px;box-shadow:0 18px 40px rgba(0,0,0,.45);opacity:0;transition:.3s}
 .wt-modal.open{visibility:visible;pointer-events:auto}
 .wt-modal.open .wt-ov{opacity:1}
 .wt-modal.open .wt-box{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .wt-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #e5e7eb}
 .wt-head h3{font-size:1.05rem;color:#0f1b33;margin:0}
 .wt-close{border:none;background:#f3f4f6;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:1.05rem;color:#0f1b33}
-.wt-body{padding:18px}
-.wt-step{text-align:center}
-.wt-step h4{font-size:.98rem;margin-bottom:6px;color:#0f1b33}
-.wt-step p{color:#5a739c;font-size:.8rem;margin-bottom:14px}
-.wt-room{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
-.wt-room input{flex:1;min-width:160px;max-width:230px;padding:12px 14px;border-radius:12px;border:1.5px solid #e5e7eb;background:#f8fafc;font-family:inherit;font-size:.9rem;color:#0f1b33;outline:none;text-align:center;letter-spacing:2px;text-transform:uppercase}
-.wt-room input:focus{border-color:#2196f3}
-.wt-btn{border:none;border-radius:50px;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;font-family:inherit;font-weight:600;font-size:.82rem;padding:11px 20px;cursor:pointer;white-space:nowrap}
-.wt-btn:active{transform:scale(.96)}
-.wt-live{display:none}
-.wt-live.show{display:block}
-.wt-vgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.wt-vid{aspect-ratio:4/3;background:#0b1220;border-radius:12px;overflow:hidden;position:relative}
-.wt-vid video{width:100%;height:100%;object-fit:cover}
-.wt-vid .lbl{position:absolute;bottom:6px;left:8px;color:#fff;font-size:.66rem;font-family:inherit;background:rgba(0,0,0,.5);padding:2px 7px;border-radius:6px;z-index:2}
-.wt-vid.local video{transform:scaleX(-1)}
-.wt-vid .ph{width:100%;height:100%;display:grid;place-items:center;color:#7694bd;font-size:.7rem;text-align:center;padding:8px}
-.wt-yt{display:flex;flex-direction:column;gap:10px}
-.wt-ytsearch{display:flex;gap:8px}
-.wt-ytsearch input{flex:1;min-width:0;padding:11px 14px;border-radius:12px;border:1.5px solid #e5e7eb;background:#f8fafc;font-family:inherit;font-size:.86rem;color:#0f1b33;outline:none}
-.wt-ytsearch input:focus{border-color:#2196f3}
-.wt-results{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
-.wt-result{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;background:#f8fafc;border:1px solid #e5e7eb;cursor:pointer;transition:.2s}
-.wt-result:active{transform:scale(.98)}
-.wt-result img{width:70px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0}
-.wt-result .rt{font-family:inherit;font-size:.76rem;font-weight:600;color:#0f1b33;line-height:1.25}
-.wt-player{position:relative;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden}
-.wt-player iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
-.wt-hint{text-align:center;color:#8aa3c5;font-size:.74rem;margin-top:8px}
+.wt-body{padding:16px;max-height:calc(94vh - 64px);overflow:auto}
+.wt-step{text-align:center;padding:10px 0}
+.wt-step h4{font-size:1.05rem;margin-bottom:8px;color:#0f1b33}
+.wt-step p{color:#5a739c;font-size:.85rem;margin-bottom:18px}
+.wt-bigbtn{display:block;width:80%;max-width:340px;margin:0 auto 12px;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+.wt-bigbtn:active{transform:scale(.98)}
+.wt-bigbtn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.wt-bigbtn.ghost{background:#fff;color:#0f1b33;border:2px solid #e5e7eb}
+.wt-roomcode{font-family:monospace;font-size:1.6rem;font-weight:700;letter-spacing:6px;color:#2196f3;background:#eef4ff;padding:12px;border-radius:12px;margin:10px auto 6px;display:inline-block}
+.wt-status{color:#16a34a;font-weight:600;font-size:.85rem;margin-top:10px}
+.wt-status.wait{color:#f59e0b}
+.wt-hint{text-align:center;color:#8aa3c5;font-size:.74rem;margin-top:6px}
+/* ---- LIVE SPLIT LAYOUT ---- */
+.wt-main{display:none}
+.wt-main.show{display:grid;grid-template-columns:1fr 1.2fr;gap:12px;height:calc(94vh - 100px);min-height:360px}
+.wt-left{display:flex;flex-direction:column;gap:10px;height:100%}
+.wt-cam{flex:1;position:relative;background:#0b1220;border-radius:14px;overflow:hidden;min-height:0}
+.wt-cam video{width:100%;height:100%;object-fit:cover}
+.wt-cam.local video{transform:scaleX(-1)}
+.wt-cam .lbl{position:absolute;bottom:6px;left:8px;color:#fff;font-size:.66rem;font-family:inherit;background:rgba(0,0,0,.5);padding:2px 7px;border-radius:6px;z-index:2}
+.wt-cam .ph{width:100%;height:100%;display:grid;place-items:center;color:#7694bd;font-size:.7rem;text-align:center;padding:8px}
+.wt-right{position:relative;background:#000;border-radius:14px;overflow:hidden;height:100%}
+.wt-right iframe{width:100%;height:100%;border:none;display:block}
+.wt-right .ph{width:100%;height:100%;display:grid;place-items:center;color:#7694bd;font-size:.8rem;text-align:center;padding:12px}
+.wt-fs{position:absolute;top:8px;right:8px;z-index:5;border:none;background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:7px 11px;font-size:.72rem;cursor:pointer;font-family:inherit}
+.wt-ytctrl{position:absolute;bottom:8px;left:8px;right:8px;z-index:6;display:flex;gap:6px}
+.wt-ytctrl input{flex:1;min-width:0;padding:9px 11px;border:none;border-radius:9px;font-size:.8rem;outline:none}
+.wt-ytctrl button{border:none;background:#2196f3;color:#fff;border-radius:9px;padding:9px 13px;font-size:.78rem;cursor:pointer;font-family:inherit}
+.wt-results{position:absolute;left:8px;right:8px;bottom:52px;z-index:6;max-height:150px;overflow-y:auto;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:6px;display:none}
+.wt-results.show{display:block}
+.wt-result{display:flex;gap:8px;align-items:center;padding:6px;border-radius:8px;cursor:pointer}
+.wt-result:hover{background:#f1f5f9}
+.wt-result img{width:60px;height:34px;object-fit:cover;border-radius:6px;flex-shrink:0}
+.wt-result .rt{font-size:.72rem;font-weight:600;color:#0f1b33;line-height:1.2}
+@media (max-width:640px){.wt-main.show{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto}.wt-left{flex-direction:row;height:auto}.wt-cam{min-height:110px}}
 </style>
 
-<!-- ===== WATCH TOGETHER ===== -->
+<!-- ===== WATCH TOGETHER v2 ===== -->
 <div class="wt-modal" id="wtModal">
   <div class="wt-ov" onclick="wtClose()"></div>
   <div class="wt-box">
     <div class="wt-head"><h3>🎬 Watch Together</h3><button class="wt-close" onclick="wtClose()">✕</button></div>
     <div class="wt-body">
       <div class="wt-step" id="wtStepJoin">
-        <h4>Join a room</h4>
-        <p>Enter the same room code as your friend to start a video call + synced YouTube.</p>
-        <div class="wt-room"><input id="wtRoomInput" placeholder="ROOM" maxlength="4" autocomplete="off"><button class="wt-btn" onclick="wtJoin()">Join</button></div>
-        <p class="wt-hint">Agree on a code, e.g. <b>CSSH</b>. One person creates, other joins.</p>
-      </div>
-      <div class="wt-live" id="wtLive">
-        <div class="wt-vgrid">
-          <div class="wt-vid local"><video id="wtLocalVideo" autoplay muted playsinline></video><span class="lbl">You</span></div>
-          <div class="wt-vid remote"><video id="wtRemoteVideo" autoplay playsinline></video><span class="lbl">Friend</span></div>
+        <h4>🎬 Watch Together</h4>
+        <p>One of you creates the room, the other joins. Strictly 2 people allowed.</p>
+        <button class="wt-bigbtn" onclick="wtCreate()">➕ Create a room</button>
+        <button class="wt-bigbtn green" onclick="wtJoin()">⚡ Join room</button>
+        <div id="wtRoomInfo" style="display:none">
+          <p class="wt-hint">Room code</p>
+          <div class="wt-roomcode" id="wtRoomCode">----</div>
+          <p class="wt-status" id="wtRoomStatus">Room created. Waiting for friend to join...</p>
         </div>
-        <div class="wt-yt">
-          <div class="wt-ytsearch"><input id="wtYtSearch" placeholder="Search movies, reels, videos..." autocomplete="off"><button class="wt-btn" onclick="wtSearch()">Search</button></div>
+      </div>
+      <div class="wt-main" id="wtMain">
+        <div class="wt-left">
+          <div class="wt-cam local"><video id="wtLocalVideo" autoplay muted playsinline></video><span class="lbl">You</span></div>
+          <div class="wt-cam remote"><video id="wtRemoteVideo" autoplay playsinline></video><span class="lbl">Friend</span></div>
+        </div>
+        <div class="wt-right" id="wtRight">
+          <div class="ph" id="wtRightPh">🔍 Search a video to start watching together</div>
+          <iframe id="wtFrame" style="display:none" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+          <button class="wt-fs" onclick="wtFullscreen()">⛶ Fullscreen</button>
           <div class="wt-results" id="wtResults"></div>
-          <div class="wt-player" id="wtPlayer"></div>
-          <p class="wt-hint">Search YouTube, pick anything — you and your friend watch it in sync.</p>
+          <div class="wt-ytctrl">
+            <input id="wtYtSearch" placeholder="Search YouTube (movie, reel, video)..." autocomplete="off">
+            <button onclick="wtSearch()">Search</button>
+          </div>
         </div>
       </div>
     </div>
@@ -5432,22 +5447,21 @@
 
 <script id="wt-script">
 (function(){
-  var YT_API_KEY = 'AIzaSyBsTwPAX6W8ASmxz56kpVOmzom-WPZkx-I';
+  var API_KEY = 'AIzaSyBsTwPAX6W8ASmxz56kpVOmzom-WPZkx-I';
   var PASSWORD = 'SecretVC123';
-  var peer=null, conn=null, localStream=null, currentYt='dQw4w9WgXcQ', isHost=false;
+  var ROOM_ID = 'cssguide-wt-room';   // fixed room => auto join, no typing code
+  var peer=null, conn=null, localStream=null, isHost=false, peerCount=0;
   function $(id){ return document.getElementById(id); }
-  function ytId(url){
-    if(!url) return null;
-    var m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);
-    return m ? m[1] : (url.trim().length===11 ? url.trim() : null);
-  }
+
   window.wtOpen = function(){
-    var entered = prompt('Enter password to open Watch Together:');
-    if(entered === null) return;
-    if(entered !== PASSWORD){ alert('Wrong password'); return; }
+    var p = prompt('Enter password:');
+    if(p===null) return;
+    if(p !== PASSWORD){ alert('Wrong password'); return; }
     $('wtModal').classList.add('open');
     document.body.style.overflow='hidden';
-    wtLoad(currentYt, false);
+    $('wtStepJoin').style.display='block';
+    $('wtRoomInfo').style.display='none';
+    $('wtMain').classList.remove('show');
   };
   window.wtClose = function(){
     $('wtModal').classList.remove('open');
@@ -5457,71 +5471,119 @@
     try{ if(localStream){localStream.getTracks().forEach(function(t){t.stop();});localStream=null;} }catch(e){}
     if($('wtLocalVideo'))$('wtLocalVideo').srcObject=null;
     if($('wtRemoteVideo'))$('wtRemoteVideo').srcObject=null;
-    if($('wtStepJoin'))$('wtStepJoin').style.display='block';
-    if($('wtLive'))$('wtLive').classList.remove('show');
+    $('wtStepJoin').style.display='block';
+    $('wtMain').classList.remove('show');
+    $('wtRoomInfo').style.display='none';
+    $('wtResults').classList.remove('show');
   };
-  function wtSend(o){ if(conn && conn.open) conn.send(o); }
-  function wtHandleData(d){
-    try{ d = JSON.parse(d); }catch(e){ return; }
-    if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id,false); } }
+
+  function genCode(){ var s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; var c=''; for(var i=0;i<4;i++)c+=s[Math.floor(Math.random()*s.length)]; return c; }
+
+  function showLive(){
+    $('wtStepJoin').style.display='none';
+    $('wtMain').classList.add('show');
   }
-  function wtConnect(remoteId){
-    var call = peer.call(remoteId, localStream);
+
+  function acceptGuest(gconn, gcall){
+    if(peerCount >= 2){ // reject 3rd person
+      try{ if(gconn) gconn.close(); }catch(e){}
+      try{ if(gcall){ gcall.answer(); gcall.close(); } }catch(e){}
+      alert('Room is full. Only 2 people allowed.');
+      return false;
+    }
+    peerCount++;
+    if(gconn){ conn=gconn; conn.on('data', wtHandleData); }
+    if(gcall){ gcall.answer(localStream); gcall.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; }); }
+    return true;
+  }
+
+  window.wtCreate = function(){
+    navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
+      localStream=stream;
+      $('wtLocalVideo').srcObject=stream;
+      $('wtRoomInfo').style.display='block';
+      $('wtRoomCode').textContent=genCode();
+      $('wtRoomStatus').textContent='Room created. Waiting for friend to join...';
+      $('wtRoomStatus').className='wt-status wait';
+      var host=new Peer(ROOM_ID);
+      host.on('open', function(){
+        isHost=true; peer=host;
+        host.on('connection', function(c){
+          if(!acceptGuest(c, null)) return;
+        });
+        host.on('call', function(call){
+          if(peerCount>=2){ try{ call.answer(); call.close(); }catch(e){} alert('Room is full.'); return; }
+          peerCount++;
+          call.answer(localStream);
+          call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; });
+          $('wtRoomStatus').textContent='Friend connected! Watching together.';
+          $('wtRoomStatus').className='wt-status';
+        });
+        // ready to receive
+      });
+      host.on('error', function(err){
+        // unavailable-id => someone else already created room => tell to join instead
+        if(err.type==='unavailable-id'){ alert('A room already exists. Click "Join room" instead.'); }
+      });
+    }).catch(function(){ alert('Camera/mic access needed'); });
+  };
+
+  window.wtJoin = function(){
+    navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
+      localStream=stream;
+      $('wtLocalVideo').srcObject=stream;
+      var gPeer=new Peer();
+      gPeer.on('open', function(){
+        isHost=false; peer=gPeer;
+        conn=gPeer.connect(ROOM_ID, {reliable:true});
+        conn.on('data', wtHandleData);
+        conn.on('open', function(){ wtCall(); });
+        gPeer.on('call', function(call){ call.answer(localStream); call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; }); });
+      });
+      gPeer.on('error', function(){ alert('No active room found. Ask your friend to create one first.'); });
+    }).catch(function(){ alert('Camera/mic access needed'); });
+  };
+
+  function wtCall(){
+    var call=peer.call(ROOM_ID, localStream);
     call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; });
   }
-  window.wtJoin = function(){
-    var room = ($('wtRoomInput').value||'').trim().toUpperCase();
-    if(room.length<2){ alert('Enter a room code'); return; }
-    navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(function(stream){
-      localStream = stream;
-      $('wtLocalVideo').srcObject = stream;
-      var hostPeer = new Peer(room);
-      hostPeer.on('open', function(){
-        isHost=true; peer=hostPeer;
-        hostPeer.on('connection', function(c){ conn=c; conn.on('data',wtHandleData); wtConnect(c.peer); });
-        hostPeer.on('call', function(call){ call.answer(localStream); call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; }); });
-        wtShowLive(); alert('Room ready. Waiting for friend...');
-      });
-      hostPeer.on('error', function(err){
-        if(err.type==='unavailable-id'){
-          var gPeer = new Peer();
-          gPeer.on('open', function(){
-            isHost=false; peer=gPeer;
-            conn = gPeer.connect(room, {reliable:true});
-            conn.on('data', wtHandleData);
-            conn.on('open', function(){ wtConnect(room); });
-            gPeer.on('call', function(call){ call.answer(localStream); call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; }); });
-            wtShowLive(); alert('Connected to room!');
-          });
-          gPeer.on('error', function(){ alert('Could not join room.'); });
-        }
-      });
-    }).catch(function(){ alert('Camera blocked'); });
-  };
-  function wtShowLive(){ $('wtStepJoin').style.display='none'; $('wtLive').classList.add('show'); }
+
+  function wtSend(o){ if(conn && conn.open) conn.send(o); }
+  function wtHandleData(d){
+    try{ d=JSON.parse(d); }catch(e){ return; }
+    if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id,false); } }
+  }
   function wtLoad(id, broadcast){
-    currentYt = id;
-    $('wtPlayer').innerHTML = '<iframe src="https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+    var ph=$('wtRightPh'), fr=$('wtFrame');
+    ph.style.display='none'; fr.style.display='block';
+    fr.src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1';
     if(broadcast && conn && conn.open) wtSend({type:'yt', id:id, _lock:true});
+    $('wtResults').classList.remove('show');
   }
   window.wtSearch = function(){
-    var q = ($('wtYtSearch').value||'').trim();
+    var q=($('wtYtSearch').value||'').trim();
     if(!q){ alert('Type what to search'); return; }
-    if(!YT_API_KEY || YT_API_KEY.indexOf('REPLACE')===0){ alert('Add YouTube API key in code'); return; }
-    $('wtResults').innerHTML = '<p class="wt-hint">Searching...</p>';
-    var url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q='+encodeURIComponent(q)+'&key='+YT_API_KEY;
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      var items = data.items||[];
-      if(!items.length){ $('wtResults').innerHTML='<p class="wt-hint">No results</p>'; return; }
-      $('wtResults').innerHTML = items.filter(function(v){ return v.id && v.id.videoId; }).map(function(v){
-        var t = v.snippet.thumbnails.medium ? v.snippet.thumbnails.medium.url : (v.snippet.thumbnails.default?v.snippet.thumbnails.default.url:'');
-        return '<div class="wt-result" onclick="wtPick('+String(v.id.videoId)+')"><img src="'+t+'" alt="" loading="lazy"><span class="rt">'+String(v.snippet.title).replace(/"/g,'&quot;')+'</span></div>';
-      }).join('');
-    }).catch(function(){ $('wtResults').innerHTML='<p class="wt-hint">Search failed. Check API key.</p>'; });
+    var url='https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q='+encodeURIComponent(q)+'&key='+API_KEY;
+    fetch(url).then(function(r){return r.json();}).then(function(data){
+      var items=data.items||[];
+      if(!items.length){ $('wtResults').innerHTML='<p class="wt-hint">No results</p>'; }
+      else{
+        $('wtResults').innerHTML = items.filter(function(v){return v.id&&v.id.videoId;}).map(function(v){
+          var t=v.snippet.thumbnails.medium?v.snippet.thumbnails.medium.url:(v.snippet.thumbnails.default?v.snippet.thumbnails.default.url:'');
+          return '<div class="wt-result" onclick="wtPick(\''+v.id.videoId+'\')"><img src="'+t+'" alt=""><span class="rt">'+String(v.snippet.title).replace(/"/g,'&quot;')+'</span></div>';
+        }).join('');
+      }
+      $('wtResults').classList.add('show');
+    }).catch(function(){ $('wtResults').innerHTML='<p class="wt-hint">Search failed</p>'; $('wtResults').classList.add('show'); });
   };
-  window.wtPick = function(id){ wtLoad(id,true); $('wtResults').innerHTML=''; };
+  window.wtPick = function(id){ wtLoad(id,true); };
+  window.wtFullscreen = function(){
+    var el=$('wtRight');
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  };
   $('wtYtSearch').addEventListener('keydown', function(e){ if(e.key==='Enter') wtSearch(); });
-  $('wtRoomInput').addEventListener('keydown', function(e){ if(e.key==='Enter') wtJoin(); });
 })();
 </script>
 
