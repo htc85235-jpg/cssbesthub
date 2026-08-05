@@ -5534,28 +5534,41 @@
 
   // RESIZE: independent per pane (absolute positioning -> no push)
   function initResize(){
+    // Each pane resizes INDEPENDENTLY (separate closures), clamped to the big box.
+    var box=document.getElementById('wtBox');
+    var bodyEl=document.querySelector('.wt-body');
     var handles=document.querySelectorAll('.wt-handle');
     handles.forEach(function(h){
       if(h._r) return; h._r=true;
-      h.addEventListener('mousedown', function(e){ e.preventDefault(); e.stopPropagation(); start(h,e.clientX,e.clientY); });
-      h.addEventListener('touchstart', function(e){ if(e.touches[0]){e.preventDefault();e.stopPropagation();start(h,e.touches[0].clientX,e.touches[0].clientY);} }, {passive:false});
-      function start(h,sx,sy){
-        var pane=h.parentNode;
+      // Determine target pane = parent element of the handle
+      var pane=h.parentNode;
+      h.addEventListener('mousedown', function(e){
+        e.preventDefault(); e.stopPropagation();
+        begin(e.clientX,e.clientY);
+      });
+      h.addEventListener('touchstart', function(e){
+        if(e.touches[0]){ e.preventDefault(); e.stopPropagation(); begin(e.touches[0].clientX,e.touches[0].clientY); }
+      }, {passive:false});
+      function begin(sx,sy){
         var startW=pane.offsetWidth, startH=pane.offsetHeight;
+        var maxW=bodyEl.clientWidth-20, maxH=bodyEl.clientHeight-20;
         document.body.classList.add('wt-resizing');
-        function mv(x,y){
+        function move(x,y){
           var nw=startW+(x-sx), nh=startH+(y-sy);
           if(nw<60)nw=60; if(nh<60)nh=60;
+          if(nw>maxW)nw=maxW; if(nh>maxH)nh=maxH;
           pane.style.width=nw+'px';
           pane.style.height=nh+'px';
         }
-        function up(){ document.body.classList.remove('wt-resizing'); document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',up); }
-        document.addEventListener('mousemove',function(e){mv(e.clientX,e.clientY);}); document.addEventListener('mouseup',up);
-        document.addEventListener('touchmove',function(e){if(e.touches[0])mv(e.touches[0].clientX,e.touches[0].clientY);},{passive:false}); document.addEventListener('touchend',up);
+        function end(){ document.body.classList.remove('wt-resizing'); document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',end); document.removeEventListener('touchmove',move); document.removeEventListener('touchend',end); }
+        document.addEventListener('mousemove',move);
+        document.addEventListener('mouseup',end);
+        document.addEventListener('touchmove',move,{passive:false});
+        document.addEventListener('touchend',end);
       }
     });
   }
-  setTimeout(initResize,400);
+    setTimeout(initResize,400);
   setTimeout(initResize,2000);
 
   // ---- YOUTUBE ----
