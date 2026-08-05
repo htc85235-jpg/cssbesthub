@@ -5369,7 +5369,7 @@
 (function(){
   var API_KEY='AIzaSyBsTwPAX6W8ASmxz56kpVOmzom-WPZkx-I';
   var ROOM_ID='cssguide-wt-room';
-  var peer=null,conn=null,localStream=null,peerCount=0,myMuted=false,peerMuted=false,currentQuality='480p',myRole='',peerRole='',callOnly=false;
+  var peer=null,conn=null,localStream=null,peerCount=0,myMuted=false,peerMuted=false,currentQuality='480p',myRole='',peerRole='',callOnly=false,lastQuery=null;
 
   function inject(){
     if(document.getElementById('wtModal')) return;
@@ -5444,7 +5444,7 @@
 .wt-box.full #wtCam1,.wt-box.full #wtCam2{display:none}
 .wt-box.full #wtYtPane{left:14px;top:14px;right:14px;bottom:14px;width:auto;height:auto}
 /* ===== SIDE TOGGLE BUTTONS (attached to left of box) ===== */
-.wt-sidebtns{position:absolute;left:-44px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:20}
+.wt-sidebtns{position:absolute;left:-44px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:999}
 .wt-sbtn{width:38px;height:38px;border-radius:50%;border:none;background:#eef0f5;color:#5a739c;cursor:pointer;display:grid;place-items:center;box-shadow:8px 8px 16px #cdd1dc,-8px -8px 16px #ffffff,inset 0 0 0 1px rgba(255,255,255,.6);font-size:1rem;transition:.2s}
 .wt-sbtn:active{box-shadow:inset 5px 5px 10px #cdd1dc,inset -5px -5px 10px #ffffff}
 .wt-sbtn.on{background:linear-gradient(135deg,#2196f3,#22d3ee);color:#fff}
@@ -5592,6 +5592,7 @@
     return h;
   }
   function loadHome(){
+    lastQuery=null;
     var view=document.getElementById('wtView');
     document.getElementById('wtPlayer').classList.remove('show');
     document.getElementById('wtView').style.display='block';
@@ -5601,6 +5602,7 @@
     api(q).then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
   }
 function loadQuery(q){
+    lastQuery=q;
     var view=document.getElementById('wtView');
     document.getElementById('wtPlayer').classList.remove('show');
     document.getElementById('wtView').style.display='block';
@@ -5614,7 +5616,10 @@ function loadQuery(q){
     document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1&vq='+(currentQuality||'480p');
     if(conn&&conn.open)conn.send({type:'yt',id:id,_lock:true});
   };
-  window.wtBackHome=function(){ loadHome(); };
+  window.wtBackHome=function(){
+    var f=document.getElementById('wtFrame'); if(f){ f.src='about:blank'; f.src=''; }
+    if(lastQuery){ loadQuery(lastQuery); } else { loadHome(); }
+  };
   window.wtExpand=function(){ var b=document.getElementById('wtBox'); b.classList.toggle('full'); var btn=document.querySelector('.wt-expand'); if(btn)btn.innerHTML=b.classList.contains('full')?'◀ Restore':'⛴ Expand'; };
   function wtLoad(id){ document.getElementById('wtView').style.display='none'; document.getElementById('wtPlayer').classList.add('show'); document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1&vq='+(currentQuality||'480p'); }
   function wtHandleData(d){ try{d=JSON.parse(d);}catch(e){return;} if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id);} } else if(d.type==='chat'){ appendMsg(d.from||'Friend', d.text||'', false); } }
