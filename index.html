@@ -5449,7 +5449,7 @@
 .wt-sidebtns #wtModeBtn,.wt-sidebtns #wtChatBtn,.wt-sidebtns #wtAudioBtn{display:none}
 .wt-sidebtns.open #wtModeBtn,.wt-sidebtns.open #wtChatBtn,.wt-sidebtns.open #wtAudioBtn{display:grid}
 .wt-sidebtns.open{left:auto;right:12px;position:absolute}
-#wtArrowBtn{background:transparent !important;border:none !important;color:#5a739c;width:auto;height:auto;padding:6px;font-size:1.6rem;line-height:1;cursor:pointer;text-shadow:0 0 10px rgba(255,200,0,.6),0 0 20px rgba(255,200,0,.3)}
+#wtArrowBtn{background:transparent !important;border:none !important;color:#5a739c;width:auto;height:auto;padding:6px;font-size:1.6rem;line-height:1;cursor:pointer}
 #wtArrowBtn:hover{color:#2196f3}
 .wt-sbtn{width:32px;height:32px;border-radius:50%;border:none;background:#eef0f5;color:#5a739c;cursor:pointer;display:grid;place-items:center;box-shadow:8px 8px 16px #cdd1dc,-8px -8px 16px #ffffff,inset 0 0 0 1px rgba(255,255,255,.6);font-size:1rem;transition:.2s}
 .wt-sbtn:active{box-shadow:inset 5px 5px 10px #cdd1dc,inset -5px -5px 10px #ffffff}
@@ -5474,11 +5474,11 @@
 .wt-msg.them{align-self:flex-end;background:#d9fdd3;border-top-right-radius:2px}
 .wt-msg.them .who{color:#005c4b}
 .wt-msg .time{display:block;font-size:.6rem;color:#8696a0;text-align:right;margin-top:2px}
-.wt-chat-input{display:flex;gap:8px;padding:10px;background:#1f2c34}
+.wt-chat-input{display:flex;gap:8px;padding:5px 10px;background:#1f2c34;align-items:center;flex-wrap:nowrap;box-sizing:border-box;width:100%}
 .wt-chat-input input{flex:1;background:#2a3942;border:none;border-radius:22px;color:#fff;outline:none;padding:10px 16px;font-size:.82rem;font-family:inherit}
 .wt-chat-input button{width:42px;height:42px;border-radius:50%;border:none;background:#00a884;color:#fff;cursor:pointer;font-size:1rem;flex-shrink:0}
 .wt-chatbox{background:linear-gradient(160deg,#0b141a,#101f2a);box-shadow:0 34px 90px rgba(0,0,0,.75),0 0 0 1px rgba(0,168,132,.35),0 0 40px rgba(0,168,132,.15)}
-.wt-chat-head{background:linear-gradient(135deg,#075e54,#128c7e);padding:14px 16px}
+.wt-chat-head{background:linear-gradient(135deg,#075e54,#128c7e);padding:7px 12px}
 .wt-chat-hd-txt{flex:1}
 .wt-chat-ava{width:42px;height:42px;font-size:1.05rem;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .wt-chat-head .nm{font-size:1rem;font-weight:700}
@@ -5486,9 +5486,9 @@
 .wt-chat-close{color:#d8ecea;font-size:1.2rem;padding:6px}
 .wt-chat-msgs{padding:16px;background-image:radial-gradient(rgba(0,168,132,.06) 1px,transparent 1px);background-size:20px 20px}
 .wt-chat-input{background:#1f2c34;padding:12px 14px;gap:10px;border-top:1px solid rgba(255,255,255,.08)}
-.wt-chat-input input{background:#2a3942;border-radius:24px;padding:12px 18px;font-size:.85rem;color:#e9edef}
+.wt-chat-input input{flex:1;min-width:0;background:#2a3942;border:none;border-radius:24px;padding:12px 16px;font-size:.85rem;color:#e9edef;outline:none}
 .wt-chat-input input::placeholder{color:#8696a0}
-.wt-chat-send{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;box-shadow:0 6px 18px rgba(37,211,102,.4);display:grid;place-items:center;transition:.2s}
+.wt-chat-send{width:44px;height:44px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;box-shadow:0 6px 18px rgba(37,211,102,.4);display:grid;place-items:center;transition:.2s;border:none}
 .wt-chat-send:hover{transform:scale(1.08);box-shadow:0 8px 22px rgba(37,211,102,.55)}
 .wt-chat-send:active{transform:scale(.95)}
 
@@ -5517,7 +5517,7 @@
           <button class="wt-sbtn" id="wtArrowBtn" onclick="wtToggleSide()" title="Menu">&#8250;</button>
           <button class="wt-sbtn" id="wtModeBtn" onclick="wtToggleMode()" title="Toggle mode">&#128222;</button>
           <button class="wt-sbtn" id="wtAudioBtn" onclick="wtToggleAudio()" title="Audio call only">&#128266;</button>
-          <button class="wt-sbtn" id="wtChatBtn" onclick="wtOpenChat()" title="Chat">&#128172;</button>
+          <button class="wt-sbtn" id="wtChatBtn" onclick="wtToggleChat()" title="Chat">&#128172;</button>
         </div>
       <div class="wt-box" id="wtBox">
         <div class="wt-join-panel show" id="wtJoinPanel">
@@ -5595,8 +5595,8 @@
           <div class="wt-audio-status" id="wtAudioStatus">Ringing...</div>
           <div class="wt-audio-timer" id="wtAudioTimer">00:00</div>
           <div class="wt-audio-ctrls">
-            <button class="wt-audio-ctrl mute" id="wtAudioMute" onclick="wtAudioMute()" title="Mute">&#127908;</button>
-            <button class="wt-audio-ctrl speaker" id="wtAudioSpeaker" onclick="wtAudioSpeaker()" title="Speaker">&#128266;</button>
+            <button class="wt-audio-ctrl mute" id="wtAudioMute" onclick="wtAudioMute()" title="Mute"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
+            
             <button class="wt-audio-ctrl end" onclick="wtHangup()" title="End">&#128222;</button>
           </div>
         </div>
@@ -5735,7 +5735,6 @@ function loadQuery(q){
     if(a){ a.innerHTML=sb.classList.contains('open')?'&#8249;':'&#8250;'; }
   };
   window.wtAudioMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtAudioMute'); if(b){b.classList.toggle('off',myMuted);} };
-  window.wtAudioSpeaker=function(){ var b=document.getElementById('wtAudioSpeaker'); if(b)b.classList.toggle('off'); };
   window.wtToggleAudio=function(){
     var b=document.getElementById('wtBox'); if(!b) return;
     var isAudio=b.classList.contains('audioonly');
@@ -5747,6 +5746,11 @@ function loadQuery(q){
   window.wtToggleMode=function(){
     var b=document.getElementById('wtBox'); b.classList.toggle('callonly');
     var btn=document.getElementById('wtModeBtn'); btn.classList.toggle('on',b.classList.contains('callonly'));
+  };
+  window.wtToggleChat=function(){
+    var cb=document.getElementById('wtChatBox'); if(!cb) return;
+    if(cb.classList.contains('show')){ cb.classList.remove('show'); }
+    else { cb.classList.add('show'); var inp=document.getElementById('wtChatInput'); setTimeout(function(){if(inp)inp.focus();},100); }
   };
   window.wtOpenChat=function(){ document.getElementById('wtChatBox').classList.add('show'); var inp=document.getElementById('wtChatInput'); setTimeout(function(){inp.focus();},100); };
   window.wtCloseChat=function(){ document.getElementById('wtChatBox').classList.remove('show'); };
