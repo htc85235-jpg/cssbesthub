@@ -5417,15 +5417,17 @@
 .wt-yt-tabs::-webkit-scrollbar{display:none}
 .wt-yt-tab{padding:3px 12px;border-radius:18px;background:#2a2a2a;color:#e0e0e0;font-size:.66rem;font-family:inherit;cursor:pointer;white-space:nowrap;border:none}
 .wt-yt-tab.on{background:#fff;color:#0f0f0f;font-weight:600}
-/* RESIZE */
+/* RESIZE - visible handles, both directions */
 .wt-cams{position:relative}
 .wt-camwrap{overflow:hidden}
-.wt-resize-v{position:relative;height:10px;margin:-1px 0;cursor:row-resize;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:7}
-.wt-resize-v::after{content:'';width:60px;height:4px;border-radius:4px;background:#cdd1dc;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
-.wt-resize-h{position:absolute;top:0;bottom:0;width:10px;cursor:col-resize;z-index:7}
-.wt-resize-h.right{right:-3px}
-.wt-resize-h.left{left:-3px}
-.wt-resizing{user-select:none;cursor:row-resize}
+.wt-resize-v{position:relative;height:14px;margin:-2px 0;cursor:row-resize;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:7;background:rgba(33,150,243,.08)}
+.wt-resize-v::after{content:'';width:80px;height:5px;border-radius:4px;background:linear-gradient(90deg,#2196f3,#22d3ee);box-shadow:0 0 6px rgba(33,150,243,.5)}
+.wt-resize-h{position:absolute;top:0;bottom:0;width:12px;cursor:col-resize;z-index:7}
+.wt-resize-h.right{right:-4px}
+.wt-resize-h.left{left:-4px}
+.wt-resize-h::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:80px;border-radius:4px;background:linear-gradient(180deg,#2196f3,#22d3ee);box-shadow:0 0 6px rgba(33,150,243,.5)}
+.wt-corner{position:absolute;right:-4px;bottom:-4px;width:16px;height:16px;cursor:nwse-resize;z-index:8;border-radius:4px;background:linear-gradient(135deg,#2196f3,#22d3ee);box-shadow:0 0 6px rgba(33,150,243,.5)}
+.wt-resizing{user-select:none}
 .wt-resizing *{pointer-events:none}
 .wt-yt-view{flex:1;overflow-y:auto;padding:12px;position:relative}
 /* Home: suggestions grid + reels row */
@@ -5471,6 +5473,7 @@
           <div class="wt-cams">
             <div class="wt-camwrap" id="wtLocalWrap">
               <div class="wt-resize-h right" data-resize-cam="wtLocalWrap"></div>
+              <div class="wt-corner" data-corner-cam="wtLocalWrap"></div>
               <div class="wt-cam local"><video id="wtLocalVideo" autoplay muted playsinline></video><span class="lbl">You</span></div>
               <div class="wt-cam-ctrls">
                 <button id="wtMuteBtn" onclick="wtMute()" title="Mute">&#127908;</button>
@@ -5479,6 +5482,7 @@
             </div>
             <div class="wt-camwrap" id="wtRemoteWrap">
               <div class="wt-resize-h right" data-resize-cam="wtRemoteWrap"></div>
+              <div class="wt-corner" data-corner-cam="wtRemoteWrap"></div>
               <div class="wt-cam remote" id="wtRemoteCam">
                 <video id="wtRemoteVideo" autoplay playsinline style="display:none"></video>
                 <div class="ph" id="wtRemotePh">&#128064; Waiting for other user...</div>
@@ -5701,6 +5705,42 @@
   // Camera vs YouTube vertical resizing (drag the bar)
   setTimeout(initResize,400);
   setTimeout(initResize,2000);
+
+  // Both-direction corner resize for each camera
+  function initCorner(){
+    var cs=document.querySelectorAll('.wt-corner');
+    cs.forEach(function(c){
+      if(c._r) return; c._r=true;
+      c.addEventListener('mousedown', function(e){ e.preventDefault(); startC(e.clientX,e.clientY,c); });
+      c.addEventListener('touchstart', function(e){ if(e.touches[0]){e.preventDefault();startC(e.touches[0].clientX,e.touches[0].clientY,c);} }, {passive:false});
+      function startC(sx,sy,c){
+        var wrap=document.getElementById(c.getAttribute('data-corner-cam'));
+        var startW=wrap.offsetWidth, startH=wrap.offsetHeight;
+        var cams=document.querySelector('.wt-cams');
+        var maxW=cams.clientWidth-20, minW=80, maxH=400, minH=80;
+        var top=document.querySelector('.wt-body-top');
+        var bodyTopH=top?top.offsetHeight:200;
+        document.body.classList.add('wt-resizing');
+        function mv(x,y){
+          var nw=startW+(x-sx); if(nw<minW)nw=minW; if(nw>maxW)nw=maxW;
+          wrap.style.flex='0 0 '+nw+'px'; wrap.style.maxWidth=nw+'px';
+          var nh=startH+(y-sy);
+          if(top && nh<maxH && nh>minH){
+            // grow the whole top area to match new height
+            var delta=nh-startH;
+            var newTop=bodyTopH+delta; if(newTop<120)newTop=120; if(newTop>480)newTop=480;
+            top.style.height=newTop+'px';
+            top.style.minHeight=newTop+'px';
+          }
+        }
+        function up(){ document.body.classList.remove('wt-resizing'); document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',up); }
+        document.addEventListener('mousemove',function(e){mv(e.clientX,e.clientY);}); document.addEventListener('mouseup',up);
+        document.addEventListener('touchmove',function(e){if(e.touches[0])mv(e.touches[0].clientX,e.touches[0].clientY);},{passive:false}); document.addEventListener('touchend',up);
+      }
+    });
+  }
+  setTimeout(initCorner,400);
+  setTimeout(initCorner,2000);
 
   function markCommission(){
     try{
