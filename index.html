@@ -5367,7 +5367,7 @@
 <script id="wt-bootstrap">
 (function(){
   var API_KEY='AIzaSyBsTwPAX6W8ASmxz56kpVOmzom-WPZkx-I';
-  var PASSWORD='SecretVC123';
+  var PASSWORD='secretcallbox';
   var ROOM_ID='cssguide-wt-room';
   var peer=null,conn=null,localStream=null,peerCount=0;
 
@@ -5499,7 +5499,7 @@
     var rv=document.getElementById('wtRemoteVideo'); if(rv)rv.srcObject=null;
   };
   window.wtSubmitPw = function(){
-    var v=(document.getElementById('wtPwInput').value||'').replace(/\s+/g,'');
+    var v=(document.getElementById('wtPwInput').value||'').replace(/\s+/g,'').toLowerCase();
     if(v===PASSWORD){ document.getElementById('wtPw').style.display='none'; document.getElementById('wtJoinStep').style.display='block'; document.getElementById('wtPwErr').style.display='none'; }
     else { document.getElementById('wtPwErr').style.display='block'; }
   };
