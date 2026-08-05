@@ -5369,7 +5369,7 @@
 (function(){
   var API_KEY='AIzaSyBsTwPAX6W8ASmxz56kpVOmzom-WPZkx-I';
   var ROOM_ID='cssguide-wt-room';
-  var peer=null,conn=null,localStream=null,peerCount=0,myMuted=false,peerMuted=false;
+  var peer=null,conn=null,localStream=null,peerCount=0,myMuted=false,peerMuted=false,currentQuality='480p';
 
   function inject(){
     if(document.getElementById('wtModal')) return;
@@ -5438,6 +5438,7 @@
 .wt-player-stage iframe{width:100%;height:100%;border:none}
 .wt-back{position:absolute;top:10px;left:10px;z-index:6;border:none;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:7px 12px;font-size:.7rem;cursor:pointer;font-family:inherit}
 .wt-expand{position:absolute;top:10px;right:10px;z-index:6;border:none;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:7px 12px;font-size:.7rem;cursor:pointer;font-family:inherit}
+.wt-quality{position:absolute;top:10px;left:60px;z-index:6;border:none;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:6px 8px;font-size:.7rem;cursor:pointer;font-family:inherit}
 .wt-yt-msg{width:100%;height:100%;display:grid;place-items:center;color:#666;font-size:.9rem;text-align:center;padding:12px}
 .wt-box.full .wt-body{display:block}
 .wt-box.full #wtCam1,.wt-box.full #wtCam2{display:none}
@@ -5493,6 +5494,13 @@
                   <iframe id="wtFrame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                   <button class="wt-back" onclick="wtBackHome()">&#8592; Back</button>
                   <button class="wt-expand" onclick="wtExpand()">&#9974; Expand</button>
+                  <select class="wt-quality" onchange="wtSetQuality(this.value)" title="Quality">
+                    <option value="1080p">1080p</option>
+                    <option value="720p">720p</option>
+                    <option value="480p" selected>480p</option>
+                    <option value="360p">360p</option>
+                    <option value="240p">240p</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -5545,7 +5553,7 @@
     document.getElementById('wtPlayer').classList.remove('show');
     document.getElementById('wtView').style.display='block';
     view.innerHTML='<div class="wt-yt-msg">Loading YouTube...</div>';
-    api('music').then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
+    api('anime love romance comedy').then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Could not load. Check API key.</div>'; });
   }
   function loadQuery(q){
     var view=document.getElementById('wtView');
@@ -5558,12 +5566,12 @@
   window.wtPlay=function(id){
     document.getElementById('wtView').style.display='none';
     var p=document.getElementById('wtPlayer'); p.classList.add('show');
-    document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1';
+    document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1&vq='+(currentQuality||'480p');
     if(conn&&conn.open)conn.send({type:'yt',id:id,_lock:true});
   };
   window.wtBackHome=function(){ loadHome(); };
   window.wtExpand=function(){ var b=document.getElementById('wtBox'); b.classList.toggle('full'); var btn=document.querySelector('.wt-expand'); if(btn)btn.innerHTML=b.classList.contains('full')?'◀ Restore':'⛴ Expand'; };
-  function wtLoad(id){ document.getElementById('wtView').style.display='none'; document.getElementById('wtPlayer').classList.add('show'); document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1'; }
+  function wtLoad(id){ document.getElementById('wtView').style.display='none'; document.getElementById('wtPlayer').classList.add('show'); document.getElementById('wtFrame').src='https://www.youtube.com/embed/'+id+'?rel=0&autoplay=1&vq='+(currentQuality||'480p'); }
   function wtHandleData(d){ try{d=JSON.parse(d);}catch(e){return;} if(d.type==='yt'){ if(!d._lock){ wtLoad(d.id);} } }
 
   window.wtVideoToggle=function(which){
@@ -5652,6 +5660,8 @@
   setTimeout(function(){inject();},1000);
   setTimeout(function(){inject();},3000);
 })();
+
+  window.wtSetQuality=function(q){ currentQuality=q; var f=document.getElementById('wtFrame'); if(f&&f.src){ f.src=f.src.replace(/vq=[a-z0-9]+/i,'vq='+q); } };
 </script>
 
 
