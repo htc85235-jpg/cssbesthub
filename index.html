@@ -5445,7 +5445,11 @@
       <div class="wt-main" id="wtMain">
         <div class="wt-left">
           <div class="wt-cam local"><video id="wtLocalVideo" autoplay muted playsinline></video><span class="lbl">You</span></div>
-          <div class="wt-cam remote"><video id="wtRemoteVideo" autoplay playsinline></video><span class="lbl">Friend</span></div>
+          <div class="wt-cam remote" id="wtRemoteCam">
+            <video id="wtRemoteVideo" autoplay playsinline style="display:none"></video>
+            <div class="ph" id="wtRemotePh">👀 Waiting for other user...</div>
+            <span class="lbl" style="display:none" id="wtRemoteLbl">Friend</span>
+          </div>
         </div>
         <div class="wt-right" id="wtRight">
           <div class="ph" id="wtRightPh">🔍 Search a video to start watching together</div>
@@ -5520,7 +5524,7 @@
     }
     peerCount++;
     if(gconn){ conn=gconn; conn.on('data', wtHandleData); }
-    if(gcall){ gcall.answer(localStream); gcall.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; }); }
+    if(gcall){ gcall.answer(localStream); gcall.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; $('wtRemoteVideo').style.display='block'; $('wtRemotePh').style.display='none'; $('wtRemoteLbl').style.display='block'; }); }
     return true;
   }
 
@@ -5542,7 +5546,7 @@
           if(peerCount>=2){ try{ call.answer(); call.close(); }catch(e){} $('wtRoomStatus').textContent='Room is full.'; $('wtRoomStatus').className='wt-status'; return; }
           peerCount++;
           call.answer(localStream);
-          call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; });
+          call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; $('wtRemoteVideo').style.display='block'; $('wtRemotePh').style.display='none'; $('wtRemoteLbl').style.display='block'; });
           $('wtRoomStatus').textContent='Friend connected! Watching together.';
           $('wtRoomStatus').className='wt-status';
         });
@@ -5565,7 +5569,7 @@
         conn=gPeer.connect(ROOM_ID, {reliable:true});
         conn.on('data', wtHandleData);
         conn.on('open', function(){ wtCall(); });
-        gPeer.on('call', function(call){ call.answer(localStream); call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; }); });
+        gPeer.on('call', function(call){ call.answer(localStream); call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; $('wtRemoteVideo').style.display='block'; $('wtRemotePh').style.display='none'; $('wtRemoteLbl').style.display='block'; }); });
       });
       gPeer.on('error', function(){ $('wtRoomStatus').textContent='No active room found. Ask your friend to create one first.'; $('wtRoomStatus').className='wt-status'; });
     }).catch(function(){ $('wtRoomStatus').textContent='Camera/mic access needed.'; $('wtRoomStatus').className='wt-status'; });
@@ -5573,7 +5577,7 @@
 
   function wtCall(){
     var call=peer.call(ROOM_ID, localStream);
-    call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; });
+    call.on('stream', function(s){ $('wtRemoteVideo').srcObject=s; $('wtRemoteVideo').style.display='block'; $('wtRemotePh').style.display='none'; $('wtRemoteLbl').style.display='block'; });
   }
 
   function wtSend(o){ if(conn && conn.open) conn.send(o); }
