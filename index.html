@@ -5386,7 +5386,7 @@
 .wt-pane{position:absolute;border-radius:16px;background:#eef0f5;box-shadow:8px 8px 20px #cdd1dc,-8px -8px 20px #ffffff;overflow:hidden}
 #wtCam1{left:14px;top:14px;width:44%;height:32%}
 #wtCam2{left:50%;top:14px;right:14px;width:auto;height:32%}
-#wtYtPane{left:14px;top:40%;right:14px;bottom:14px;width:auto;height:auto}
+#wtYtPane{left:14px;top:31%;right:14px;bottom:14px;width:auto;height:auto}
 .wt-pane video{width:100%;height:100%;object-fit:cover;display:block}
 .wt-pane.local video{transform:scaleX(-1)}
 .wt-pane .lbl{position:absolute;top:8px;left:10px;color:#fff;font-size:.62rem;font-family:inherit;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:7px;z-index:3}
@@ -5399,8 +5399,8 @@
 .wt-cam-ctrls button.off{background:#ef4444;color:#fff}
 .wt-cam-ctrls button.hang{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
 /* Little ">" arrow resize handle - nothing else */
-.wt-handle{position:absolute;right:4px;bottom:4px;width:22px;height:22px;display:grid;place-items:center;cursor:nwse-resize;z-index:9;color:#94a3b8;font-size:.8rem;font-family:monospace;line-height:1;user-select:none}
-.wt-handle:hover{color:#2196f3}
+
+
 .wt-resizing{user-select:none;cursor:nwse-resize}
 /* Join panel */
 .wt-join-panel{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#eef0f5;z-index:8;padding:20px;text-align:center}
@@ -5414,10 +5414,10 @@
 .wt-hint{color:#8aa3c5;font-size:.72rem;text-align:center}
 /* YouTube pane: beautiful search bar, no header text */
 .wt-yt{position:absolute;inset:0;display:flex;flex-direction:column;background:#0f0f0f}
-.wt-yt-search{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1a1a1a;border-bottom:1px solid #2a2a2a;flex-shrink:0}
-.wt-yt-search input{flex:1;max-width:520px;margin:0 auto;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:40px;color:#fff;outline:none;padding:10px 18px;font-size:.88rem;font-family:inherit}
+.wt-yt-search{display:flex;align-items:center;gap:6px;padding:4px 8px;background:#1a1a1a;border-bottom:1px solid #2a2a2a;flex-shrink:0}
+.wt-yt-search input{flex:1;max-width:420px;margin:0 auto;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:40px;color:#fff;outline:none;padding:5px 12px;font-size:.78rem;font-family:inherit}
 .wt-yt-search input:focus{border-color:#2196f3}
-.wt-yt-search button{background:linear-gradient(135deg,#2196f3,#22d3ee);border:none;color:#fff;border-radius:40px;padding:10px 20px;cursor:pointer;font-size:.88rem;font-family:inherit;font-weight:600}
+.wt-yt-search button{background:linear-gradient(135deg,#2196f3,#22d3ee);border:none;color:#fff;border-radius:40px;padding:5px 12px;cursor:pointer;font-size:.72rem;font-family:inherit;font-weight:600}
 .wt-yt-tabs{display:flex;gap:5px;padding:5px 10px;overflow-x:auto;background:#1a1a1a;flex-shrink:0;scrollbar-width:none}
 .wt-yt-tabs::-webkit-scrollbar{display:none}
 .wt-yt-tab{padding:5px 14px;border-radius:18px;background:#2a2a2a;color:#e0e0e0;font-size:.72rem;font-family:inherit;cursor:pointer;white-space:nowrap;border:none}
@@ -5467,7 +5467,7 @@
               <button id="wtMuteBtn" onclick="wtMute()" title="Mute">&#127908;</button>
               <button class="hang" onclick="wtHangup()" title="Hang up">&#128222;</button>
             </div>
-            <div class="wt-handle">&#8250;</div>
+            
           </div>
           <div class="wt-pane" id="wtCam2">
             <video id="wtRemoteVideo" autoplay playsinline style="display:none"></video>
@@ -5477,14 +5477,14 @@
               <button id="wtPeerMuteBtn" onclick="wtPeerMute()" title="Mute friend">&#127908;</button>
               <button class="hang" onclick="wtHangup()" title="End">&#128222;</button>
             </div>
-            <div class="wt-handle">&#8250;</div>
+            
           </div>
           <div class="wt-pane" id="wtYtPane">
-            <div class="wt-handle">&#8250;</div>
+            
             <div class="wt-yt" id="wtYt">
               <div class="wt-yt-search">
                 <input id="wtYtSearch" placeholder="Search movies, reels, videos...">
-                <button onclick="wtDoSearch()">Search</button>
+                <button onclick="wtDoSearch()" aria-label="Search">&#128269;</button>
               </div>
               <div class="wt-yt-tabs">
                 <button class="wt-yt-tab on" onclick="wtTab('home',this)">Home</button>
@@ -5521,7 +5521,6 @@
       if(!el||el._cb) return; el._cb=true;
       el.addEventListener('click', function(e){
         if(e.target.closest && e.target.closest('.wt-cam-ctrls')) return;
-        if(e.target.closest && e.target.closest('.wt-handle')) return;
         var any=document.querySelectorAll('.wt-pane.ctrls');
         for(var i=0;i<any.length;i++) any[i].classList.remove('ctrls');
         el.classList.add('ctrls');
@@ -5533,43 +5532,7 @@
   setTimeout(bindCams,2000);
 
   // RESIZE: independent per pane (absolute positioning -> no push)
-  function initResize(){
-    // Each pane resizes INDEPENDENTLY (separate closures), clamped to the big box.
-    var box=document.getElementById('wtBox');
-    var bodyEl=document.querySelector('.wt-body');
-    var handles=document.querySelectorAll('.wt-handle');
-    handles.forEach(function(h){
-      if(h._r) return; h._r=true;
-      // Determine target pane = parent element of the handle
-      var pane=h.parentNode;
-      h.addEventListener('mousedown', function(e){
-        e.preventDefault(); e.stopPropagation();
-        begin(e.clientX,e.clientY);
-      });
-      h.addEventListener('touchstart', function(e){
-        if(e.touches[0]){ e.preventDefault(); e.stopPropagation(); begin(e.touches[0].clientX,e.touches[0].clientY); }
-      }, {passive:false});
-      function begin(sx,sy){
-        var startW=pane.offsetWidth, startH=pane.offsetHeight;
-        var maxW=bodyEl.clientWidth-20, maxH=bodyEl.clientHeight-20;
-        document.body.classList.add('wt-resizing');
-        function move(x,y){
-          var nw=startW+(x-sx), nh=startH+(y-sy);
-          if(nw<60)nw=60; if(nh<60)nh=60;
-          if(nw>maxW)nw=maxW; if(nh>maxH)nh=maxH;
-          pane.style.width=nw+'px';
-          pane.style.height=nh+'px';
-        }
-        function end(){ document.body.classList.remove('wt-resizing'); document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',end); document.removeEventListener('touchmove',move); document.removeEventListener('touchend',end); }
-        document.addEventListener('mousemove',move);
-        document.addEventListener('mouseup',end);
-        document.addEventListener('touchmove',move,{passive:false});
-        document.addEventListener('touchend',end);
-      }
-    });
-  }
-    setTimeout(initResize,400);
-  setTimeout(initResize,2000);
+  
 
   // ---- YOUTUBE ----
   function api(q){ return fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q='+encodeURIComponent(q)+'&key='+API_KEY).then(function(r){return r.json();}); }
