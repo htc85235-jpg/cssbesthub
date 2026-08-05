@@ -5449,7 +5449,7 @@
 .wt-sidebtns #wtModeBtn,.wt-sidebtns #wtChatBtn,.wt-sidebtns #wtAudioBtn{display:none}
 .wt-sidebtns.open #wtModeBtn,.wt-sidebtns.open #wtChatBtn,.wt-sidebtns.open #wtAudioBtn{display:grid}
 .wt-sidebtns.open{left:auto;right:12px;position:absolute}
-#wtArrowBtn{background:transparent;color:#5a739c;box-shadow:none;width:22px;height:40px;font-size:1.4rem;border-radius:0;cursor:pointer}
+#wtArrowBtn{background:transparent;color:#5a739c;box-shadow:0 0 12px rgba(255,200,0,.5),0 0 24px rgba(255,200,0,.25);width:22px;height:40px;font-size:1.4rem;border-radius:0;cursor:pointer}
 #wtArrowBtn:hover{color:#2196f3}
 .wt-sbtn{width:32px;height:32px;border-radius:50%;border:none;background:#eef0f5;color:#5a739c;cursor:pointer;display:grid;place-items:center;box-shadow:8px 8px 16px #cdd1dc,-8px -8px 16px #ffffff,inset 0 0 0 1px rgba(255,255,255,.6);font-size:1rem;transition:.2s}
 .wt-sbtn:active{box-shadow:inset 5px 5px 10px #cdd1dc,inset -5px -5px 10px #ffffff}
@@ -5513,7 +5513,7 @@
     var box=document.createElement('div'); box.className='wt-modal'; box.id='wtModal';
     box.innerHTML=`<div class="wt-ov" onclick="wtClose()"></div>
               <div class="wt-sidebtns" id="wtSideBtns">
-          <button class="wt-sbtn" id="wtArrowBtn" onclick="wtToggleSide()" title="Menu">&#8249;</button>
+          <button class="wt-sbtn" id="wtArrowBtn" onclick="wtToggleSide()" title="Menu">&#8250;</button>
           <button class="wt-sbtn" id="wtModeBtn" onclick="wtToggleMode()" title="Toggle mode">&#128222;</button>
           <button class="wt-sbtn" id="wtAudioBtn" onclick="wtToggleAudio()" title="Audio call only">&#128266;</button>
           <button class="wt-sbtn" id="wtChatBtn" onclick="wtOpenChat()" title="Chat">&#128172;</button>
@@ -5723,7 +5723,7 @@ function loadQuery(q){
     var sb=document.getElementById('wtSideBtns'); if(!sb) return;
     sb.classList.toggle('open');
     var a=document.getElementById('wtArrowBtn');
-    if(a){ a.innerHTML=sb.classList.contains('open')?'&#8250;':'&#8249;'; }
+    if(a){ a.innerHTML=sb.classList.contains('open')?'&#8249;':'&#8250;'; }
   };
   window.wtAudioMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtAudioMute'); if(b){b.classList.toggle('off',myMuted);} };
   window.wtAudioSpeaker=function(){ var b=document.getElementById('wtAudioSpeaker'); if(b)b.classList.toggle('off'); };
