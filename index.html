@@ -5588,8 +5588,8 @@
     b.classList.toggle('on',!on);
     b.style.opacity=on?'0.4':'1';
   };
-  window.wtMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtMuteBtn'); b.classList.toggle('off',myMuted); b.textContent=myMuted?'&#128263;':'&#127908;'; };
-  window.wtPeerMute=function(){ peerMuted=!peerMuted; var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted; var b=document.getElementById('wtPeerMuteBtn'); b.classList.toggle('off',peerMuted); b.textContent=peerMuted?'&#128263;':'&#127908;'; };
+  window.wtMute=function(){ myMuted=!myMuted; if(localStream){localStream.getAudioTracks().forEach(function(t){t.enabled=!myMuted;});} var b=document.getElementById('wtMuteBtn'); if(b){ b.classList.toggle('off',myMuted); b.style.opacity=myMuted?'0.4':'1'; } };
+  window.wtPeerMute=function(){ peerMuted=!peerMuted; var v=document.getElementById('wtRemoteVideo'); if(v)v.muted=peerMuted; var b=document.getElementById('wtPeerMuteBtn'); if(b){ b.classList.toggle('off',peerMuted); b.style.opacity=peerMuted?'0.4':'1'; } };
   window.wtHangup=function(){ wtClose(); };
 
   window.wtCreate=function(){
