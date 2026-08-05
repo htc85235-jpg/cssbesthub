@@ -5499,8 +5499,8 @@
     var rv=document.getElementById('wtRemoteVideo'); if(rv)rv.srcObject=null;
   };
   window.wtSubmitPw = function(){
-    var v=document.getElementById('wtPwInput').value||'';
-    if(v===PASSWORD){ document.getElementById('wtPw').style.display='none'; document.getElementById('wtJoinStep').style.display='block'; }
+    var v=(document.getElementById('wtPwInput').value||'').replace(/\s+/g,'');
+    if(v===PASSWORD){ document.getElementById('wtPw').style.display='none'; document.getElementById('wtJoinStep').style.display='block'; document.getElementById('wtPwErr').style.display='none'; }
     else { document.getElementById('wtPwErr').style.display='block'; }
   };
   function showLive(){
