@@ -5418,12 +5418,8 @@
 .wt-yt-search input{flex:1;max-width:260px;margin:0 auto;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:40px;color:#fff;outline:none;padding:3px 8px;font-size:.68rem;font-family:inherit}
 .wt-yt-search input:focus{border-color:#2196f3}
 .wt-yt-search button{background:linear-gradient(135deg,#2196f3,#22d3ee);border:none;color:#fff;border-radius:40px;padding:5px 12px;cursor:pointer;font-size:.72rem;font-family:inherit;font-weight:600}
-.wt-yt-tabs{display:flex;gap:5px;padding:5px 10px;overflow-x:auto;background:#1a1a1a;flex-shrink:0;scrollbar-width:none}
-.wt-yt-tabs::-webkit-scrollbar{display:none}
 .wt-yt-view::-webkit-scrollbar{display:none}
 .wt-reels-row::-webkit-scrollbar{display:none}
-.wt-yt-tab{padding:5px 14px;border-radius:18px;background:#2a2a2a;color:#e0e0e0;font-size:.72rem;font-family:inherit;cursor:pointer;white-space:nowrap;border:none}
-.wt-yt-tab.on{background:#fff;color:#0f0f0f;font-weight:600}
 .wt-yt-view{flex:1;overflow-y:auto;padding:12px;position:relative;scrollbar-width:none;-ms-overflow-style:none}
 .wt-reels-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none}
 .wt-reels-row::-webkit-scrollbar{display:none}
@@ -5490,12 +5486,7 @@
                 <input id="wtYtSearch" placeholder="Search movies, reels, videos...">
                 <button onclick="wtDoSearch()" aria-label="Search">&#128269;</button>
               </div>
-              <div class="wt-yt-tabs">
-                <button class="wt-yt-tab on" onclick="wtTab('home',this)">Home</button>
-                <button class="wt-yt-tab" onclick="wtTab('reels',this)">Reels</button>
-                <button class="wt-yt-tab" onclick="wtTab('trending',this)">Trending</button>
-                <button class="wt-yt-tab" onclick="wtTab('movies',this)">Movies</button>
-              </div>
+              
               <div class="wt-yt-view" id="wtView"></div>
               <div class="wt-yt-player" id="wtPlayer">
                 <div class="wt-player-stage" id="wtStage">
@@ -5564,10 +5555,6 @@
     api(q).then(function(data){ var items=(data.items||[]).filter(function(v){return v.id&&v.id.videoId;}); view.innerHTML=items.length?renderHome(items):'<div class="wt-yt-msg">No results</div>'; }).catch(function(){ view.innerHTML='<div class="wt-yt-msg">Search failed. Check API key.</div>'; });
   }
   window.wtDoSearch=function(){ var q=document.getElementById('wtYtSearch').value.trim(); if(q)loadQuery(q); };
-  window.wtTab=function(t,btn){
-    var tabs=document.querySelectorAll('.wt-yt-tab'); tabs.forEach(function(x){x.classList.remove('on');}); if(btn)btn.classList.add('on');
-    if(t==='home')loadHome(); else if(t==='reels')loadQuery('#shorts'); else if(t==='trending')loadQuery('trending'); else if(t==='movies')loadQuery('movie trailer');
-  };
   window.wtPlay=function(id){
     document.getElementById('wtView').style.display='none';
     var p=document.getElementById('wtPlayer'); p.classList.add('show');
