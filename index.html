@@ -5603,6 +5603,14 @@
         </div>
       </div>`;
     document.body.appendChild(box);
+    // Runtime fix: ensure audio panel + chatbox are direct children of the box (not nested in YouTube pane)
+    try{
+      var ap=document.getElementById('wtAudioPanel');
+      var cb=document.getElementById('wtChatBox');
+      var bx=document.getElementById('wtBox');
+      if(ap && bx && ap.parentNode!==bx){ ap.parentNode.removeChild(ap); bx.appendChild(ap); }
+      if(cb && bx && cb.parentNode!==bx){ cb.parentNode.removeChild(cb); bx.appendChild(cb); }
+    }catch(e){}
   }
 
   window.wtOpen=function(){ inject(); var m=document.getElementById('wtModal'); m.classList.add('open'); document.body.style.overflow='hidden'; loadHome(); };
